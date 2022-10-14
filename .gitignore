@@ -145,4 +145,4 @@ dmypy.json
 cython_debug/
 
 # Project data ignores
-data/
+data/_matched
