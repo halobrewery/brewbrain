@@ -1,13 +1,14 @@
 name;category;type;alt_names;alt_names_extra
-Basic Barley Malt;grain;base;Brewers Malt 2-Row,Standard 2-Row,Base Malt;2-Row,Two-Row,6-Row,Six-Row,Barley Malt,Standard Malt,Basic Malt
-Munich Malt;grain;base;;Munich,Münchner Malz,Bonlander Munich,Munich Malt 20L
+Basic Barley Malt;grain;base;Brewers Malt 2-Row,2 Row,Standard 2-Row,Base Malt;2-Row,Two-Row,6-Row,Six-Row,Barley Malt,Standard Malt,Basic Malt,Two Row,2Row
+Munich Malt;grain;base;;Munich,Münchner Malz,Bonlander Munich,Bonlander,Munich Malt 20L
 Munich Light Malt;grain;base;Munich Malt I;Munich Light,Münchner Malz Hell,Light Munich,Munich Malt Light,Münchner Malz I,Münchner I,Munich Type I,Munich I,Munich - Light
 Munich Dark Malt;grain;base;Munich Malt II;Munich Dark,Münchner Malz Dunkel,Dark Munich,Münchner Malz II,Munich Type II,Munich II
-Vienna Malt;grain;base;;Vienna,Vienna Malt,Wiener Malz
-Pilsner Malt;grain;base;Bohemian Pilsner,Lager Malt;Pilsner,Pilsner Malt,Château Pilsner
+Vienna Malt;grain;base;;Vienna,Vienna Malt,Wiener Malz,Monaco
+Pilsner Malt;grain;base;Bohemian Pilsner,Lager Malt;Pilsner,Pilsner Malt,Château Pilsner,Pilsen,Kolsch,Plensky,Idapils,Kölsch,Czech Pils,Czech Pilsner
+Bohemian Floor-Malted Pilsner Malt;grain;base;Bohemian Floor Malted Pilsner;
 Pilsner Light Malt;grain;base;Extra Light Pilsner,Light Lager Malt;Pilsner Light,Light Pilsner,Pilsner Malt Light,Pilsner Malt Extra Light,Pilsner Malz Hell,Pilsner Malz Extra Hell,Helles Pilsner,Extra Helles Pilsner,Lager Malt Light
 Extra Pale Ale Malt;grain;base;Extra Pale Malt,Thomas Fawcett Pearl;Extra Pale Ale,Pearl
-Pale Ale Malt;grain;base;ESB Malt;Pale Ale,Pale Malt,Ale Malt,Pale 2-Row,Pale 6-Row,
+Pale Ale Malt;grain;base;ESB Malt;Pale Ale,Pale Malt,Ale Malt,Pale 2-Row,Pale 6-Row,Halcyon,Ale,American Ale,Optic,Propino
 Mild Ale Malt;grain;base;Mild Malt;Mild Ale,Ashbourne Mild,Ashburne Mild,
 Maris Otter Malt;grain;base;;Maris Otter,Maris Otter Pale Ale
 Golden Promise Malt;grain;base;;Golden Promise,Golden Promise Pale Ale
@@ -16,7 +17,7 @@ Pale Wheat Malt;grain;base;White Wheat Malt;Pale Wheat,White Wheat,Helles Weizen
 Dark Wheat Malt;grain;base;;Dark Wheat,Dunkles Weizenmalz,Weizenmalz Dunkel,Château Wheat Munich Light
 Extra Dark Wheat Malt;grain;base;;Extra Dark Wheat,Château Wheat Munich 25
 Stout Malt;grain;base;;
-Smoke Malt;grain;base;;Smoked,Smoked Malt,Rauchmalz
+Smoke Malt;grain;base;;Smoked,Smoked Malt,Rauchmalz,Stjørdalsmalt
 Peated Malt;grain;base;Peated Malt;Peat Malt,Château Whisky
 Whisky Malt;grain;base;Distiller's Malt;Whiskey Malt,Distiller Malt
 Green Malt;grain;base;;Grünmalz
@@ -29,33 +30,33 @@ Dark Oat Malt;grain;other_malt;;Schwarzhafermalz
 Triticale Malt;grain;other_malt;;Triticalemalz
 Millet Malt;grain;other_malt;;Hirsemalz
 Buckwheat Malt;grain;other_malt;;Buchweizenmalz,Château Buckwheat
-Carafa I;grain;roasted;Roasted Malt I;Cara Fa I,Röstmalz I,Château Chocolat
-Carafa II;grain;roasted;Roasted Malt II;Cara Fa II,Röstmalz II
-Carafa III;grain;roasted;Roasted Malt III;Cara Fa III,Röstmalz IIII
-Carafa Special I;grain;roasted;Roasted Malt Special I,Dehusked Carafa I;Cara Fa Special I,Cara Fa Spezial I,Cara Fa Sp. I,Röstmalz Spezial I,Röstmalz Sp. I,De-husked Carafa I,De-husked Caraf I
+Carafa I;grain;roasted;Roasted Malt I;Cara Fa I,Röstmalz I,Château Chocolat,Chocolat,Carafa Type I
+Carafa II;grain;roasted;Roasted Malt II;Cara Fa II,Röstmalz II,Carafa Type II
+Carafa III;grain;roasted;Roasted Malt III;Cara Fa III,Röstmalz IIII,Carafa Type III,Carafa 3,Cara Fa 3
+Carafa Special I;grain;roasted;Roasted Malt Special I,Dehusked Carafa I;Cara Fa Special I,Cara Fa Spezial I,Cara Fa Sp. I,Röstmalz Spezial I,Röstmalz Sp. I,De-husked Carafa I,De-husked Caraf I,Carafa Special
 Carafa Special II;grain;roasted;Roasted Malt Special II,Dehusked Carafa II;Cara Fa Special II,Cara Fa Spezial II,Cara Fa Sp. II,Röstmalz Spezial II,Röstmalz Sp. II,De-husked Carafa II,De-husked Caraf II
-Carafa Special III;grain;roasted;Roasted Malt Special III,Dehusked Carafa III;Cara Fa Special III,Cara Fa Spezial III,Cara Fa Sp. III,Röstmalz Spezial III,Röstmalz Sp. III,De-husked Carafa III,De-husked Caraf III
-Light Coffee Malt;grain;roasted;;Light Coffee,Coffee Light,Château Cafe Light
+Carafa Special III;grain;roasted;Roasted Malt Special III,Dehusked Carafa III;Cara Fa Special III,Cara Fa Spezial III,Cara Fa Sp. III,Röstmalz Spezial III,Röstmalz Sp. III,De-husked Carafa III,De-husked Caraf III,perla negra,Black Pearl,Black Perle,Mroost 1400,blackprinz,black prinz
+Light Coffee Malt;grain;roasted;;Light Coffee,Coffee Light,Château Cafe Light,kawowy jasny
 Coffee Malt;grain;roasted;;Château Cafe
-Pale Chocolate;grain;roasted;Chocolate Light,Chocolate Low Colour;Pale Chocolate,Chocolate Light,Chocolate Low Colour,Chocolate Low Color
-Chocolate Malt;grain;roasted;;Chocolate
+Pale Chocolate;grain;roasted;Chocolate Light,Chocolate Low Colour;Pale Chocolate,Chocolate Light,Chocolate Low Colour,Chocolate Low Color,czekoladowy jasny
+Chocolate Malt;grain;roasted;;
 Dark Chocolate Malt;grain;roasted;;Chocolate Dark
-Black Malt;grain;roasted;Black Barley,Black Patent,Château Black,Blackprinz;Roasted Malt,Roast Malt,Kiln Black,Black Roast
+Black Malt;grain;roasted;Black Barley,Black Patent,Château Black,Blackprinz;Roasted Malt,Roast Malt,Kiln Black,Black Roast,Black Kiln
 Debittered Black Malt;grain;roasted;;De-bittered Black Malt
 Roasted Wheat Malt;grain;roasted;Chocolate Wheat,Midnight Wheat;Roasted Wheat,Wheat Roasted,Roast Wheat,Weizenröstmalz Röstmalz Weizen,Midnight Wheat
 Roasted Rye Malt;grain;roasted;Chocolate Rye;Rye Roasted,Roggenröstmalz,Roast Rye
 Roasted Spelt Malt;grain;roasted;;Spelt Roasted,Dinkelröstmalz,Roast Spelt
-Roasted Barley Malt;grain;roasted;Black Pearl;Roasted Barley,Barley Roasted,Röstgerste,Röstmalz,Roast Barley
+Roasted Barley Malt;grain;roasted;Black Pearl;Roasted Barley,Barley Roasted,Röstgerste,Röstmalz,Roast Barley,nesladovany odpleveny prazeny jacmen,barley (roasted)
 Roasted Millet Malt;grain;roasted;;Roasted Millet,Millet Roasted,Roast Millet
-Brown Malt;grain;roasted;Aroma 150 MD;Brown
-Abbey Malt;grain;toasted;Belgian Malt,Aromatic MD;Château Abbey,Aromatic MD
-Biscuit Malt;grain;toasted;Victory Malt;Château Biscuit
+Brown Malt;grain;roasted;Aroma 150 MD;Brown,Château Café,Café
+Abbey Malt;grain;toasted;Belgian Malt,Aromatic MD;Château Abbey,Aromatic MD,Abby Malt
+Biscuit Malt;grain;toasted;Victory,Victory Malt;Château Biscuit,Biscuit
 Cookie Malt;grain;toasted;;Cookie
-Aromatic Malt;grain;toasted;;Aromatic,Château Arome,Aurora Malt
-Amber Malt;grain;toasted;Special Roast,Aroma 100 MD;Amber
-Melanoidin Malt;grain;toasted;Melano,Red X,Toasted Malt;Melanoidin
+Aromatic Malt;grain;toasted;;Aromatic,Château Arome,Aurora Malt,Aroma
+Amber Malt;grain;toasted;Special Roast,Aroma 100 MD;Amber,Dark Ale
+Melanoidin Malt;grain;toasted;Melano,Red X,Red-X,RedX,Toasted Malt;Melanoidin,Blumenauer 1,Blumenauer I,Melano,Melany
 Honey Malt;grain;toasted;;
-Toffee Malt;grain;toasted;;
+Toffee Malt;grain;toasted;;Brumalt
 Acidulated Malt;grain;adjunct;Acid Malt,Sour Malt;Sauermalz,Acidulated,Château Acid
 Chit Malt;grain;adjunct;Pointed Malt;Spitzmalz
 Diastatic Malt;grain;adjunct;;Diastasemalz,Diastatic
@@ -72,57 +73,62 @@ Unmalted Triticale;grain;unmalted_adjunct;;Triticale Unmalted,Raw Triticale,Trit
 Unmalted Millet;grain;unmalted_adjunct;;Millet Unmalted,Raw Millet,Millet Raw
 Unmalted Buckwheat;grain;unmalted_adjunct;;Buckwheat Unmalted,Raw Buckwheat,Buckwheat Raw
 Flaked Barley;grain;unmalted_adjunct;;Gerstenflocken,Gersteflocken,Barley Flakes,Barley Flaked
-Flaked Oats;grain;unmalted_adjunct;Rolled Oats;Haferflocken,Oat Flakes,Oats Flaked,Oat Flaked
+Flaked Oats;grain;unmalted_adjunct;Rolled Oats;Ovsenne Vlocky,Haferflocken,Oat Flakes,Oats Flaked,Oat Flaked,Oats,Quaker Quick Oats,Quaker Oats,Pinhead Oats,Toasted Oats
 Flaked Rye;grain;unmalted_adjunct;;Roggenflocken,Rye Flakes,Rye Flaked
 Flaked Wheat;grain;unmalted_adjunct;;Weizenflocken,Wheat Flakes,Wheat Flaked
 Flaked Corn;grain;unmalted_adjunct;;Maisflocken,Corn Flakes,Corn Flaked
-Flaked Rice;grain;unmalted_adjunct;;Reisflocken,Rice Flakes,Rice Flaked
+Flaked Rice;grain;unmalted_adjunct;;Reisflocken,Rice Flakes,Rice Flaked,Rice
 Flaked Spelt;grain;unmalted_adjunct;;Hirseflocken,Spelt Flakes,Spelt Flaked
 Flaked Quinoa;grain;unmalted_adjunct;;Quinoaflocken,Quinoa Flakes,Quinoa Flaked
+Puffed Quinoa;grain;unmalted_adjunct;Quinoa;
 Rice Hulls;grain;unmalted_adjunct;Rice Husks;
 Torrified Barley Malt;grain;unmalted_adjunct;;Torrified Barley,Barley Torrified
 Torrified Wheat Malt;grain;unmalted_adjunct;;Torrified Wheat,Wheat Torrified
 Maize;grain;unmalted_adjunct;Corn;Mais
-Golden Naked Oats;grain;cara_crystal;;Naked Oats,Oats Golden Naked
+Golden Naked Oats;grain;cara_crystal;;Naked Oats,Oats Golden Naked,Golden Naked Oat
 CaraRye;grain;cara_crystal;;Cara Malt Rye,Rye Cara
-CaraRed;grain;cara_crystal;CaraRuby;Cara Malt Red,Cara Malt Ruby,Cara Malt Rot,Rotes Cara
-CaraHell;grain;cara_crystal;;Cara Malt Hell,Karamellmalz Hell,CaraMalt,Helles Cara
-CaraWheat;grain;cara_crystal;;Cara Malt Wheat,Wheat Cara,Weizen Cara,Cara Weizen
+CaraRed;grain;cara_crystal;CaraRuby;Cara Malt Red,Cara Malt Ruby,Cara Malt Rot,Rotes Cara,Ruby
+CaraHell;grain;cara_crystal;;Cara Malt Hell,Karamellmalz Hell,CaraMalt,Cara Malt,Helles Cara,Caramillet,karmelowy jasny
+CaraWheat;grain;cara_crystal;;Cara Malt Wheat,Wheat Cara,Weizen Cara,Cara Weizen,Pszeniczny karmelowy
 CaraGold;grain;cara_crystal;;Cara Malt Gold
-CaraPils / CaraFoam;grain;cara_crystal;Cara Clair,Gladiator,Dextrine Malt;Cara Malt Pils,Cara Malt Foam,Dextrine,Dextrin,Cara Malt Extra Hell,CaraPils
+CaraPils / CaraFoam;grain;cara_crystal;CaraFoam,CaraPils,Cara Clair,Gladiator,Dextrine Malt;Cara Malt Pils,Cara Malt Foam,Dextrine,Dextrin,Cara Malt Extra Hell,CaraPils,Dextrapils
 CaraMunich I;grain;cara_crystal;;Caramunich Malt,Cara Malt Munich I,Cara Malt Münch I,Cara Malt Münchner I,Cara Malt Dunkel I,Cara Malt Dunkel
 CaraMunich II;grain;cara_crystal;;Cara Malt Munich II,Cara Malt Münch II,Cara Malt Münchner II,Cara Malt Dunkel II,CaraMunich 45L,Munich 45L,Caramel Munich 45L
 CaraMunich III;grain;cara_crystal;;Cara Malt Munich III,Cara Malt Münch III,Cara Malt Münchner III,Cara Malt Dunkel III,CaraMunich 60L,Munich 60L,Caramel Munich Dark 150,Caramel Munich 60L,Munich - 60L
 CaraBelge;grain;cara_crystal;;Cara Malt Belge,Cara Belgisch,Beligisches Cara
-CaraBohemian;grain;cara_crystal;;Cara Malt Bohemian,Cara Böhmisch,Böhmisches Cara
+CaraBohemian;grain;cara_crystal;;Cara Malt Bohemian,Cara Böhmisch,Böhmisches Cara,Bohemian Floor-Malted Dark,bohemian floor malted dark
 CaraAroma;grain;cara_crystal;;Cara Malt Aroma,Aroma Cara
 CaraAmber;grain;cara_crystal;;Cara Malt Amber,Amber Cara
 CaraVienne;grain;cara_crystal;;Cara Malt Vienne,Cara Malt Vienna,Cara Wiener,Wiener Cara
-Caramel/Crystal Malt – 10L;grain;cara_crystal;Crystal Malt 10L,Caramel Malt 10L,Caramel/Crystal 10L,Crystal 10,Caramel 10;
-Caramel/Crystal Malt – 15L;grain;cara_crystal;Crystal Malt 15L,Caramel Malt 15L,Carastan Light,Caramel/Crystal 15L,Crystal 15,Caramel 15;Light Carastan
-Caramel/Crystal Malt – 20L;grain;cara_crystal;Crystal Malt 20L,Caramel Malt 20L,Caramel/Crystal 20L,Crystal 20,Caramel 20;
-Caramel/Crystal Malt – 30L;grain;cara_crystal;Crystal Malt 30L,Caramel Malt 30L,Pale Caramel,Carastan,Caramel/Crystal 30L;Pale Crystal,Cara Pale,Pale Cara
-Caramel/Crystal Malt – 40L;grain;cara_crystal;Crystal Malt 40L,Caramel Malt 40L,Light Caramel,Caramel/Crystal 40L;Light Crystal,Cara Malt Munich 40L,Light Cara,Cara Light
-Caramel/Crystal Malt – 45L;grain;cara_crystal;Crystal Malt 45L,Caramel Malt 45L,Caramel/Crystal 45L;
-Caramel/Crystal Malt – 50L;grain;cara_crystal;Crystal Malt 50L,Caramel Malt 50L;Château Cara Gold,Caramel/Crystal 50L
-Caramel/Crystal Malt – 55L;grain;cara_crystal;Crystal Malt 55L,Caramel Malt 55L,Caramel/Crystal 55L;
-Caramel/Crystal Malt – 60L;grain;cara_crystal;Crystal Malt 60L,Caramel Malt 60L,Medium Caramel,Crystal Medium,Caramel/Crystal 60L;Château Crystal
-Caramel/Crystal Malt – 70L;grain;cara_crystal;Crystal Malt 70L,Caramel Malt 70L,Caramel/Crystal 70L;
-Caramel/Crystal Malt – 75L;grain;cara_crystal;Crystal Malt 75L,Caramel Malt 75L,Caramel/Crystal 75L;
-Caramel/Crystal Malt – 80L;grain;cara_crystal;Crystal Malt 80L,Caramel Malt 80L,Caramel/Crystal 80L;
-Caramel/Crystal Malt – 90L;grain;cara_crystal;Crystal Malt 90L,Caramel Malt 90L,Caramel/Crystal 90L;
-Caramel/Crystal Malt – 120L;grain;cara_crystal;Crystal Malt 120L,Caramel Malt 120L,Caramel/Crystal 120L,Dark Caramel,Special B,Extra Special Malt,DRC Malt;Dark Cara,Dark Cara II,Cara Dark,Cara Munich 120L,Crystal Extra Dark 120L,DRC
-Caramel/Crystal Malt – 140L;grain;cara_crystal;Crystal Malt 140L,Caramel Malt 140L,Caramel/Crystal 140L;
-Caramel/Crystal Malt – 150L;grain;cara_crystal;Crystal Malt 150L,Caramel Malt 150L,Caramel/Crystal 150L,Special X,Crystal Extra Dark;
-Malt Extract;extract;;DME,LME;Extract
+Caramel/Crystal Malt – 10L;grain;cara_crystal;Crystal Malt 10L,Caramel Malt 10L,Caramel/Crystal 10L,Crystal 10,Caramel 10,C10;
+Caramel/Crystal Malt – 15L;grain;cara_crystal;Crystal Malt 15L,Caramel Malt 15L,Carastan Light,Caramel/Crystal 15L,Crystal 15,Caramel 15,C15;Light Carastan;karamel svetly
+Caramel/Crystal Malt – 20L;grain;cara_crystal;Crystal Malt 20L,Caramel Malt 20L,Caramel/Crystal 20L,Crystal 20,Caramel 20,C20;
+Caramel/Crystal Malt – 30L;grain;cara_crystal;Crystal Malt 30L,Caramel Malt 30L,Pale Caramel,Carastan,Caramel/Crystal 30L,C30;Pale Crystal,Cara Pale,Pale Cara,Crystal 30,Caramel 30
+Caramel/Crystal Malt – 40L;grain;cara_crystal;Crystal Malt 40L,Caramel Malt 40L,Light Caramel,Caramel/Crystal 40L,C40;Light Crystal,Cara Malt Munich 40L,Light Cara,Cara Light,Crystal 40,Caramel 40,Redback
+Caramel/Crystal Malt – 45L;grain;cara_crystal;Crystal Malt 45L,Caramel Malt 45L,Caramel/Crystal 45L,Crystal 45,Caramel 45,C45;
+Caramel/Crystal Malt – 50L;grain;cara_crystal;Crystal Malt 50L,Caramel Malt 50L,C50;Château Cara Gold,Caramel/Crystal 50L,Crystal 50,Caramel 50
+Caramel/Crystal Malt – 55L;grain;cara_crystal;Crystal Malt 55L,Caramel Malt 55L,Caramel/Crystal 55L,Crystal 55,Caramel 55,C55;
+Caramel/Crystal Malt – 60L;grain;cara_crystal;Crystal Malt 60L,Caramel Malt 60L,Medium Caramel,Medium Crystal,Crystal Medium,Caramel/Crystal 60L,Crystal 60,Caramel 60,C60;Château Crystal,Supernova
+Caramel/Crystal Malt – 70L;grain;cara_crystal;Crystal Malt 70L,Caramel Malt 70L,Caramel/Crystal 70L,Crystal 70,Caramel 70,C70;
+Caramel/Crystal Malt – 75L;grain;cara_crystal;Crystal Malt 75L,Caramel Malt 75L,Caramel/Crystal 75L,Crystal 75,Caramel 75,C75;77L
+Caramel/Crystal Malt – 80L;grain;cara_crystal;Crystal Malt 80L,Caramel Malt 80L,Caramel/Crystal 80L,Crystal 80,Caramel 80,C80;
+Caramel/Crystal Malt – 90L;grain;cara_crystal;Crystal Malt 90L,Caramel Malt 90L,Caramel/Crystal 90L,Crystal 90,Caramel 90,C90;Caradark,Cara Dark
+Caramel/Crystal Malt – 120L;grain;cara_crystal;Crystal Malt 120L,Caramel Malt 120L,Caramel/Crystal 120L,Crystal 120,Caramel 120,C120,Gold Classic,Dark Caramel,Dark Crystal,Special B,Special W,Extra Special Malt,Extra Special,DRC Malt;Dark Cara,Dark Cara II,Cara Dark,Cara Munich 120L,Crystal Extra Dark 120L,DRC,shepards delight,Shepherds Delight
+Caramel/Crystal Malt – 140L;grain;cara_crystal;Crystal Malt 140L,Caramel Malt 140L,Caramel/Crystal 140L,Crystal 140,Caramel 140,C140;
+Caramel/Crystal Malt – 150L;grain;cara_crystal;Crystal Malt 150L,Caramel Malt 150L,Caramel/Crystal 150L,Special X,Crystal Extra Dark,Crystal 150,Caramel 150,C150;
+Caramel/Crystal Malt - 160L;grain;cara_crystal;Extra Dark Crystal 160L,C160;karamel záhlinice;Extra Dark
+Sinamar;extract;roasted;LME Sinamar,Sinamar Extract;Sinimar
+Malt Extract;extract;;DME,LME;Extract,malt syrup,maltose,cbw golden light
+Granola;cereal;;;
+Frosted Flakes;cereal;;;
 Acerola;fruit;;;
-Apple;fruit;;;
-Apricot;fruit;;;
+Apple;fruit;;Apples;
+Apricot;fruit;;Apricots;
 Banana;fruit;;;
-Beets ;fruit;;;Beet
-Blackberry;fruit;;;
-Blueberry;fruit;;;
-Boysenberry;fruit;;;
+Beets;fruit;;;Beet
+Blackberry;fruit;;Blackberries;
+Blueberry;fruit;;Blueberries;
+Boysenberry;fruit;;Boysenberries;
 Cantaloupe;fruit;;;
 Carambola;fruit;;;
 Carrot;fruit;;;
@@ -157,8 +163,8 @@ Orange;fruit;;;
 Blood Orange;fruit;;;
 Papaya;fruit;;;
 Passionfruit;fruit;;;
-Peach;fruit;;;
-Pear;fruit;;;
+Peach;fruit;;Peaches;
+Pear;fruit;;Pears;
 Persimmon;fruit;;;
 Pineapple;fruit;;;
 Plum;fruit;;;
@@ -167,10 +173,10 @@ Prickly Pear;fruit;;;
 Prunes;fruit;;;
 Pumpkin;fruit;;;
 Quince;fruit;;;
-Raisins;fruit;;;
-Raspberry;fruit;;;
+Raisins;fruit;;;Raisans Plain
+Raspberry;fruit;;Raspberries;
 Rhubarb;fruit;;;
-Strawberry;fruit;;;
+Strawberry;fruit;;Strawberries;
 Sultanas;fruit;;;
 Tangelo;fruit;;;
 Tangerine;fruit;;;
@@ -178,22 +184,36 @@ Tomato;fruit;;;
 Watermelon;fruit;;;
 Youngberry;fruit;;;
 Yuzu ;fruit;;;
-Agave Nectar;sugar;;;
+Agave Nectar;sugar;;Agave Syrup;
 Brown Sugar;sugar;;;
 Candi Sugar;sugar;;;
 Candi Syrup;sugar;;;
-Cane Sugar;sugar;;;
-Corn Sugar;sugar;;Dextrose;
+Invert Sugar #1;sugar;;Invert No. 1;
+Invert Sugar #2;sugar;;Invert No. 2;
+Invert Sugar #3;sugar;;Invert No. 3;
+Cane Sugar;sugar;;Piloncillo;
+Brewvint Alcohol Boost;sugar;;Brewvint,Brewvint Boost;mr beer booster,mr. beer booster
+Jaggery;sugar;;;
+Bread Syrup;sugar;;;
+Corn Sugar;sugar;;Dextrose,Glucose;
 Corn Syrup;sugar;;Brewers Crystals;
+Marshmallow;sugar;;Marshmallows;
+Birch Syrup;sugar;;;
 Honey;sugar;;;Honig
 Lactose (Milk Sugar);sugar;;;Lactose,Milk Sugar
 Maltodextrin;sugar;;;
 Maple Syrup;sugar;;;
 Molasses;sugar;;;Melasse
+Muscovado;sugar;;;
+Rapadura;sugar;;;
 Rice Syrup;sugar;;;
 Sugar;sugar;;Table Sugar,Sucrose,Sucrose (Table Sugar);Zucker,Haushaltszucker
 Turbinado;sugar;;;
+Cake Sprinkles;sugar;;Sprinkles;
 Sorghum Syrup;sugar;;;
+Black Treacle;sugar;;Dark Treacle,Treacle;
+Graham Cracker;sugar;;;
+Vanilla Sugar;sugar;;Vanilsocker,Vaniljsocker;
 Allspice;spice_herb;;;
 Basil;spice_herb;;;
 Bay Leaves;spice_herb;;;Bay Leaf
@@ -211,8 +231,8 @@ Cinnamon;spice_herb;;;Canela,Cinammon,Cinnimon
 Clementine;spice_herb;;;
 Clove;spice_herb;;;
 Coca;spice_herb;;;
-Cocoa;spice_herb;;;Cocao
-Coconut;spice_herb;;;
+Chocolate Powder;spice_herb;;Cokoladovy,Czekoladowy,Cocoa Powder,Cocoa,Cocao;
+Coconut;spice_herb;;Toasted Coconut,kokosmasse røsta;
 Coconut Water;spice_herb;;;
 Coffee Beans;spice_herb;;;
 Coriander;spice_herb;;;Coriandr,Cilantro,Coriande,Coriandre,Koriander
@@ -224,7 +244,7 @@ Green Pepper;spice_herb;;;
 Green Tea;spice_herb;;;
 Habanero Pepper;spice_herb;;;
 Hazelnut;spice_herb;;;
-Hibiscus;spice_herb;;;
+Hibiscus;spice_herb;;Hibisco;
 Jalapeño Pepper;spice_herb;;;
 Jasmine;spice_herb;;;
 Juniper;spice_herb;;;
@@ -232,7 +252,7 @@ Lavender;spice_herb;;;Lavendar
 Lemongrass;spice_herb;;;
 Mint;spice_herb;;Peppermint ;
 Nutmeg;spice_herb;;;
-Oak Chip;spice_herb;;;
+Oak Chip;spice_herb;;Oak Chips;
 Orange Peel;spice_herb;;;Orange Zest 
 Rooibos;spice_herb;;;
 Rosemary;spice_herb;;;
@@ -248,3 +268,10 @@ Brandy;spice_herb;;;
 Coffee;spice_herb;;;Cafe,Espresso,Kaffee
 Tequila;spice_herb;;;
 Whisky;spice_herb;;;Whiskey
+Yam;vegetable;;;
+Cooked Yam;vegetable;;;
+Potato;vegetable;;;
+Hemp;spice_herb;;;Hemp Seed,Roasted Hemp Seed
+Amaranth;spice_herb;;;
+Cacao Nibs;spice_herb;;;
+Pecan;spice_herb;;Toasted Pecans;
