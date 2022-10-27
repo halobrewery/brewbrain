@@ -6,35 +6,56 @@ def build_yeast_dicts(yeast_db_filepath="./data/_db/yeasts.csv"):
   brand_to_ids = {}
   id_to_yeast_names = {}
   with open(yeast_db_filepath, "r", encoding="utf-8") as f:
-      csv_reader = csv.reader(f, delimiter=";")
-      for i,row in enumerate(csv_reader):
-          if i == 0: continue
-          names = []
-          yeast_name = row[0].lower()
-          yeast_name_to_id[yeast_name] = i
-          names.append(yeast_name)
-          
-          for alt_name in row[1].split(",") + row[2].split(","):
-              if len(alt_name) > 0:
-                  alt_name = alt_name.lower()
-                  yeast_name_to_id[alt_name] = i
-                  names.append(alt_name)
-                  
-          for product_id in row[7].split(",") + row[8].split(","):
-              if len(product_id) > 0:
-                  product_id = product_id.lower()
-                  yeast_name_to_id[product_id] = i
-                  names.append(product_id)
-          assert len(names) > 0
-          id_to_yeast_names[i] = names
-          
-          for brand in row[5].split(",") + row[6].split(","):
-              if len(brand) > 0:
-                  if brand not in brand_to_ids:
-                      brand_to_ids[brand] = []
-                  brand_to_ids[brand].append(i)
+    csv_reader = csv.reader(f, delimiter=";")
+    for i,row in enumerate(csv_reader):
+      if i == 0: continue
+      names = []
+      yeast_name = row[0].lower().strip()
+      yeast_name_to_id[yeast_name] = i
+      names.append(yeast_name)
+      
+      for alt_name in row[1].split(",") + row[2].split(","):
+        if len(alt_name) > 0:
+          alt_name = alt_name.lower().strip()
+          yeast_name_to_id[alt_name] = i
+          names.append(alt_name)
+              
+      for product_id in row[7].split(",") + row[8].split(","):
+        if len(product_id) > 0:
+          product_id = product_id.lower().strip()
+          yeast_name_to_id[product_id] = i
+          names.append(product_id)
+      assert len(names) > 0
+      id_to_yeast_names[i] = names
+      
+      for brand in row[5].split(",") + row[6].split(","):
+        if len(brand) > 0:
+          if brand not in brand_to_ids:
+            brand_to_ids[brand] = []
+          brand_to_ids[brand].append(i)
 
   return yeast_name_to_id, brand_to_ids, id_to_yeast_names
+
+def build_style_to_common_yeast_dict(
+  yeast_name_to_id,
+  style_to_common_yeasts_db_filepath="./data/_db/style_to_common_yeasts.csv"):
+  style_to_yeast_ids = {}
+  with open(style_to_common_yeasts_db_filepath, "r", encoding="utf-8") as f:
+    csv_reader = csv.reader(f, delimiter=";")
+    for i, row in enumerate(csv_reader):
+      if i == 0: continue
+      style_name = row[0].lower().strip()
+      #style_id = int(row[1])
+      yeast_ids = []
+      style_to_yeast_ids[style_name] = yeast_ids
+      for yeast in row[2].split(","):
+        yeast_name = yeast.lower().strip()
+        if len(yeast_name) == 0: continue
+        if yeast_name in yeast_name_to_id:
+          yeast_ids.append(yeast_name_to_id[yeast_name])
+        else:
+          print(f"Failed to find yeast '{yeast_name}' in database, skipping.")
+  return style_to_yeast_ids
 
 # Given a recipe and yeast id dictionaries, return any matching ID for the yeast of the given recipe
 def match_recipe_to_yeast_id(recipe, yeast_name_to_id, brand_to_ids, id_to_yeast_names):

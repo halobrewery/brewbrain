@@ -14,7 +14,7 @@ American Stout;12;US-05,S-04,WLP001,Nottingham,1056,A10,M42,WLP002
 American Strong Ale;13;US-05,S-04,WLP007,Voss,BRY-97,Nottingham,M42
 American Wheat Beer;14;US-05,1010,WB-06,WLP001,BRY-97,WLP320,S-04,Voss
 American Wheat or Rye Beer;15;US-05,1010,WB-06,WLP001,BRY-97,WLP320,S-04,Voss
-Apple Wine;16;
+Apple Wine;16;Lalvin EC-1118
 Australian Sparkling Ale;17;US-05,S-04,W34/70,Nottingham,Coopers,WLP009,BRY-97,M44
 Autumn Seasonal Beer;18;US-05,S-04,1098,A07,WLP001,M36
 Baltic Porter;19;W34/70,US-05,S-23,M76,WLP830,Nottingham,S-04,M42
@@ -23,14 +23,14 @@ Belgian Dark Strong Ale;21;BE-256,3787,M41,WLP530,WLP500,T-58,M31,1762
 Belgian Dubbel;22;BE-256,WLP530,M47,3787,T-58,1762,WLP500,M31
 Belgian Golden Strong Ale;23;1388,M41,BE-256,WLP570,T-58,S-33,M31,US-05
 Belgian Pale Ale;24;T-58,M47,3522,S-33,M41,S-04,WLP550,BE-256
-Belgian Specialty Ale;25;
+Belgian Specialty Ale;25;1388,M41,BE-256,WLP570,T-58,S-33,M31,US-05
 Belgian Tripel;26;M31,BE-256,3787,WLP530,T-58,S-33,Abbaye,WLP500
 Berliner Weisse;27;US-05,Philly Sour,K-97,WLP677,1007,Voss,OYL-605,WLP630
 Best Bitter;28;S-04,Nottingham,WLP002,1469,1968,M36,Windsor,London English-Style Ale
 Biere de Garde;29;Belle Saison,T-58,3711,1007,US-05,S-33,K-97,WLP590
 Blond Ale;30;US-05,S-04,Nottingham,Voss,WLP001,S-33,BRY-97,1056
 Bohemian Pilsener;31;W34/70,M84,Voss,S-23
-Braggot;32;
+Braggot;32;Lalvin ICV D47
 Brett Beer;33;WLP648,WLP644,OYL-212,WLP645,WLP650
 British Brown Ale;34;S-04,Nottingham,US-05,Windsor,1318,M15,M36,WLP013
 British Golden Ale;35;S-04,US-05,Nottingham,M36,1318,Windsor,Voss,1469
@@ -38,13 +38,13 @@ British Strong Ale;36;S-04,Nottingham,1968,US-05,WLP023,WLP002,M15,WLP005
 Brown Porter;37;1318,1968,S-04
 California Common;38;M54,2112,WLP810,W34/70,L05,1007,US-05,S-23
 California Common Beer;39;M54,2112,WLP810,W34/70,L05,1007,US-05,S-23
-Classic American Pilsner;40;
+Classic American Pilsner;40;W34/70,S-23,M84,WLP830,M76,Diamond Lager,S-189,2124
 Classic Rauchbier;41;W34/70,M76,S-23,US-05,2206,WLP820,Diamond Lager
 Classic Style Smoked Beer;42;W34/70,US-05,S-04,OYL-071,S-33,S-23,WLP820
-Clone Beer;43;
-Common Cider;44;
-Cream Ale;45;
-Cyser (Apple Melomel);46;
+Clone Beer;43;US-05
+Common Cider;44;Lalvin ICV D47
+Cream Ale;45;US-05,WLP080,S-04,Voss,Nottingham,2565,WLP001
+Cyser (Apple Melomel);46;Lalvin ICV D47
 Czech Amber Lager;47;W34/70,WLP802,2278,M84,2124,L28,WLP800,S-23
 Czech Dark Lager;48;W34/70,S-23,WLP802,2124,M84,S-189,2278,L28
 Czech Pale Lager;49;W34/70,L28,S-23,M84,2278,Diamond Lager,WLP800,WLP802
@@ -62,7 +62,7 @@ Dunkles Bock;60;Diamond Lager,M76,W34/70,2308,WLP833,S-189,2206
 Dunkles Weissbier;61;WB-06,3068,M20,WLP300,Munich Classic Wheat Beer,3056,WLP380,G01
 Eisbock;62;W34/70
 English Barleywine;63;Nottingham,S-04,1028,US-05,WLP007,WLP013,M42,WLP099
-English Cider;64;
+English Cider;64;4766
 English IPA;65;US-05,S-04,Nottingham,Voss,WLP001,Verdant,M36,BRY-97
 English Porter;66;S-04,Nottingham,US-05,1028,M15,Windsor,WLP002,M42
 Experimental Beer;67;US-05
@@ -71,10 +71,10 @@ Festbier;69;W34/70,S-23,2308,M76,WLP830,S-189,OYL-071,WLP838
 Flanders Brown Ale/Oud Bruin;70;3763,US-05,WLP655,S-04,WLP001,3522,1056,1007
 Flanders Red Ale;71;3763,US-05,WLP655,S-04,WLP001,3522,1056,1007
 Foreign Extra Stout;72;S-04,US-05,1084,Nottingham,WLP007,W34/70,WLP004,M42
-French Cider;73;
+French Cider;73;4632
 Fruit and Spice Beer;74;US-05
 Fruit Beer;75;US-05
-Fruit Cider;76;
+Fruit Cider;76;4632
 Fruit Lambic;77;Philly Sour,US-05,3278,OYL-605,S-04
 German Helles Exportbier;78;W34/70,S-23,WLP830,M84,M76,US-05,S-189,2124
 German Leichtbier;79;S-23,Diamond Lager,1007,W34/70
@@ -102,13 +102,13 @@ Light American Lager;100;W34/70,S-23,WLP840,US-05,S-189,2035,Diamond Lager
 London Brown Ale;101;1318,1968
 Marzen;102;W34/70,M76,WLP820,S-23,2633,2206,OYL-071,K-97
 Maibock/Helles Bock;103;W34/70,WLP833,2206,S-23,M76,Nottingham,Diamond Lager,S-189
-Metheglin;104;
+Metheglin;104;4632
 Mild;105;S-04,1318,Nottingham,Windsor,WLP002,1968,A09,1469
 Mixed-Fermentation Sour Beer;106;US-05,Philly Sour,S-04,OYL-605,3763,WLP677,WLP672,Voss
 Mixed-Style Beer;107;US-05
 Munich Dunkel;108;W34/70,WLP833,S-23,M76,WLP830,Diamond Lager,2206,2308
 Munich Helles;109;W34/70,2308,Diamond Lager,M76,S-23,L17,OYL-071,S-189
-New England Cider;110;
+New England Cider;110;4632
 N/A;111;
 North German Altbier;112;K-97,WLP036,US-05,WLP029,W34/70,G02,Nottingham
 Northern English Brown;113;S-04,Nottingham,US-05,Windsor,1318,M15,M36,WLP013
@@ -117,15 +117,15 @@ Oktoberfest/Marzen;115;W34/70,M76,WLP820,S-23,2633,2206,OYL-071,K-97
 Old Ale;116;S-04,US-05,1028,M42,Nottingham,WLP007,M15,WLP013
 Open Category Mead;117;Dry Mead,Sweet Mead
 Ordinary Bitter;118;S-04,1469,WLP002,London English-Style Ale,1968,Nottingham,1318,WLP013
-Other Fruit Melomel;119;
-Other Smoked Beer;120;
-Other Specialty Cider or Perry;121;
+Other Fruit Melomel;119;4632
+Other Smoked Beer;120;US-05,S-04,Nottingham,Voss,1056,K-97,M15,OYL-091
+Other Specialty Cider or Perry;121;4632
 Oud Bruin;122;3763,US-05,WLP655,S-04,WLP001,3522,1056,1007
 Piwo Grodziskie;123;K-97,2565,1007,US-05,S-33,S-04
 Premium American Lager;124;W34/70,S-23,OYL-071,WLP840,US-05,WLP940,M54,Diamond Lager
 Pre-Prohibition Lager;125;W34/70,S-23,OYL-071,WLP840,US-05,WLP940,M54,Diamond Lager
 Pre-Prohibition Porter;126;S-04,Nottingham,US-05,1028,M15,Windsor,WLP002,M42
-Pyment (Grape Melomel);127;
+Pyment (Grape Melomel);127;4632
 Rauchbier;128;W34/70,M76,S-23,US-05,2206,WLP820,Diamond Lager
 Robust Porter;129;S-04,Nottingham,US-05,1028,M15,Windsor,WLP002,M42
 Roggenbier;130;WLP300,3068,WB-06,3638,K-97,Munich Classic Wheat Beer

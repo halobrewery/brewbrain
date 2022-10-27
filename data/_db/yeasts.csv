@@ -195,7 +195,7 @@ General/Belgian;;;Fermentis;;Safale;Saf Ale;S-33;S 33,S33;ale;dry;;11.5;high;70;
 Specialty Ale;;;Fermentis;;Safale;Saf Ale;T-58;T 58,T58;ale;dry;;11.5;high;70;12;25
 Wheat Beer;;;Fermentis;;Safale;Saf Ale;WB-06;WB 06,WB06;wheat;dry;;10.5;low;86;12;25
 German Lager;;;Fermentis;;Saflager;Saf Lager;S-23;S 23,S23;lager;dry;;10.5;high;82;9;22
-German Lager;;;Fermentis;;Saflager;Saf Lager;W-34/70;34/70;lager;dry;;10.5;high;83;9;22
+German Lager;;;Fermentis;;Saflager;Saf Lager;W-34/70;34/70,W34/70;lager;dry;;10.5;high;83;9;22
 Swiss Lager;;;Fermentis;;Saflager;Saf Lager;S-189;S 189,S189;lager;dry;;10.5;high;84;9;22
 SafBrew DA-16;;;Fermentis;;Safbrew;Saf Brew;DA-16;DA 16,DA16;ale;dry;;16.0;high;98;19;25
 SafBrew S-33;Edme Ale Yeast,Edme Ale;;Fermentis;;Safbrew;Saf Brew;S-33;S 33,S33;ale;dry;;10.0;medium;70;15;22
@@ -305,7 +305,7 @@ Munich Classic Wheat Beer;Munich Dry Wheat Yeast,Munich,Danstar Munich Wheat;;La
 Nottingham Ale;Nottingham High Performance Ale Yeast,Notty,Danstar Notty;Nottingham;Lallemand;Danstar;LalBrew;;;;ale;dry;medium;;high;80;10;22
 Voss Kveik Ale;;;Lallemand;;LalBrew;;;;ale;dry;high;;high;80;25;40
 Windsor Ale;Windsor British-Style Beer Yeast;Windsor;Lallemand;Danstar;LalBrew;;;;ale;dry;medium;;low;70;15;22
-Verdant IPA;;;Lallemand;;LalBrew;;;;ale;dry;high;;high;80;18;23
+Verdant IPA;Verdant;;Lallemand;;LalBrew;;;;ale;dry;high;;high;80;18;23
 Lalvin 71B;Narbonne,I.N.R.A.-Narbonne;;Lallemand;;Lalvin;;71B;;wine-cider;dry;high;;high;100;15;30
 Lalvin EC-1118;;;Lallemand;;Lalvin;;EC-1118;EC1118,EC 1118,KV-1118;wine-cider;dry;high;;high;65;15;25
 Lalvin ICV D47;;;Lallemand;;Lalvin;;;;wine-cider;liquid;high;;medium;95;15;30
