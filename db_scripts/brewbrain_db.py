@@ -44,11 +44,14 @@ class Adjunct(Base):
 
 class Misc(Base):
   __tablename__ = "miscs"
+  __table_args__ = (
+    UniqueConstraint("name", "type"),
+  )
+
   id = Column(Integer, primary_key=True)
   name = Column(String(128))
   type = Column(String(32)) # {"spice", "fining", "herb", "flavour", "other"}
-  UniqueConstraint("name", "type")
-
+  
   def __repr__(self):
     return f"Misc(id={self.id!r}, name={self.name!r}, type={self.type!r})"
 
@@ -87,6 +90,7 @@ class Style(Base):
   name = Column(String(128))
   category = Column(String(128))
   guide = Column(String(128))
+  guide_year = Column(Integer(), default=None)
   number = Column(String(16))
   letter = Column(String(16))
   type = Column(String(32))
@@ -103,7 +107,7 @@ class Style(Base):
   min_abv = Column(Float(2))
   max_abv = Column(Float(2))
 
-  UniqueConstraint("name", "category", "guide", "number", "letter")
+  UniqueConstraint("name", "category", "guide", "guide_year", "number", "letter")
   recipes = relationship("RecipeML", back_populates="style")
 
   def __repr__(self):
@@ -269,7 +273,7 @@ class RecipeML(Base):
       hash.update(str(int(stage_time)).encode())
       hash.update(str(round(stage_temp,1)).encode())
 
-    for hop_addition in sorted(self.hops, key=lambda h: h.hop_id):
+    for hop_addition in self.hops:
       hop_id    = hop_addition.hop_id
       hop_amt   = hop_addition.amount
       hop_stage = hop_addition.stage
@@ -280,21 +284,21 @@ class RecipeML(Base):
       hash.update(hop_stage.encode())
       hash.update(str(int(hop_time)).encode())
 
-    for grain_addition in sorted(self.grains, key=lambda g: g.grain_id):
+    for grain_addition in self.grains:
       grain_id  = grain_addition.grain_id
       grain_amt = grain_addition.amount
       assert grain_amt != None
       hash.update(str(grain_id).encode())
       hash.update(str(round(grain_amt,6)).encode())
 
-    for adjunct_addition in sorted(self.adjuncts, key=lambda a: a.adjunct_id):
+    for adjunct_addition in self.adjuncts:
       adjunct_id = adjunct_addition.adjunct_id
       adjunct_amt = adjunct_addition.amount
       assert adjunct_amt != None
       hash.update(str(adjunct_id).encode())
       hash.update(str(round(adjunct_amt,6)).encode())
 
-    for mo_addition in sorted(self.microorganisms, key=lambda m: m.microorganism_id):
+    for mo_addition in self.microorganisms:
       mo_id = mo_addition.microorganism_id
       mo_stage = mo_addition.stage
       assert mo_stage != None
