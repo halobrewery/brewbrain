@@ -2,7 +2,7 @@ import os
 import shutil
 import csv
 from pybeerxml.parser import Parser
-from style_db import create_style_dict
+from style_names import create_style_dict
 
 def clean_data():
   parser = Parser()

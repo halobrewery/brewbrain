@@ -36,6 +36,85 @@ def build_yeast_dicts(yeast_db_filepath="./data/_db/yeasts.csv"):
 
   return yeast_name_to_id, brand_to_ids, id_to_yeast_names
 
+def match_yeast_id(yeast_name, yeast_name_to_id):
+  def clean_replace(s, target):
+    return s.replace(target, '').replace("  ", " ").strip()
+
+  yeast_name = str(yeast_name).lower()
+  if yeast_name in yeast_name_to_id:
+    return yeast_name_to_id[yeast_name]
+
+  # Some basic clean-up to start...
+  if "conan" in yeast_name: yeast_name = "vermont ale"
+  elif "super high gravity" in yeast_name or "wlp 099" in yeast_name: yeast_name = "super high gravity ale"
+  elif "super yeast" in yeast_name: yeast_name = "san diego super"
+  elif "chico" in yeast_name: yeast_name = "chico ale"
+  elif "orval" in yeast_name: yeast_name = "brettanomyces bruxellensis"
+  elif "duvel" in yeast_name: yeast_name = "belgian golden ale"
+  elif "dupont" in yeast_name: yeast_name = "french saison ale"
+  else:
+    # Clean up any spelling mistakes, ordering
+    yeast_name = yeast_name.replace("kรถlsch","kolsch").replace("kรถlsh","kolsch").replace("kölsh","kolsch")
+    yeast_name = yeast_name.replace("monastery","monastary").replace("monestary","monastary")
+    yeast_name = yeast_name.replace("california v ale", "california ale v")
+    yeast_name = yeast_name.replace("mã©lange","melange").replace("brettâ€™","brett") \
+      .replace("cã´te","cote").replace("munuch","munich").replace("lellemand","lallemand") \
+      .replace("champagene", "champagne").replace("vemont","vermont")
+
+  if yeast_name in yeast_name_to_id:
+    return yeast_name_to_id[yeast_name]
+
+  # Try to find a yeast code to match
+  s = re.search(r"(inis\-|wlp|us\-|([kwst]|oyl|bry)\-|[mg]|\d+/)\s?\-?(\d+(/\d+)?)", yeast_name, flags=re.IGNORECASE)
+  if s != None and len(s.group()) > 0:
+    # We have a potential yeast product id...
+    product_id = s.group().replace("--","-").replace(" ","")
+    if product_id in yeast_name_to_id:
+      return yeast_name_to_id[product_id]
+
+  # Check for a wyeast code (4 digit code)
+  s = re.search(r"(\d{4})(\D+|$)", yeast_name, flags=re.IGNORECASE)
+  if s != None and len(s.group(1)) > 0:
+    product_id = s.group(1)
+    if product_id in yeast_name_to_id:
+      return yeast_name_to_id[product_id]
+
+  # Try removing the word "yeast" (and watch out for any double spaces that may ensue)
+  new_yeast_name = clean_replace(yeast_name, "yeast")
+  if new_yeast_name in yeast_name_to_id:
+    return yeast_name_to_id[new_yeast_name]
+
+  # Try replacing "yeast" with "ale" or "lager"
+  new_yeast_name = yeast_name.replace("yeast", "ale")
+  if new_yeast_name in yeast_name_to_id:
+    return yeast_name_to_id[new_yeast_name]
+  new_yeast_name = yeast_name.replace("yeast", "lager")
+  if new_yeast_name in yeast_name_to_id:
+    return yeast_name_to_id[new_yeast_name]
+
+  # Try adding "ale" or "blend" or "lager" to the end
+  new_yeast_name = yeast_name+" ale"
+  if new_yeast_name in yeast_name_to_id: return yeast_name_to_id[new_yeast_name]
+  new_yeast_name = yeast_name+" lager"
+  if new_yeast_name in yeast_name_to_id: return yeast_name_to_id[new_yeast_name]
+  new_yeast_name = yeast_name+" blend"
+  if new_yeast_name in yeast_name_to_id: return yeast_name_to_id[new_yeast_name]
+
+  # Last attempt - try to match any of the ids directly with the yeast name string
+  best_len = 0
+  best_name = ""
+  for dict_name in yeast_name_to_id:
+    name_opts = f"({dict_name})"
+    s = re.search(name_opts, yeast_name)
+    if s != None and len(s.group()) > 0:
+      group_len = len(s.group())
+      if best_len < group_len:
+        best_len = group_len
+        best_name = dict_name
+
+  if best_len == 0: return None
+  else: return yeast_name_to_id[best_name]
+
 def build_style_to_common_yeast_dict(
   yeast_name_to_id,
   style_to_common_yeasts_db_filepath="./data/_db/style_to_common_yeasts.csv"):

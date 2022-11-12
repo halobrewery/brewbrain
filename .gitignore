@@ -148,3 +148,6 @@ cython_debug/
 data/_matched/
 data/_not_matched/
 original_data/
+db_scripts/beersmith_ingredients_to_db.py
+db_scripts/beersmith_styles_to_db.py
+data/*.xml
