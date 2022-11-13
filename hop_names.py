@@ -29,12 +29,13 @@ def build_hop_name_dicts():
 def match_hop_id(hop_name, hop_name_to_id):
   h_name = str(hop_name).lower().strip()
   init_name = h_name
-  
-  h_name = h_name.replace("u.s.","us")
+
+  h_name = re.sub(r"(\,|us|u\.s\.)", "", h_name)
   h_name = re.sub(r"(uk kent(\s*goldings?)?|kent holdings)", "east kent goldings", h_name)
   h_name = re.sub(r"(\(?(\d+\.?\d*%\s*aa|™|â„¢|t\-?90|\s*organic|yakima(\s*valley\s?\-?)?|ychhops|,|bmw|lambic|frech)\)?)", "", h_name)
   h_name = re.sub(r"(\s{2,})", " ", h_name) # Clean up extra spacing
   h_name = re.sub(r"(mittelfr端h|mittelfrã¼h|mittelfruh|mittlefruh)", r"mittlefrüh", h_name, flags=re.IGNORECASE)
+  h_name = re.sub(r"\(\d\d\d\d\)", "", h_name) # Remove 4 digit years in brackets e.g, "(2015)"
   h_name = h_name.strip()
   
   if h_name in hop_name_to_id:
@@ -55,15 +56,12 @@ def match_hop_id(hop_name, hop_name_to_id):
     else:
       s2 = re.search(name_opts, init_name)
       if s2 != None and len(s2.group()) > 0:
-          group_len = len(s2.group())
-          if best_len_s2 < group_len:
-            best_len_s2 = group_len
-            best_id_s2  = dict_id
+        group_len = len(s2.group())
+        if best_len_s2 < group_len:
+          best_len_s2 = group_len
+          best_id_s2  = dict_id
 
   if best_len_s1 == 0:
-    if best_len_s2 == 0:
-      return None
-    else:
-      return best_id_s2
-  else:
-    return best_id_s1
+    if best_len_s2 == 0: return None
+    else: return best_id_s2
+  else: return best_id_s1

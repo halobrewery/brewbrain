@@ -293,7 +293,7 @@ Northern California Ale;NorCal;;Inland Island Yeast;Inland Island;;;INIS-001;;al
 Saison Farmhouse;;;Inland Island Yeast;Inland Island;;;INIS-291;;ale;liquid;high;;medium;76.5;21;35
 Oregon IPA;Oregon;;Inland Island Yeast;Inland Island;;;INIS-004;INIS 004;ale;liquid;high;;high;72.5;18;22
 Southern California Ale Yeast;SoCal,Southern California Ale,Southern California Yeast,Southern California;;Inland Island Yeast;Inland Island;;;INIS-005;INIS 005;ale;liquid;high;;high;81;18;20
-West Coast;;;Lallemand;Danstar;LalBrew;;BRY-97;BRY97,BRY 97,BRY - 97;ale;dry;high;;high;75;15;22
+West Coast;American West Coast Ale;;Lallemand;Danstar;LalBrew;;BRY-97;BRY97,BRY 97,BRY - 97;ale;dry;high;;high;75;15;22
 Abbaye Belgian Ale;;Abbaye Ale;Lallemand;Danstar;LalBrew;;;;ale;dry;high;;medium;88;17;25
 Belle Saison;;;Lallemand;Danstar;LalBrew;;;;ale;dry;high;;low;90;15;35
 Diamond Lager;;;Lallemand;Danstar;LalBrew;;;;lager;dry;low;;high;80;10;15
@@ -346,7 +346,7 @@ Belgian Wit;;;Mangrove Jack's;Mangrove;;;M27;M 27,M-27;ale;liquid;high;;medium;9
 Mead;;;Mangrove Jack's;Mangrove;;;M05;M 05,M-05;wine-cider;dry;;;medium-high;97.5;15;30
 New World Strong Ale;New World Ale;;Mangrove Jack's;Mangrove;;;M42;M 42,M-42;ale;dry;;;high;79.5;16;22
 UK Dark Ale;Newcastle Dark Ale,Newcastle Dark Ale Yeast,Newcastle Brown;;Mangrove Jack's;Mangrove;;;M03;M 03,M-03;ale;dry;;;medium;73;18;22
-US West Coast;;;Mangrove Jack's;Mangrove;;;M44;M 44,M-44;ale;dry;;;high;78;15;23
+US West Coast;US West Coast Yeast;;Mangrove Jack's;Mangrove;;;M44;M 44,M-44;ale;dry;;;high;78;15;23
 Workhorse Beer;;;Mangrove Jack's;Mangrove;;;M10;M 10,M-10;ale;dry;;;medium;78;15;20
 HopHead Ale;Hop Head;;Mangrove Jack's;Mangrove;;;M66;M 66,M-66;ale;dry;;;high;78;18;22
 Gervin Ale;;;Muntons;;;;GV-12;;ale;dry;low;;low;70;16;22
@@ -461,7 +461,7 @@ American Lager;;;RVA Yeast Labs;RVA;;;RVA 301;RVA-301;lager;liquid;medium;;mediu
 München Lager;;;RVA Yeast Labs;RVA;;;RVA 302;RVA-302;lager;liquid;medium;;high;77.5;14;18
 Oktoberfest Lager;;;RVA Yeast Labs;RVA;;;RVA 303;RVA-303;lager;liquid;medium;;medium;69;11;14
 Czech Lager;;;RVA Yeast Labs;RVA;;;RVA 304;RVA-304;lager;liquid;medium;;medium;77.5;10;13
-Alt Ale;;;Siebel Institute;Siebel;;;BRY 144;BRY-97;ale;liquid;;;medium;78;15;20
+Alt Ale;;;Siebel Institute;Siebel;;;BRY 144;;ale;liquid;;;medium;78;15;20
 American Ale;;;Siebel Institute;Siebel;;;BRY 96;BRY-96;ale;liquid;;;medium;78;18;22
 American Lager;;;Siebel Institute;Siebel;;;BRY 118;BRY-118;lager;liquid;;;high;72;20;22
 Bavarian Weizen Ale;;;Siebel Institute;Siebel;;;BRY 235;BRY-235;ale;liquid;;;high;73;10;14
@@ -697,7 +697,7 @@ Octoberfest Lager Blend;Wyeast Lager Blend;;Wyeast;;;;2633;;lager;liquid;;9;medi
 Pediococcus;;;Wyeast;;;;5733;;bacteria;liquid;;9;;75;16;35
 Pilsen Lager;;;Wyeast;;;;2007;;lager;liquid;;9;medium;73;9;13
 Pilsner Urquell H-Strain;;;Wyeast;;;;2001-PC;;lager;liquid;medium;;medium;74;9;13
-Private Collection West Coast IPA;;;Wyeast;;;;1217;;ale;liquid;;10;medium-high;75;17;23
+Private Collection West Coast IPA;West Coast IPA;;Wyeast;;;;1217;;ale;liquid;;10;medium-high;75;17;23
 Rasenmäher Lager;;;Wyeast;;;;2252;;lager;liquid;;9;low;75;9;20
 Ringwood Ale;;;Wyeast;;;;1187;;ale;liquid;;10;high;70;18;23
 Rocky Mountain Lager;;;Wyeast;;;;2105;;lager;liquid;;10;medium-high;72;9;13
@@ -734,3 +734,5 @@ Classic Belgian Witbier;Gozdawa CBW;;Gozdawa;;;;;;ale;dry;;;;;20;24
 Pure Ale Yeast 7;Gozdawa Pure Ale;;Gozdawa;;;;;;ale;dry;;;;;16;32
 Old German Altbier 9;Gozdawa OGA;;Gozdawa;;;;;;ale-lager;dry;;;;;15;20
 Porter & Kvass;;;Gozdawa;;;;;;ale;dry;;;;;22;26
+FM52 American Dream;American Dream,FM52 Amerykański Sen,Amerykański Sen;;Fermentum Mobile;;;;;;ale;dry;;;medium;75.5;16;22
+FM30 Bohemian Melody;Bohemian Melody,FM30 Bohemska Rapsodia,Bohemska Rapsodia;;Fermentum Mobile;;;;;;ale;dry;;;high;75.5;8;12

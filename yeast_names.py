@@ -208,38 +208,38 @@ def match_recipe_to_yeast_id(recipe, yeast_name_to_id, brand_to_ids, id_to_yeast
       # Try to match the brand name first and then try to figure out
       # which yeast we're dealing with within that brand 
       for brand_name, ids in brand_to_ids.items():
-          s = re.search(brand_name, yeast_name, flags=re.IGNORECASE)
-          if s != None and len(s.group()) > 0:
-              # Find the best possible match
-              best_match_count = 0
-              best_match_id = -1
-              for id in ids:
-                  count = 0
-                  potential_yeast_names = id_to_yeast_names[id]
-                  for name in potential_yeast_names:
-                      s = re.search(name, yeast_name, flags=re.IGNORECASE)
-                      if s != None: count += 1
-                  if count > best_match_count:
-                      best_match_count = count
-                      best_match_id = id
-              if best_match_id == -1:
-                  # Just choose the first id...
-                  assert len(ids) > 0
-                  best_match_id = ids[0]
-                  yeast_name = id_to_yeast_names[best_match_id][0]
-              break
+        s = re.search(brand_name, yeast_name, flags=re.IGNORECASE)
+        if s != None and len(s.group()) > 0:
+          # Find the best possible match
+          best_match_count = 0
+          best_match_id = -1
+          for id in ids:
+            count = 0
+            potential_yeast_names = id_to_yeast_names[id]
+            for name in potential_yeast_names:
+              s = re.search(name, yeast_name, flags=re.IGNORECASE)
+              if s != None: count += 1
+            if count > best_match_count:
+              best_match_count = count
+              best_match_id = id
+          if best_match_id == -1:
+            # Just choose the first id...
+            assert len(ids) > 0
+            best_match_id = ids[0]
+            yeast_name = id_to_yeast_names[best_match_id][0]
+          break
 
       # Last attempt - try to match any of the ids directly with the yeast name string
       best_len = 0
       best_id = -1
       for id, dict_name in yeast_name_to_id.items():
-          name_opts = f"({dict_name}|{clean_replace(dict_name, 'ale')}|{clean_replace(dict_name,'lager')})"
-          s = re.search(name_opts, yeast_name)
-          if s != None and len(s.group()) > 0:
-              group_len = len(s.group())
-              if best_len < group_len:
-                  best_len = group_len
-                  best_id = id
+        name_opts = f"({dict_name}|{clean_replace(dict_name, 'ale')}|{clean_replace(dict_name,'lager')})"
+        s = re.search(name_opts, yeast_name)
+        if s != None and len(s.group()) > 0:
+          group_len = len(s.group())
+          if best_len < group_len:
+            best_len = group_len
+            best_id = id
 
       if best_id != -1: return best_id
 

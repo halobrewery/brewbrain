@@ -1,4 +1,5 @@
 name;use;origin;substitutes;aromas;alt_names;alt_names_extra
+ADHA 484;;USA;;;;Experimental 484,ADHA-484
 Admiral;bittering;GBR;Challenger,Northdown,Target;Citrus,Herbal,Orange,Resin,Tea;;admiral (uk)
 African Queen;dual-purpose;ZAF;Amarillo,Cascade,Citra,Mosaic,Simcoe;Blueberry,Bubblegum,Cassis,Chilies,Citrus,Currant,Gazpacho,Gooseberry,Lemongrass,Stonefruit;South African Queen;Africa Queen,SA Queen,S.A. Queen,South Africa Queen,j17,j-17
 Aged Hops;;;;;;aged / debittered hops
@@ -87,7 +88,7 @@ East Kent Golding;aroma;GBR;Fuggle,Golding,Progress,Target,Whitbread Golding,Wil
 Eastern Gold;bittering;;;;;
 Eastern Green;aroma;;;;;
 Eastwell Golding;aroma;;;;;
-Ekuanot;dual-purpose;USA;Chinook,Cluster,Galena,Summit;Apple,Berry,Citrus,Eucalyptus,Guava,Herbal,Lemon,Lime,Melon,Orange,Papaya,Pepper,Sage,Tropical Fruits;Equinox,HBC 366;Ekvanot,Equanot,Eukanot,Ekua
+Ekuanot;dual-purpose;USA;Chinook,Cluster,Galena,Summit;Apple,Berry,Citrus,Eucalyptus,Guava,Herbal,Lemon,Lime,Melon,Orange,Papaya,Pepper,Sage,Tropical Fruits;Equinox,HBC 366;Ekvanot,Equanot,Eukanot,Ekua,Experimental 366,Equinot
 El Dorado;aroma;USA;Citra,Nelson Sauvin,Rakau;Candy,Fruity,Pear,Stonefruit,Tropical Fruits,Watermelon;;Eldorado
 Elixir;aroma;FRA;;Citrus,Cognac,Floral,Leather,Orange,Tangerine,Tobacco,Tropical Fruits,Woody;;Elexir
 Ella;aroma;AUS;Galaxy,Palisade,Perle;Anise,Floral,Grapefruit,Noble,Spicy,Tropical Fruits;Stella;ella (stella) (au),ella (au),stella (au)
@@ -99,7 +100,7 @@ Epic;aroma;;;Berry,Fruity,Herbal;;
 Eroica;bittering;USA;Brewer's Gold,Chinook,Cluster,Galena,Nugget;;;eroica (us)
 Eureka;dual-purpose;USA;Apollo,Columbus,Merkur,Simcoe,Summit;Citrus,Currant,Herbal,Mandarin,Mint,Peach,Pine,Stonefruit;;
 Experimental 06300;dual-purpose;USA;;Cocoa,tropical,stone fruit, passionfruit,caramel,anise,Jolly Rancher;;exp 6300 (us)
-Experimental 7270;;;;;;7270
+Experimental 7270;;;;;;7270,Experimental #7270,EXPERIMENTAL 07270
 Falconer's Flight 7 C's;dual-purpose;USA;Cascade,Centennial,Chinook,Citra,Cluster,Columbus,Crystal;Citrus,Earthy,Fruity,Spicy;;Seven C's,7 C's,7C's,falconer's seven seas
 Falconer's Flight;dual-purpose;USA;;;;falconers flight,Falconer Flight,Falcon Flight,Falcones Flight,falconer's flight (us),falconers flight (us)
 Fantasia;dual-purpose;GER;;Caramel,Cream,Fruity,Noble;;
@@ -108,9 +109,7 @@ First Choice;aroma;;;;;1st Choice
 First Gold;dual-purpose;GBR;Crystal,East Kent Golding,Golding;Apricot,Berry,Herbal,Magnolia,Orange,Tangerine;;1st Gold,first gold (uk)
 Flyer;dual-purpose;GBR;;Citrus,Licorice,Resin,Spicy;;flyer (uk)
 Fortnight;dual-purpose;USA;;;;
-Fuggle;aroma;GBR,GER;East Kent Golding,Styrian Golding,Tettnanger,Willamette;Grassy,Mild,Mint,Woody;;Fuggles,Fuggels,Fugle,fuggle (uk),fuggle (de),fruggle
-Fuggle H;aroma;USA;;Fruity,Woody;;fuggle (us)
-Fuggle N;aroma;GBR;;;;
+Fuggle;aroma;GBR,GER,USA;East Kent Golding,Styrian Golding,Tettnanger,Willamette;Grassy,Mild,Mint,Woody;;Fuggles,Fuggels,Fugle,fuggle (uk),fuggle (de),fruggle,fuggle (us)
 Fuggle Tetraploid;dual-purpose;;;;;
 Furano Ace;aroma;;;;;
 Fusion;aroma;GBR;;Spicy,Tropical Fruits;;Fuison
@@ -121,9 +120,11 @@ Glacier;dual-purpose;USA;Fuggle,Styrian Golding,Willamette;Blackberry,Cedar,Plum
 Godiva;aroma;GBR;Hallertauer Blanc,Wai-iti;Gooseberry,Spicy,Tangerine,Whitegrape;;
 Golden Star;aroma;;;;;
 Golding;aroma;USA;East Kent Golding,Fuggle,Styrian Golding,Willamette;;;Goldings,Golding,Goldins,golding (us)
+GP75;;GBR;;;;
 Green Bullet;dual-purpose;NZL;Crystal,Hallertauer Mittelfrüh,Liberty,Mount Hood,Styrian Golding,Ultra;Floral,Fruity,Pepper,Pine,Plum,Resin;;green bullet (nz)
 Greensburg;dual-purpose;;;;;
 Groene Bel;aroma;;;;;
+Grüngeist;aroma;GER;Armarillo,Aramis,Azacca;Tropical, Passion Fruit, Peach, Lemon Zest;;Grungeist
 Hallertauer;dual-purpose;NZL;;;;new zealand hallertau,hallertauer aroma,hallertauer aroma (nz)
 Hallertauer Bitter;bittering;GER;Merkur;Spicy,Sweet;;Hallertau Bitter,H Bitter
 Hallertauer Blanc;aroma;GER;Enigma,Nelson Sauvin;Clean,Gooseberry,Grape,Lemongrass,Passionfruit,Pineapple,Whitewine;;Hallertau Blanc,H Blanc,halletau blanc
@@ -136,9 +137,10 @@ Hallertauer Tradition;aroma;GER;Crystal,East Kent Golding,Hallertauer Mittelfrü
 Harmonie;aroma;;;Apricot,Banana,Caramel,Green Tea;;
 Hartwick;aroma;;;;;Harwick
 HBC 342;bittering;USA;;Citrus,Mild,Tropical Fruits;;hbc342,hbc-342
-HBC 431;bittering;;;;;hbc431,hbc-431
-HBC 472;dual-purpose;USA;;Citrus,Coconut,Earthy,Floral,Fruity,Grapefruit,Whisky,Woody;;hbc472,hbc-472
-HBC 586;bittering;USA;;Citrus,Fruity,Guava,Herbal,Lychee,Mango,Sulfur,Tropical Fruits;;hbc586,hbc-586
+HBC 431;bittering;;;;;hbc431,hbc-431,Experimental 431
+HBC 438;dual-purpose;USA;;Tropical,stone fruit,grapefruit,mango,pineapple,coconut,lime,cedar;;hbc438,Experimental 438,HBC-438
+HBC 472;dual-purpose;USA;;Citrus,Coconut,Earthy,Floral,Fruity,Grapefruit,Whisky,Woody;;hbc472,hbc-472,Experimental 472
+HBC 586;bittering;USA;;Citrus,Fruity,Guava,Herbal,Lychee,Mango,Sulfur,Tropical Fruits;;hbc586,hbc-586,Experimental 586
 Helga;aroma;AUS;Hallertauer Mittelfrüh;Noble;;helga (au),haga
 Herald;dual-purpose;GBR;;;;
 Herkules;dual-purpose;GER;Hallertauer Taurus,Warrior;Citrus,Melon;;Hercules,Herkels,Herkules (de)
@@ -183,6 +185,7 @@ Lotus;aroma;USA;;Berry,Cream,Orange,Tropical Fruits,Vanilla;;
 Lubelska;aroma;POL;Saaz,Sterling,Tettnanger;Floral,Lavender,Magnolia,Spicy;Lublin;Lubelski,Luboloski,Lubliner
 Lubelska-Pulawy;aroma;;;;;
 Lucan;aroma;;;;;
+Lumberjack;;CAN;;;;
 Lunga;dual-purpose;;;;;
 Mackinac;aroma;USA;;Citrus,Floral,Melon,Papaya,Pepper,Spicy,Tropical Fruits;;Mackinaw
 Magnat;dual-purpose;;Lubelska,Magnum;Chamomile,Citrus,Floral,Lemon,Lilac,Woody;;
@@ -254,7 +257,7 @@ Pride of Ringwood;bittering;AUS;Centennial,Cluster,Galena;Cedar,Herbal,Oak;;Prid
 Progress;aroma;GBR;Fuggle;;;progress (uk)
 ProvOAK;aroma;;;;;
 Puławski;dual-purpose;;;;;
-Rakau;dual-purpose;NZL;Amarillo,Summit;Apricot,Fig,Fruity,Pine,Resin,Stonefruit;AlphAroma;Raku,Rakua,AlphaAroma,rakau (au),rakau (nz)
+Rakau;dual-purpose;NZL;Amarillo,Summit;Apricot,Fig,Fruity,Pine,Resin,Stonefruit;AlphAroma;Raku,Rakua,AlphaAroma,rakau (au),rakau (nz),Rakeu
 Record;aroma;;;;;
 Red Earth;aroma;;;;;
 Relax;aroma;GER;;;;
@@ -286,7 +289,8 @@ Southern Dawn;dual-purpose;ZAF;;Chamomile,Citrus,Fruity,Ginger,Herbal,Lemongrass
 Southern Passion;aroma;ZAF;;Blackberry,Coconut,Floral,Guava,Melon,Passionfruit;;
 Southern Promise;dual-purpose;ZAF;Southern Brewer;Berry,Citrus,Floral,Fruity,Herbal,Woody;;
 Southern Star;bittering;ZAF;Ekuanot,El Dorado,Mandarina Bavaria,Mosaic,Southern Cross,Warrior;Berry,Cassis,Citrus,Coffee,Floral,Orange,Passionfruit,Pear,Pineapple,Rose,Tangerine,Tropical Fruits;;southernstar
-Sovereign;bittering;GBR;;;;Sovereign (uk),sovreign
+Southern Tropic;dual-purpose;ZAF;;;;U1/108
+Sovereign;bittering;GBR;;;;Sovereign (uk),sovreign,Soverign
 Spalter;aroma;GER;Crystal,Hallertauer Mittelfrüh,Hersbrucker,Liberty,Mount Hood,Saaz,Santiam,Tettnanger,Ultra;Earthy,Floral,Herbal,Noble;;Spalt,Spal,Spaltz,spalt (de),spalter (de)
 Spalter Select;aroma;GER,USA;Saaz,Spalter,Tettnanger;;;Select Spalt,Spalt Select,Select,german spalt select (de),german spalt select,spalt select (de),spalt select (us)
 Sterling;dual-purpose;USA;Lubelska,Saaz;;;sterling (us)
@@ -324,6 +328,7 @@ Tettnanger A;aroma;;;;;
 Tettnanger B;aroma;;;;;
 The Bruce;dual-purpose;;;;;Bruce
 Tillicum;bittering;;;;;
+TNT;aroma;USA;;;;TNT Blend,T'n'T
 Tolhurst;aroma;;;;;
 Topaz;aroma;AUS;Amarillo,Cascade,Citra,Galaxy,Rakau,Riwaka;Clove,Grassy,Lychee,Resin,Tropical Fruits;;topaz (au)
 Toyomidori;bittering;;;;;
@@ -339,7 +344,7 @@ Vic Secret;dual-purpose;AUS;Galaxy;Earthy,Herbal,Passionfruit,Pine,Pineapple,Tro
 Viking;aroma;;;;;
 Vital;dual-purpose;CZH;;;;
 Vojvodina;aroma;;;;;vojvodia
-Wai-iti;aroma;NZL;Riwaka;Apricot,Citrus,Lime,Mandarin,Peach,Spicy,Stonefruit;;Wai-ti,wai-iti (nz),waiiti (nz),waiti (nz)
+Wai-iti;aroma;NZL;Riwaka;Apricot,Citrus,Lime,Mandarin,Peach,Spicy,Stonefruit;;Wai-ti,wai-iti (nz),waiiti (nz),waiti (nz),Wai iti,Wai-Hiti,Waiti
 Waimea;dual-purpose;NZL;Pacific Jade;Citrus,Grapefruit,Herbal,Mandarin,Pine;;waimea (nz)
 Wakatu;dual-purpose;NZL;Hallertauer Mittelfrüh,Liberty,Nelson Sauvin;Floral,Lime,Tropical Fruits;;Whakatu,wacatu,Wakatu (nz)
 Warrior;bittering;USA;Columbus,Magnum,Nugget,Summit;Mild,Pine,Resin;;Warior,Warr,Warroir,warrior (us)

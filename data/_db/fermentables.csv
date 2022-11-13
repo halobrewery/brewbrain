@@ -5,7 +5,7 @@ Munich Malt;grain;base;;Munich,Münchner Malz,Bonlander Munich,Bonlander,Munich 
 Munich Light Malt;grain;base;Munich Malt I;Munich Light,Münchner Malz Hell,Light Munich,Munich Malt Light,Münchner Malz I,Münchner I,Munich Type I,Munich I,Munich - Light,Muenchner I,Breiss 21L,munique tipo i,müncher malz i
 Munich Dark Malt;grain;base;Munich Malt II;Munich Dark,Münchner Malz Dunkel,Dark Munich,Münchner Malz II,Munich Type II,Munich II,munique tipo ii,münchner typ ii,best munic dark,munic2h
 Vienna Malt;grain;base;;Vienna,Vienna Malt,Wiener Malz,Monaco,Vienne,Ashburn Mild,Ashbourne Mild,Ashburne Mild,ashburneâ,венский,vieanna,viena
-Pilsner Malt;grain;base;Bohemian Pilsner,Lager Malt;Pilsner,Pilsner Malt,Château Pilsner,Pilsen,Kolsch,Plensky,Idapils,Kölsch,Czech Pils,Czech Pilsner,valley pils,Pils,pelton,pilsmout,cologne malt,koelsch malt,finest lager,colonge malt,plzen,lager light,Spitz,pilzneå,norsk basis,wunderpilz,pszeniczny,cologne,pilznenski,pisner malt,german traditional malt,pilzneñski
+Pilsner Malt;grain;base;Bohemian Pilsner,Lager Malt;Pilsner,Pilsner Malt,Château Pilsner,Pilsen,Kolsch,Plensky,Idapils,Kölsch,Czech Pils,Czech Pilsner,valley pils,Pils,pelton,pilsmout,cologne malt,koelsch malt,finest lager,colonge malt,plzen,lager light,Spitz,pilzneå,norsk basis,wunderpilz,pszeniczny,cologne,pilznenski,pisner malt,german traditional malt,pilzneñski,pilzneński,strzegom pilzneński
 Bohemian Floor-Malted Pilsner Malt;grain;base;Bohemian Floor Malted Pilsner,Floor-Malted Pilsner,Bohemian Floor-Malted Pilsner;malt de plancher,floor malt
 Bohemian Floor-Malted Dark Pilsner Malt;grain;base;floor-malted bohemian dark;
 Pilsner Light Malt;grain;base;Extra Light Pilsner,Light Lager Malt;Pilsner Light,Light Pilsner,Pilsner Malt Light,Pilsner Malt Extra Light,Pilsner Malz Hell,Pilsner Malz Extra Hell,Helles Pilsner,Extra Helles Pilsner,Lager Malt Light,pilzneński,francobelge
@@ -14,7 +14,7 @@ Pale Ale Malt;grain;base;ESB Malt;Pale Ale,Pale Malt,Ale Malt,Pale 2-Row,Pale 6-
 Mild Ale Malt;grain;base;Mild Malt;Mild Ale,joe white traditional
 Maris Otter Malt;grain;base;;Maris Otter,Maris Otter Pale Ale,scottish malt,mariss otter
 Golden Promise Malt;grain;base;;Golden Promise,Golden Promise Pale Ale,viking golden,admiral feldblume,peterson heavy base,malta nacional,gamgrinus esb,malt - golden
-Wheat Malt;grain;base;;Wheat,Weizenmalz,Weizen,Trigo,hvete,viking vete,på¡enica,vete malt,vetemalt,słód pszeniczny,ekoråg
+Wheat Malt;grain;base;;Wheat,Weizenmalz,Weizen,Trigo,hvete,viking vete,på¡enica,vete malt,vetemalt,słód pszeniczny,ekoråg,hvede malt
 Sahti malt;grain;base;Sahtimallas,Viking Sahti;
 Pale Wheat Malt;grain;base;White Wheat Malt;Pale Wheat,White Wheat,Helles Weizenmalz,Weizenmalz Hell,Chaetau Wheat Blanc,lichte tarwemout,pszeniczny jasny,shaniko,malt de froment,froment blond
 Dark Wheat Malt;grain;base;;Dark Wheat,Dunkles Weizenmalz,Weizenmalz Dunkel,Château Wheat Munich Light,tarwemout donker,Red Wheat,red fife malt
@@ -29,7 +29,7 @@ Whisky Malt;grain;base;Distiller's Malt;Whiskey Malt,Distiller Malt
 Green Malt;grain;base;;Grünmalz
 Egyptian Barley Malt;grain;other_malt;obsidian barley,egyptian purple,purple malt,skagit obsidian;
 Spelt Malt;grain;other_malt;;Dinkelmalz,Château Spelt,Spelt,orkiszowy
-Rye Malt;grain;other_malt;;Rye,Roggenmalz,Château Rye,tuoppi kaljamallas,rugmalt
+Rye Malt;grain;other_malt;;Rye,Roggenmalz,Château Rye,tuoppi kaljamallas,rugmalt,seigle
 Emmer Malt;grain;other_malt;;Emmermalz
 Small Spelt Malt;grain;other_malt;;
 Oat Malt;grain;other_malt;;Hafermalz,Château Oat,Oats malted,Oat malted,malte de aveia,csupasz zab,chateu oat
@@ -63,7 +63,7 @@ Aromatic Malt;grain;toasted;;Aromatic,Château Arome,Arome,Aurora Malt,Aurora,Ar
 Amber Malt;grain;toasted;Special Roast,Special Roast Malt,Aroma 100 MD;Amber,Dark Ale,bursztynowy,jantar
 Melanoidin Malt;grain;toasted;Melano,Red X,Red-X,RedX,red- x,red - x,x-red,Toasted Malt;Melanoidin,Blumenauer 1,Blumenauer I,Melano,Melany,deer creek first crack,меланоид,meloanoid
 Honey Malt;grain;toasted;;dakota
-Toffee Malt;grain;toasted;;Brumalt,new zealand - toffee
+Toffee Malt;grain;toasted;;Brumalt,new zealand - toffee,caragold
 Acidulated Malt;grain;adjunct;Acid Malt,Sour Malt,sourmalt;Sauermalz,Acidulated,Château Acid,Chateau Acid,acidificado,acidualted,german-sour,acide,sauer
 Chit Malt;grain;adjunct;Pointed Malt;Spitzmalz,Best Chit,chitmalt
 Oak-Aged Wheat Malt;grain;specialty;eikerøkt hvetemalt;
@@ -99,9 +99,9 @@ CaraRed;grain;cara_crystal;CaraRuby;Cara Malt Red,Cara Malt Ruby,Cara Malt Rot,R
 CaraHell;grain;cara_crystal;;Cara Malt Hell,Karamellmalz Hell,CaraMalt,Cara Malt,Helles Cara,Caramillet,karmelowy jasny
 CaraWheat;grain;cara_crystal;;Cara Malt Wheat,Wheat Cara,Weizen Cara,Cara Weizen,Pszeniczny karmelowy,Trigo Caramelo
 CaraGold;grain;cara_crystal;;Cara Malt Gold
-CaraPils / CaraFoam;grain;cara_crystal;CaraFoam,CaraPils,Cara Clair,Gladiator,Dextrine Malt;Cara Malt Pils,Cara Malt Foam,Dextrine,Dextrin,Cara Malt Extra Hell,CaraPils,Dextrapils,Cara-Pils,copper malt,carapills,caraclair,dingemann 8l,caraplis
+CaraPils / CaraFoam;grain;cara_crystal;CaraFoam,CaraPils,Cara Clair,Gladiator,Dextrine Malt;Cara Malt Pils,Cara Malt Foam,Dextrine,Dextrin,Cara Malt Extra Hell,CaraPils,Dextrapils,Cara-Pils,copper malt,carapills,caraclair,dingemann 8l,caraplis,carapil malt
 CaraMunich I;grain;cara_crystal;;Caramunich Malt,Cara Malt Munich I,Cara Malt Münch I,Cara Malt Münchner I,Cara Malt Dunkel I,Cara Malt Dunkel
-CaraMunich II;grain;cara_crystal;;Cara Malt Munich II,Cara Malt Münch II,Cara Malt Münchner II,Cara Malt Dunkel II,CaraMunich 45L,Munich 45L,Caramel Munich 45L,caramünch ii
+CaraMunich II;grain;cara_crystal;;Cara Malt Munich II,Cara Malt Münch II,Cara Malt Münchner II,Cara Malt Dunkel II,CaraMunich 45L,Munich 45L,Caramel Munich 45L,caramünch ii,caramünich ii
 CaraMunich III;grain;cara_crystal;;Cara Malt Munich III,Cara Malt Münch III,Cara Malt Münchner III,Cara Malt Dunkel III,CaraMunich 60L,Munich 60L,Caramel Munich Dark 150,Caramel Munich 60L,Munich - 60L
 CaraBelge;grain;cara_crystal;;Cara Malt Belge,Cara Belgisch,Beligisches Cara
 CaraBohemian;grain;cara_crystal;;Cara Malt Bohemian,Cara Böhmisch,Böhmisches Cara,Bohemian Floor-Malted Dark,bohemian floor malted dark
@@ -110,11 +110,11 @@ CaraAmber;grain;cara_crystal;;Cara Malt Amber,Amber Cara
 CaraVienne;grain;cara_crystal;;Cara Malt Vienne,Cara Malt Vienna,Cara Wiener,Wiener Cara
 Caramel/Crystal Malt – 10L;grain;cara_crystal;Crystal Malt 10L,Caramel Malt 10L,Caramel/Crystal 10L,Crystal 10,Caramel 10,C10;,gold swaen light,swaen light,karmelowy 30,c-10,caraplus 10,finland - colorado 10l,denhoff
 Caramel/Crystal Malt – 15L;grain;cara_crystal;Crystal Malt 15L,Caramel Malt 15L,Carastan Light,Caramel/Crystal 15L,Crystal 15,Caramel 15,C15;Light Carastan,Light Carastan Malt,Karamel Svetly,light carstan,c-15,Opal 22
-Caramel/Crystal Malt – 20L;grain;cara_crystal;Crystal Malt 20L,Caramel Malt 20L,Caramel/Crystal 20L,Crystal 20,Caramel 20,C20;Carablond,c-20
+Caramel/Crystal Malt – 20L;grain;cara_crystal;Crystal Malt 20L,Caramel Malt 20L,Caramel/Crystal 20L,Crystal 20,Caramel 20,C20;Carablond,c-20,carablon,carablonde
 Caramel/Crystal Malt – 30L;grain;cara_crystal;Crystal Malt 30L,Caramel Malt 30L,Pale Caramel,Carastan,Caramel/Crystal 30L,C30;Pale Crystal,Cara Pale,Pale Cara,Crystal 30,Caramel 30,Opal 44,krystallmalt 70 ebc
 Caramel/Crystal Malt – 40L;grain;cara_crystal;Crystal Malt 40L,Caramel Malt 40L,Light Caramel,Caramel/Crystal 40L,C40;Light Crystal,Cara Malt Munich 40L,Light Cara,Cara Light,Caralight,Crystal 40,Caramel 40,Redback,Red Back
 Caramel/Crystal Malt – 45L;grain;cara_crystal;Crystal Malt 45L,Caramel Malt 45L,Caramel/Crystal 45L,Crystal 45,Caramel 45,C45;karmelowy 120ebc,karmelowy 120,patagonia 45,patagonia 45L
-Caramel/Crystal Malt – 50L;grain;cara_crystal;Crystal Malt 50L,Caramel Malt 50L,C50;Château Cara Gold,Caramel/Crystal 50L,Crystal 50,Caramel 50,simpsons t50,sacchra 50,saccharine-50
+Caramel/Crystal Malt – 50L;grain;cara_crystal;Crystal Malt 50L,Caramel Malt 50L,C50;Château Cara Gold,Caragold,Caramel/Crystal 50L,Crystal 50,Caramel 50,simpsons t50,sacchra 50,saccharine-50
 Caramel/Crystal Malt – 55L;grain;cara_crystal;Crystal Malt 55L,Caramel Malt 55L,Caramel/Crystal 55L,Crystal 55,Caramel 55,C55;caraplus 150
 Caramel/Crystal Malt – 60L;grain;cara_crystal;Crystal Malt 60L,Caramel Malt 60L,Medium Caramel,Medium Crystal,Crystal Medium,Caramel/Crystal 60L,Crystal 60,Caramel 60,C60;Château Crystal,Supernova,simpsons medium,norsk karamell,C-60
 Caramel/Crystal Malt – 70L;grain;cara_crystal;Crystal Malt 70L,Caramel Malt 70L,Caramel/Crystal 70L,Crystal 70,Caramel 70,C70;dark malt 70
@@ -240,7 +240,7 @@ Agave Nectar;sugar;;Agave Syrup,Agave;
 Brown Sugar;sugar;;cassonade brun fonce,bruine basterdsuiker;
 Golden Brown Sugar;sugar;;;cassonade dorée
 Candi Sugar;sugar;;candi;
-Candi Syrup;sugar;;;
+Candi Syrup;sugar;;;ljus sirap
 Invert Sugar #1;sugar;;Invert No. 1,Invert no.1,Invert #1;Candi Sugar - Light,belgian candi 0,belgian candi blond
 Invert Sugar #2;sugar;;Invert No. 2,Invert no.2,Invert #2;Candi Sugar - Medium,d90,d-90,d45,d-45,D-60
 Invert Sugar #3;sugar;;Invert No. 3,Invert no.3,Invert #3;Black Invert,Candi Sugar - Dark,dark candy syrup,d180,d-180,kandij siroop donker,darksyrup
