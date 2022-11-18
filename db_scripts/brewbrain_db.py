@@ -110,8 +110,34 @@ class Style(Base):
   UniqueConstraint("name", "category", "guide", "guide_year", "number", "letter")
   recipes = relationship("RecipeML", back_populates="style")
 
+  core_style_id = Column(Integer(), ForeignKey("core_styles.id"))
+  core_style = relationship("CoreStyle", back_populates="styles")
+
   def __repr__(self):
     return f"Style(id={self.id!r}, name={self.name!r}, category={self.category!r})"
+
+
+# Distilled styles, these are the most 'core' styles possible in beer, no guides/categories/numbers/letters.
+# These sum styles across all style guides into the most simplified 'prototypical' styles in all of beer.
+class CoreStyle(Base):
+  __tablename__ = "core_styles"
+  id = Column(Integer, primary_key=True)
+  name = Column(String(128), unique=True)
+  type = Column(String(32))
+  min_og = Column(Float(4))
+  max_og = Column(Float(4))
+  min_fg = Column(Float(4))
+  max_fg = Column(Float(4))
+  min_ibu = Column(Float(2))
+  max_ibu = Column(Float(2))
+  min_carb = Column(Float(2))
+  max_carb = Column(Float(2))
+  min_colour_srm = Column(Float(2))
+  max_colour_srm = Column(Float(2))
+  min_abv = Column(Float(2))
+  max_abv = Column(Float(2))
+
+  styles = relationship("Style", back_populates="core_style")
 
 
 # Association Table (AT) for many-to-many relationship between RecipeMLs and Hops
@@ -258,6 +284,31 @@ class RecipeML(Base):
 
   style_id = Column(Integer, ForeignKey("styles.id"))
   style    = relationship("Style", back_populates="recipes")
+
+  def mash_steps(self):
+    steps = []
+    postfixes = ["_type", "_time", "_start_temp", "_end_temp", "_infuse_amt"]
+    for i in range(self.num_mash_steps):
+      prefix = "mash_step_"+str(i+1)
+      step = {}
+      for postfix in postfixes:
+        step[prefix+postfix] = getattr(self, prefix+postfix)
+      steps.append(step)
+    return steps
+
+  def total_infusion_vol(self):
+    infuse_total = 0
+    for i in range(self.num_mash_steps):
+      prefix = "mash_step_"+str(i+1)
+      infuse_amt = getattr(self, prefix+"_infuse_amt")
+      infuse_total += infuse_amt if infuse_amt != None else 0
+    return infuse_total
+  
+  def total_grain_mass(self):
+    mass_total = 0
+    for grain in self.grains:
+      mass_total += grain.amount
+    return mass_total
 
   # Generates a unique identifier hash for this machine learning recipe 
   # to avoid duplicates of the same recipes in the database

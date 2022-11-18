@@ -27,7 +27,7 @@ def cleanup_misc_name(misc_name):
   misc_name = re.sub(r"(berrys)", "berries", misc_name)
   misc_name = re.sub(r"(pickeling)", "pickling")
   misc_name = re.sub(r"\(?(wyeast|white\s*labs?|cacl2|mgso4|mgcl2|nacl|nahco3|ca\(oh2\)|whole|sparge|mash|boil|\d+\s*(g|ml|kg|l))\)?", "", misc_name)
-  misc_name = re.sub(r"\,?(wln1000|fresh|ground|\*|\d+%|granulates|granules|crushed|pod)\,?", "", misc_name)
+  misc_name = re.sub(r"\,?(wln1000|fresh|ground|\*|\d+%|granulates|granules|crushed|pod|pulp)\,?", "", misc_name)
   misc_name = re.sub(r"^\s*\-\s*", "", misc_name)
   misc_name = misc_name.strip()
 

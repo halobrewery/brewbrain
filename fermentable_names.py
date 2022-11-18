@@ -34,7 +34,7 @@ def match_fermentable_id(fermentable_name, fermentable_name_to_id):
   f_name = f_name.replace("carafaâ","carafa").replace("®","").replace("速","").replace("marris","maris") \
     .replace("roasted oats","malted oats").replace("mdâ„¢","").replace("torrefied","torrified").replace("specl","special") \
     .replace("carafaz", "carafa").replace("kรถlsch", "kolsch").replace("©","").replace("ch창teau", "chateau").replace("aรงucar","") \
-    .replace("chã¢teau", "chateau")
+    .replace("chã¢teau", "chateau").replace(",","")
   f_name = re.sub(r"(\s{2,})", " ", f_name)
   f_name = re.sub(r"[\'\"](w|b)[\'\"]", r"\1", f_name, flags=re.IGNORECASE)
   f_name = re.sub(r"\brosted\b", "roasted", f_name, flags=re.IGNORECASE)
@@ -43,13 +43,13 @@ def match_fermentable_id(fermentable_name, fermentable_name_to_id):
   f_name = re.sub(r"\,?\s*steel\s*cut\s*\(?pinhead\s*oats\)?", "", f_name, flags=re.IGNORECASE)
   f_name = re.sub(r"(md)?™","",f_name,flags=re.IGNORECASE)
   f_name = re.sub(r"(.+)\s*\,\s*(flaked|malted|cooked)\s*", r"\1 \2", f_name, flags=re.IGNORECASE)
-  f_name = re.sub(r"\s*\((us|de|uk|nz|be|pl|english|british|german|belgian|patent|american)\)\s*", " ", f_name, flags=re.IGNORECASE)
+  f_name = re.sub(r"\s*\-*\s*\((us|de|uk|nz|be|pl|english|british|german|belgian|patent|american|late|addition|mash)\)\s*", " ", f_name, flags=re.IGNORECASE)
   f_name = re.sub(r"\s*(english|german|lund)\s*", "", f_name, flags=re.IGNORECASE)
   f_name = re.sub(r"(cara\s+|crystal\s*/\s*caramel|caramel\s*/\s*crystal|caramel|crystal)(\s+malts?\s+\-?)?","caramel/crystal", f_name, flags=re.IGNORECASE)
-  f_name = re.sub(r"\s*\(?(malt=|bob'?s\s*mills|homemade|malting|cal\s*rose|cargill|((green|black|gold)\s?)?swaen|munton'?s?|warminster|biscoff|patagonia|global malt|thomas\s*fawcett|crisp|best\s*(malz|maltz)|simpsons?|valley\s*(malt)?|briess|bairds|gladfield'?s?|château|chateau|castle|dingemans|brewers\s+malt|rahr|organic|dehusked|weyermann?)\)?\s*\-*\s*", " ", f_name, flags=re.IGNORECASE)
+  f_name = re.sub(r"\-*\s*\(?(malt=|bob'?s\s*mills|muntons|homemade|malting|cal\s*rose|cargill|((green|black|gold)\s?)?swaen|munton'?s?|warminster|biscoff|patagonia|global malt|thomas\s*fawcett|crisp|best\s*(malz|maltz)|simpsons?|valley\s*(malt)?|briess|bairds|gladfield'?s?|château|chateau|castle|dingemans|brewers\s+malt|rahr|organic|dehusked|weyermann?)\)?\s*\-*\s*", " ", f_name, flags=re.IGNORECASE)
   f_name = re.sub(r"\(?(\d+|\d+\-\d+)\s+(ebc|lovibond)\)?\:?", "", f_name, flags=re.IGNORECASE)
 
-  f_name = f_name.replace(",","").strip()
+  f_name = f_name.replace(",","").replace("  ", " ").strip()
   
   if f_name in fermentable_name_to_id:
     return fermentable_name_to_id[f_name]

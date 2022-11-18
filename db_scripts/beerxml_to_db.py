@@ -43,14 +43,17 @@ def read_recipe(session, recipe, filepath):
   if recipe.boil_size != None and recipe.boil_size != 0:
     preboil_vol = recipe.boil_size
   else:
+    if equipment == None:
+      raise ValueError(f"No equipment and no boil size, in recipe: {recipe_name}")
+
     # Preboil volume needs to be calculated from the equipment, 
     # BOIL_SIZE = (BATCH_SIZE – TOP_UP_WATER – TRUB_CHILLER_LOSS) * (1+BOIL_TIME * EVAP_RATE ) 
     preboil_vol = (equipment.batch_size - equipment.top_up_water - equipment.trub_chiller_loss) * (1 + equipment.boil_time/60 * equipment.evap_rate/100)
 
-  if equipment.evap_rate > preboil_vol:
+  if equipment != None and equipment.evap_rate > preboil_vol:
     raise ValueError(f"Invalid evaporation rate for recipe: {recipe_name}")
 
-  if equipment.evap_rate:
+  if equipment != None and equipment.evap_rate:
     postboil_vol = preboil_vol - (preboil_vol * equipment.evap_rate/100 * boil_time/60)
   else:
     postboil_vol = fermenter_vol
@@ -59,33 +62,35 @@ def read_recipe(session, recipe, filepath):
   aging_time  = recipe.age
   aging_temp  = recipe.age_temp
   carbonation = recipe.carbonation
-  num_ferment_stages = int(recipe.fermentation_stages)
-  if num_ferment_stages == 0:
-    raise ValueError(f"No fermentation stages found in recipe: {recipe_name}")
-
+  num_ferment_stages = 0
   ferment_stage_1_time = ferment_stage_1_temp = None
   ferment_stage_2_time = ferment_stage_2_temp = None
   ferment_stage_3_time = ferment_stage_3_temp = None
-  if num_ferment_stages > 0:
-    ferment_stage_1_time = recipe.primary_age
-    ferment_stage_1_temp = recipe.primary_temp
-    if ferment_stage_1_time == None or ferment_stage_1_temp == None:
-      raise ValueError(f"'None' value(s) found for ferment stage 1 in recipe: {recipe_name}")
-    if num_ferment_stages > 1:
-      ferment_stage_2_time = recipe.secondary_age
-      ferment_stage_2_temp = recipe.secondary_temp
-      if ferment_stage_2_time == None or ferment_stage_2_temp == None: num_ferment_stages = 1
-      if num_ferment_stages > 2:
-        ferment_stage_3_time = recipe.tertiary_age
-        ferment_stage_3_temp = recipe.tertiary_temp
-        if ferment_stage_3_time == None or ferment_stage_3_temp == None: num_ferment_stages = 2
+
+  if recipe.fermentation_stages != None:
+    num_ferment_stages = int(recipe.fermentation_stages)
+    if num_ferment_stages == 0:
+      raise ValueError(f"No fermentation stages found in recipe: {recipe_name}")
+    if num_ferment_stages > 0:
+      ferment_stage_1_time = recipe.primary_age
+      ferment_stage_1_temp = recipe.primary_temp
+      if ferment_stage_1_time == None or ferment_stage_1_temp == None:
+        raise ValueError(f"'None' value(s) found for ferment stage 1 in recipe: {recipe_name}")
+      if num_ferment_stages > 1:
+        ferment_stage_2_time = recipe.secondary_age
+        ferment_stage_2_temp = recipe.secondary_temp
+        if ferment_stage_2_time == None or ferment_stage_2_temp == None: num_ferment_stages = 1
+        if num_ferment_stages > 2:
+          ferment_stage_3_time = recipe.tertiary_age
+          ferment_stage_3_temp = recipe.tertiary_temp
+          if ferment_stage_3_time == None or ferment_stage_3_temp == None: num_ferment_stages = 2
 
   # Style
   style = recipe.style
   if hasattr(style, 'style_guide'):
     style_guide = re.sub(r"\s*\d+", "", style.style_guide).lower().strip()
     style_guide_year = re.sub(r"\D+\s*", "", style.style_guide).strip()
-    style_guide_year = int(style_guide_year) if len(style_guide_year) > 0 else None
+    style_guide_year = int(style_guide_year) if len(style_guide_year) > 0 else 2021
   else:
     # This is actually malformed beerxml, but we'll just assume an up-to-date style guide anyway
     style_guide = "bjcp"
@@ -101,12 +106,14 @@ def read_recipe(session, recipe, filepath):
   # First, try to find the style guide and number/letter of the style
   existing_style = None
   if style_letter != None and category_number != None:
-    existing_style = session.scalars(select(Style).filter_by(
-      guide=style_guide,
-      guide_year=style_guide_year, 
-      letter=style_letter, 
-      number=category_number
-    )).first()
+    existing_styles = session.scalars(select(Style).filter_by(guide=style_guide, letter=style_letter, number=category_number)).all()
+    if len(existing_styles) == 1:
+      existing_style = existing_styles[0]
+    else:
+      for potential_style in existing_styles:
+        if style.name.lower() == potential_style.name.lower():
+          existing_style = potential_style
+          break
 
   if existing_style == None:
     if not hasattr(style, 'name') or style.name == None:
@@ -136,8 +143,14 @@ def read_recipe(session, recipe, filepath):
 
   # Mash/Sparge
   mash = recipe.mash
+  if mash == None: raise ValueError(f"No mash found, in recipe: {recipe_name}")
+
   mash_ph = mash.ph
+  if mash_ph == None: raise ValueError(f"No mash pH found, in recipe: {recipe_name}")
+
   sparge_temp = mash.sparge_temp
+  if sparge_temp < 35.0:
+    sparge_temp = None
 
   MAX_MASH_STEPS = 6
   num_mash_steps = len(mash.steps)
@@ -145,6 +158,10 @@ def read_recipe(session, recipe, filepath):
     raise ValueError(f"Too many mash steps ({num_mash_steps}), in recipe: {recipe_name}")
   elif num_mash_steps == 0:
     raise ValueError(f"No mash steps found for recipe: {recipe_name}")
+
+  first_step_type = mash.steps[0].type.lower()
+  if first_step_type != "infusion":
+    raise ValueError(f"Invalid starting mash type '{first_step_type}' found, in recipe: {recipe_name}")
 
   mash_step_vals = {}
   for i in range(MAX_MASH_STEPS):
@@ -204,15 +221,18 @@ def read_recipe(session, recipe, filepath):
   grains_ats = []
   adjuncts_ats = []
   for fermentable in recipe.fermentables:
-    f_name  = fermentable.name.lower()
+    if not hasattr(fermentable, 'name') or fermentable.name == None:
+      raise ValueError(f"No fermentable name found in recipe: {recipe_name}")
+
+    f_name  = str(fermentable.name).lower()
     if hasattr(fermentable, 'type') and fermentable.type != None:
       f_type  = fermentable.type.lower()
     else:
       # This is frustrating... malformed beerxml and we're going to have to figure out if it's a grain or not
       # Try a look-up by name and if that fails just ignore this recipe
-      existing_something = session.scalars(select(Adjunct).filter(Adjunct.name.ilike(f"%{name}%"))).first()
+      existing_something = session.scalars(select(Adjunct).filter(Adjunct.name.ilike(f"%{f_name}%"))).first()
       if existing_something == None:
-        existing_something = session.scalars(select(Grain).filter(Grain.name.ilike(f"%{name}%"))).first()
+        existing_something = session.scalars(select(Grain).filter(Grain.name.ilike(f"%{f_name}%"))).first()
         if existing_something == None:
           raise ValueError(f"No fermentable type provided for {f_name}, couldn't find match in database, in recipe {recipe_name}")
         else:
@@ -228,8 +248,9 @@ def read_recipe(session, recipe, filepath):
     if f_id != None:
       f_names += id_to_fermentable_names[f_id]
 
-    if f_type == 'grain':
+    def grain_addition_check_add():
       # Try to find the grain in our database...
+      existing_grain = None
       for name in f_names:
         existing_grain = session.scalars(select(Grain).filter(
           (Grain.name.ilike(f"{name}")) & 
@@ -242,37 +263,48 @@ def read_recipe(session, recipe, filepath):
         if existing_grain != None: break
 
       if existing_grain == None:
-        raise ValueError(f"Failed to find grain '{f_name}', in recipe: {recipe_name}")
-
-      assert existing_grain != None
-      moisture_override = fermentable.moisture/100
-      coarse_fine_diff_override = fermentable.coarse_fine_diff/100
-      protein_override = fermentable.protein/100
-
-      grains_ats.append(
-        RecipeMLGrainAT(
-          grain=existing_grain,
-          amount=f_amt,
-          fgdb_override=f_yield,
-          moisture_override=moisture_override,
-          coarse_fine_diff_override=coarse_fine_diff_override,
-          protein_override=protein_override,
+        return False
+      else:
+        moisture_override = fermentable.moisture/100
+        coarse_fine_diff_override = fermentable.coarse_fine_diff/100
+        protein_override = fermentable.protein/100
+        grains_ats.append(
+          RecipeMLGrainAT(
+            grain=existing_grain,
+            amount=f_amt,
+            fgdb_override=f_yield,
+            moisture_override=moisture_override,
+            coarse_fine_diff_override=coarse_fine_diff_override,
+            protein_override=protein_override,
+          )
         )
-      )
-    else:
-      # Try to find the adjunct in our database...
+      return True
+
+    def adjunct_addition_check_add():
+       # Try to find the adjunct in our database...
+      existing_adjunct = None
       for name in f_names:
         existing_adjunct = session.scalars(select(Adjunct).filter(Adjunct.name.ilike(f"{name}"))).first()
         if existing_adjunct == None:
           existing_adjunct = session.scalars(select(Adjunct).filter(Adjunct.name.ilike(f"%{name}%"))).first()
         if existing_adjunct != None: break
-
       if existing_adjunct == None:
-        raise ValueError(f"Failed to find adjunct '{f_name}, in recipe: {recipe_name}")
+        return False
+      else:
+        adjuncts_ats.append(RecipeMLAdjunctAT(adjunct=existing_adjunct, amount=f_amt, yield_override=f_yield))
+      return True
 
-      assert existing_adjunct != None
-      adjuncts_ats.append(RecipeMLAdjunctAT(adjunct=existing_adjunct, amount=f_amt, yield_override=f_yield))
-
+    if f_type == 'grain':
+      if not grain_addition_check_add():
+        # Try to find the addition as an adjunct instead
+        f_type = 'adjunct'
+        if not adjunct_addition_check_add():
+          raise ValueError(f"Failed to find grain/adjunct '{f_name}', in recipe: {recipe_name}")
+    else:
+      if not adjunct_addition_check_add():
+        f_type = 'grain'
+        if not grain_addition_check_add():
+          raise ValueError(f"Failed to find adjunct/grain '{f_name}', in recipe: {recipe_name}")
 
   # Misc
   miscs_ats = []
@@ -410,7 +442,8 @@ if __name__ == "__main__":
     datapath = "/Users/callumhay/projects/brewbrain/data"
 
     with Session(engine) as session:
-      for filepath in glob.glob(os.path.join(datapath, "*.xml")): #[f for f in glob.glob(os.path.join(datapath, "beersmith_recipes*.xml")) if re.search(r"(34|35|36|37)", f)]:
+      #for dirpath, dirnames, files in os.walk(datapath):
+      for filepath in glob.glob(os.path.join(datapath, "*.xml")):
         try:
           recipes = beerxml_parser.parse(filepath)
         except Exception as e:
@@ -425,7 +458,7 @@ if __name__ == "__main__":
             print(f"Failed to read recipe: {e}, rolling back and continuing.")
             session.rollback()
             continue
-        print(f"Finished reading recipes from file {filepath}")
+        #print(f"Finished reading recipes from file {filepath}")
       session.commit()
 
   session_read_beerxml_files()

@@ -165,6 +165,9 @@ def match_recipe_to_yeast_id(recipe, yeast_name_to_id, brand_to_ids, id_to_yeast
               .replace("cã´te","cote").replace("munuch","munich").replace("lellemand","lallemand") \
               .replace("champagene", "champagne").replace("vemont","vermont")
 
+    yeast_name = re.sub(r"(strain|escarpment|wyeast|white\s*labs?|slurry)", "", yeast_name)
+    yeast_name = yeast_name.replace("  ", " ").strip()
+
     if yeast_name not in yeast_name_to_id:
       # First attempt: Try to find a yeast code to match
       s = re.search(r"(inis\-|wlp|us\-|([kwst]|oyl|bry)\-|[mg]|\d+/)\s?\-?(\d+(/\d+)?)", yeast_name, flags=re.IGNORECASE)

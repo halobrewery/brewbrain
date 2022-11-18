@@ -11,11 +11,11 @@ London ESB;;;Bio4;Bio 4;;;SY030;;ale;liquid;medium;;high;71;18;22
 Norwegian Kveik ;;;Bio4;Bio 4;;;SY081;;ale;liquid;high;;medium;65;22;37
 Norwegian Kveik 2;;;Bio4;Bio 4;;;SY084;;ale;liquid;high;;high;76;20;37
 Superyeast High Gravity Ale;;;Bio4;Bio 4;;;SY042;;ale;liquid;high;;medium;80;18;22
-Aurora;;;Bootleg Biology;Bootleg;;;BBAUR ;;ale;liquid;medium;;medium;81;24;37
+Aurora;;;Bootleg Biology;Bootleg;;;BBAUR;;ale;liquid;medium;;medium;81;24;37
 NEEPAH Blend;;;Bootleg Biology;Bootleg;;;BBXNPA ;;ale;liquid;low;;low;80;19;21
 Belgian Blend;;;Bootleg Biology;Bootleg;;;BBXBELG;;ale;liquid;medium;;low;72;17;22
 Berliner Blend;;;Bootleg Biology;Bootleg;;;BBXBRLN ;;brett-bacteria;liquid;low;;low;98;18;24
-Brulosophy Blend;Brülosophy Blend;;Bootleg Biology;Bootleg;;;BBXBRU1;;ale;liquid;low;;medium;76;10;20
+Brulosophy Blend;Brülosophy Blend;;Bootleg Biology;Bootleg;;;BBXBRU1,BRU - 1,BRU1;;ale;liquid;low;;medium;76;10;20
 Chardonnay;;;Bootleg Biology;Bootleg;;;BB99301A;;wine-cider;liquid;medium;;low;70;18;24
 Funk Weapon #1;Funk Weapon 1;;Bootleg Biology;Bootleg;;;BB0034A;;brett-bacteria;liquid;medium;;low;80;18;24
 Funk Weapon #2;Funk Weapon 2;;Bootleg Biology;Bootleg;;;BB0035C;;brett-bacteria;liquid;medium;;low;80;18;24
@@ -190,7 +190,7 @@ American Ale;;;Fermentis;;Safale;Saf Ale;US-56;US 56,US56;ale;dry;medium;;medium
 Belgian Saison Ale;;;Fermentis;;Safale;Saf Ale;BE-134;BE 134,BE134;ale;dry;;;low;90;18;28
 English Ale;;;Fermentis;;Safale;Saf Ale;S-04;S 04,S04;ale;dry;;9.75;high;75;12;25
 German Ale;;;Fermentis;;Safale;Saf Ale;K-97;K 97,K97;ale;dry;;10.4;high;81;12;25
-Abbaye;;;Fermentis;;Safale;Saf Ale;BE-256;BE 256,BE256;ale;dry;;11;high;82;12;25
+Abbaye;SafBrew Abeye;;Fermentis;;Safale;Saf Ale;BE-256;BE 256,BE256;ale;dry;;11;high;82;12;25
 General/Belgian;;;Fermentis;;Safale;Saf Ale;S-33;S 33,S33;ale;dry;;11.5;high;70;12;25
 Specialty Ale;;;Fermentis;;Safale;Saf Ale;T-58;T 58,T58;ale;dry;;11.5;high;70;12;25
 Wheat Beer;;;Fermentis;;Safale;Saf Ale;WB-06;WB 06,WB06;wheat;dry;;10.5;low;86;12;25
@@ -469,7 +469,7 @@ English Ale;;;Siebel Institute;Siebel;;;BRY 264;BRY-264;ale;liquid;;;medium;78;1
 German Kölsch;;;Siebel Institute;Siebel;;;BRY 401;BRY-401;ale;liquid;;;low;72;13;15
 North European Lager;;;Siebel Institute;Siebel;;;BRY 203;BRY-203;lager;liquid;;;low;78;20;22
 Trappist Ale;;;Siebel Institute;Siebel;;;BRY 204;BRY-204;ale;liquid;;;medium;78;18;22
-Amalgamation - Brett Super Blend;;;The Yeast Bay;TYB;;;WLP4637;;brett;liquid;low;;low;85;21;27
+Amalgamation - Brett Super Blend;Amalgamation;;The Yeast Bay;TYB;;;WLP4637;;brett;liquid;low;;low;85;21;27
 Amalgamation - Brett Super Blend II;;;The Yeast Bay;TYB;;;WLP4641;;brett;liquid;high;;low;84;21;27
 Beersel Brettanomyces Blend;;;The Yeast Bay;TYB;;;WLP4603;;brett;liquid;low;;medium;78;21;27
 Brettanomyces bruxellensis - Strain TYB261;;;The Yeast Bay;TYB;;;TYB261;;brett;liquid;high;;low;81;22;28
@@ -578,7 +578,7 @@ Flemish Ale Blend;;;White Labs;White Lab;;;WLP665;WLP 665,WLP-665;ale;liquid;med
 French Ale;;;White Labs;White Lab;;;WLP072;WLP 072,WLP-072;ale;liquid;medium;;medium-high;71.5;17;19
 French Saison Ale;;;White Labs;White Lab;;;WLP590;WLP 590,WLP-590;ale;liquid;medium;;medium;81;21;24
 German Ale II;;;White Labs;White Lab;;;WLP003;WLP 003,WLP-003;ale;liquid;medium;;medium;76.5;18;21
-German Ale/ Kölsch;;;White Labs;White Lab;;;WLP029;WLP 029,WLP-029;ale;liquid;medium;;medium;75;18;21
+German Ale/ Kölsch;German Ale/Kolsch;;White Labs;White Lab;;;WLP029;WLP 029,WLP-029;ale;liquid;medium;;medium;75;18;21
 German Bock Lager;;;White Labs;White Lab;;;WLP833;WLP 833,WLP-833,WLP0833;lager;liquid;medium;;medium;73;9;13
 German Lager X;;;White Labs;White Lab;;;WLP835;WLP 835,WLP-835;lager;liquid;medium;;medium;73;10;12
 German Lager;;;White Labs;White Lab;;;WLP830;WLP 830,WLP-830;lager;liquid;medium;;medium;76.5;10;13
@@ -600,7 +600,7 @@ Monastary Ale;;;White Labs;White Lab;;;WLP500;WLP 500,WLP-500;ale;liquid;high;;m
 Munich Helles;;;White Labs;White Lab;;;WLP860;WLP 860,WLP-860;lager;liquid;medium;;medium;70;9;11
 Neutral Grain;;;White Labs;White Lab;;;WLP078;WLP 078,WLP-078;ale;liquid;high;;medium;81;24;29
 New Nordic Ale;;;White Labs;White Lab;;;WLP611;WLP 611,WLP-611;ale;liquid;medium;;medium;70;10;30
-Oktoberfest/Märzen Lager;;;White Labs;White Lab;;;WLP820;WLP 820,WLP-820;lager;liquid;medium;;medium;69;11;14
+Oktoberfest/Märzen Lager;Octoberfest/Marzen Lager;;White Labs;White Lab;;;WLP820;WLP 820,WLP-820;lager;liquid;medium;;medium;69;11;14
 Old Bavarian Lager;;;White Labs;White Lab;;;WLP920;WLP 920,WLP-920;lager;liquid;medium;;medium;69.5;10;13
 Old Sonoma Ale;;;White Labs;White Lab;;;WLP076;WLP 076,WLP-076;ale;liquid;medium;;medium;72;19;21
 Opshaug Kveik Ale;;;White Labs;White Lab;;;WLP518;WLP 518,WLP-518;ale;liquid;medium;;medium;75;25;30
@@ -608,7 +608,7 @@ Pacific Ale;;;White Labs;White Lab;;;WLP041;WLP 041,WLP-041;ale;liquid;medium;;h
 Pilsner Lager;;;White Labs;White Lab;;;WLP800;WLP 800,WLP-800;lager;liquid;medium;;medium-high;74.5;10;13
 Premium Bitter Ale;;;White Labs;White Lab;;;WLP026;WLP 026,WLP-026;ale;liquid;medium;;medium;72.5;19;16
 Ringwood Ale: Strain 1187;;;White Labs;White Lab;;;;;ale;liquid;high;;high;77;20;22
-"Saccharomyces ""Bruxellensis"" Trois";Saccharomyces "Brett" Trois;;White Labs;White Lab;;;WLP644;WLP 644,WLP-644;ale;liquid;medium;;low;85;21;29
+"Saccharomyces ""Bruxellensis"" Trois";Saccharomyces "Brett" Trois,Brettanomyces Bruxellensis Trois;;White Labs;White Lab;;;WLP644;WLP 644,WLP-644;ale;liquid;medium;;low;85;21;29
 Flor Sherry Yeast;Flor Sherry,Flor;;White Labs;White Lab;;;WLP700;WLP 700,WLP-700;wine;liquid;high;;;90;23;40
 Sake #7;;;White Labs;White Lab;;;WLP705;WLP 705,WLP-705;wine-cider;liquid;high;;low;90;21;38
 Sake #9;;;White Labs;White Lab;;;WLP709;WLP 709,WLP-709;wine-cider;liquid;low;;low;75;17;20
@@ -666,7 +666,7 @@ Canadian/Belgian Ale;;;Wyeast;;;;3864;;ale;liquid;;12;medium;77;18;27
 Cider & Mead;Cider and Mead;;Wyeast;;;;4766;;wine-cider;liquid;;12;low;85;18;21
 Czech Pils;;;Wyeast;;;;2278;;lager;liquid;;9;medium-high;72;10;14
 Danish Lager;;;Wyeast;;;;2042;;lager;liquid;;9;low;75;8;13
-Denny's Favorite 50;;;Wyeast;;;;1450;;ale;liquid;;10;low;75;16;21
+Denny's Favorite;1450;;Wyeast;;;;1450;;ale;liquid;;10;low;75;16;21
 Dry Mead;;;Wyeast;;;;4632;;wine-cider;liquid;;18;low;95;13;24
 English Special Bitter;;;Wyeast;;;;1768;;ale;liquid;;9;high;70;18;22
 European Ale;;;Wyeast;;;;1338;;ale;liquid;;10;high;69;17;22
@@ -702,7 +702,7 @@ Rasenmäher Lager;;;Wyeast;;;;2252;;lager;liquid;;9;low;75;9;20
 Ringwood Ale;;;Wyeast;;;;1187;;ale;liquid;;10;high;70;18;23
 Rocky Mountain Lager;;;Wyeast;;;;2105;;lager;liquid;;10;medium-high;72;9;13
 Roeselare Ale Blend;Roeselare,Roselare,Rosalare;;Wyeast;;;;3763;;ale;liquid;;11;;80;18;29
-De Bom;de bomb;;Wyeast;;;;3203;;brett-bacteria;liquid;;11;;72.5;26;30
+De Bom;de bomb;;Wyeast;;;;3203;3203-PC;brett-bacteria;liquid;;11;;72.5;26;30
 Rogue Pacman;;;Wyeast;;;;1764;;ale;liquid;;12;medium-high;75;16;22
 Saison-Brett Blend;;;Wyeast;;;;3031-PC;3031,3031 PC,PC-3031;brett;liquid;;12;low;85;18;27
 Sake;;;Wyeast;;;;WY4134;;wine-cider;dry;high;;low;65;16;24
@@ -711,7 +711,7 @@ Staro Prague Lager;;;Wyeast;;;;2782;;lager;liquid;;11;high;72;10;14
 Sweet Mead;;;Wyeast;;;;4184;;wine-cider;liquid;;11;medium;75;18;24
 Thames Valley Ale;;;Wyeast;;;;1275;;ale;liquid;;10;medium-low;77;17;22
 Thames Valley II;;;Wyeast;;;;1882;;ale;liquid;;10;high;75;16;21
-Trappist Blend;;;Wyeast;;;;3789;;ale;liquid;;12;medium;77;20;29
+Trappist Blend;Trappist Style Blend,3789;;Wyeast;;;;3789;;ale;liquid;;12;medium;77;20;29
 Trappist High Gravity;;;Wyeast;;;;3787;;ale;liquid;;12;medium-high;76;18;26
 Urquell Lager;;;Wyeast;;;;2001;;lager;liquid;;9;medium-high;74;9;14
 Weihenstephan Weizen;;;Wyeast;;;;3068;;ale;liquid;;10;low;75;18;24
@@ -723,7 +723,7 @@ Coopers Ale;Cooper Pure,Cooper's Ale;Coopers;Coopers;;;;;;ale;dry;medium;;high;7
 Premium Gold;Munton,Muntons,Munton's;;Muntons;;;;;;ale;dry;;;medium;75;14;25
 WildBrew Philly Sour;Philly,Philly Sour;;Lallemand;;WildBrew;;;;ale;dry;medium;;high;85;20;25
 WildBrew Helveticus Pitch;Helveticus,Lactobacillus Helveticus,L Helveticus,L. Helveticus,Lacto Helveticus,Lactobacillus H;;Lallemand;;WildBrew;;;;bacteria;dry;low;;low;;38;45
-Wildbrew Sour Pitch;Plantarum,Lactobacillus Plantarum,L Plantarum,L. Plantarum,Lacto Plantarum,Lactobacillus P,Lacto. P,Lacto P.;;Lallemand;;WildBrew;;;;bacteria;dry;low;;low;;30;40
+Wildbrew Sour Pitch;Sour pitch,Plantarum,Lactobacillus Plantarum,L Plantarum,L. Plantarum,Lacto Plantarum,Lactobacillus P,Lacto. P,Lacto P.;;Lallemand;;WildBrew;;;;bacteria;dry;low;;low;;30;40
 Classic 8 Turbo Yeast;Turbo,Turbo Yeast;;Still Spirits;StillSpirits;;;;;ale;dry;;20;high;100;18;24
 Pure Turbo Yeast;Triple Distilled Turbo,Triple Distilled;;Still Spirits;StillSpirits;;;;;ale;dry;;20;high;100;18;24
 Alcotec Turbo Yeast Pure 48;Turbo Yeast Pure 48,Pure 48;;Alcotec;;;;;;ale;dry;;20;high;100;18;24
