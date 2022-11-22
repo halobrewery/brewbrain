@@ -311,8 +311,8 @@ def read_recipe(session, recipe, filepath):
   for misc in recipe.miscs:
     m_name = misc.name.lower().strip()
     
-    #m_type = misc.type.lower()
-    #if m_type == 'water agent': continue
+    if misc.type != None:
+      if misc.type.lower() == 'fining': continue
 
     existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"%{m_name}%"))).first()
     if existing_misc == None:
