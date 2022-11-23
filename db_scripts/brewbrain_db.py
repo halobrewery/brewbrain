@@ -23,9 +23,20 @@ class Grain(Base):
   is_fermentable = Column(Boolean())
   dbfg = Column(Float(4))
 
-  
+  core_grain_id = Column(Integer(), ForeignKey("core_grains.id"))
+  core_grain = relationship("CoreGrain", back_populates="grains")
+
   def __repr__(self):
     return f"Grain(id={self.id!r}, name={self.name!r}, origin={self.origin!r}, supplier={self.supplier!r})"
+
+class CoreGrain(Base):
+  __tablename__ = "core_grains"
+  id = Column(Integer, primary_key=True)
+  name = Column(String(128), unique=True)
+  grains = relationship("Grain", back_populates="core_grain")
+
+  def __repr__(self):
+    return f"CoreGrain(id={self.id!r}, name={self.name!r})"
 
 
 class Adjunct(Base):
@@ -123,20 +134,6 @@ class CoreStyle(Base):
   __tablename__ = "core_styles"
   id = Column(Integer, primary_key=True)
   name = Column(String(128), unique=True)
-  type = Column(String(32))
-  min_og = Column(Float(4))
-  max_og = Column(Float(4))
-  min_fg = Column(Float(4))
-  max_fg = Column(Float(4))
-  min_ibu = Column(Float(2))
-  max_ibu = Column(Float(2))
-  min_carb = Column(Float(2))
-  max_carb = Column(Float(2))
-  min_colour_srm = Column(Float(2))
-  max_colour_srm = Column(Float(2))
-  min_abv = Column(Float(2))
-  max_abv = Column(Float(2))
-
   styles = relationship("Style", back_populates="core_style")
 
 
