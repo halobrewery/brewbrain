@@ -48,6 +48,7 @@ def convert_recipe_numpy(recipes_db, grains_dbid_to_idx, core_grains_dbid_to_idx
     grain_amts /= total_qty
 
     recipe_mashes.append({
+      'recipe_id': recipe.id,
       'core_types': grain_core_type_inds,
       'specific_types': grain_specific_type_inds,
       'amts': grain_amts
