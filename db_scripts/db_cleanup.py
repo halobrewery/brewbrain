@@ -185,7 +185,7 @@ if __name__ == "__main__":
     #clean_up_mash_steps(session)
     #remove_zero_mash_or_ferment_step_recipes(session)
     #clean_up_misc(session)
-    ids_to_remove = [27004, 21736, 4188]
+    ids_to_remove = [9914]
     recipes_to_remove = session.scalars(select(RecipeML).filter(or_(*[RecipeML.id == id for id in ids_to_remove]))).all()
     for recipe in recipes_to_remove:
       session.delete(recipe)
