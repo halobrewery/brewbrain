@@ -185,8 +185,8 @@ SafSpirit HG-1;;;Fermentis;;SafSpirit;Saf Spirit;HG-1;;ale;dry;high;;low;80;25;3
 SafSpirit USW-6;;;Fermentis;;SafSpirit;Saf Spirit;USW-6;;ale;liquid;high;;medium;80;20;32
 SafAle HA-18;;;Fermentis;;Safale;Saf Ale;HA-18;HA 18,HA18;ale;dry;high;;medium;97;25;35
 SafAle F-2;;;Fermentis;;Safale;Saf Ale;F-2;F 2,F2;ale;dry;high;;high;80;15;25
-American Ale;;;Fermentis;;Safale;Saf Ale;US-05;US 05,US05,uso5,US - 05;ale;dry;low;;medium;81;12;25
-American Ale;;;Fermentis;;Safale;Saf Ale;US-56;US 56,US56;ale;dry;medium;;medium;72;15;24
+Safale American;;;Fermentis;;Safale;Saf Ale;US-05;US 05,US05,uso5,US - 05;ale;dry;low;;medium;81;12;25
+Safale US-56;;;Fermentis;;Safale;Saf Ale;US-56;US 56,US56;ale;dry;medium;;medium;72;15;24
 Belgian Saison Ale;;;Fermentis;;Safale;Saf Ale;BE-134;BE 134,BE134;ale;dry;;;low;90;18;28
 English Ale;;;Fermentis;;Safale;Saf Ale;S-04;S 04,S04;ale;dry;;9.75;high;75;12;25
 German Ale;;;Fermentis;;Safale;Saf Ale;K-97;K 97,K97;ale;dry;;10.4;high;81;12;25
@@ -568,7 +568,7 @@ Dry English Ale;;;White Labs;White Lab;;;WLP007;WLP 007,WLP-007;ale;liquid;mediu
 Dusseldorf Alt;;;White Labs;White Lab;;;WLP036;WLP 036,WLP-036;ale;liquid;medium;;medium;68.5;18;22
 East Coast Ale;;;White Labs;White Lab;;;WLP008;WLP 008,WLP-008;ale;liquid;medium;;medium-low;72.5;20;23
 East Midlands Ale;;;White Labs;White Lab;;;WLP039;WLP 039,WLP-039;ale;liquid;medium;;medium-high;77.5;19;21
-Edinburgh Scottish Ale;;;White Labs;White Lab;;;WLP028;WLP0028,WLP 028,WLP-028;ale;liquid;medium;;medium;72.5;18;21
+Edinburgh Scottish Ale;Edinburgh Ale;;White Labs;White Lab;;;WLP028;WLP0028,WLP 028,WLP-028;ale;liquid;medium;;medium;72.5;18;21
 English Ale Blend;;;White Labs;White Lab;;;WLP085;;ale;liquid;medium;;medium-high;72.5;20;22
 English Ale;;;White Labs;White Lab;;;WLP002;WLP 002,WLP-002;ale;liquid;medium;;very-high;66.5;18;20
 English Cider;;;White Labs;White Lab;;;WLP775;WLP 775,WLP-775;wine-cider;liquid;medium;;medium;90;20;24

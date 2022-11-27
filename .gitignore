@@ -154,3 +154,4 @@ data/*.xml
 brewbrain_backup.db
 data/beersmith_completed/
 brewbrain_backup_old.db
+data/_completed/

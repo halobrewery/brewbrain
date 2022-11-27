@@ -3,6 +3,9 @@ import os
 import glob
 import sys
 import re
+import random
+
+class MockObj: pass
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -16,6 +19,8 @@ from sqlalchemy import or_, and_
 
 from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, Style, Hop, Grain, Adjunct, Misc, Microorganism, RecipeML
 from brewbrain_db import RecipeMLHopAT, RecipeMLGrainAT, RecipeMLAdjunctAT, RecipeMLMiscAT, RecipeMLMicroorganismAT
+from distributions import distributions_by_core_style_id
+from db_cleanup import clean_up_recipe_mash_steps
 
 from hop_names import build_hop_name_dicts, match_hop_id
 from fermentable_names import build_fermentable_name_dicts, match_fermentable_id
@@ -31,7 +36,7 @@ misc_name_to_id, id_to_misc_names = build_misc_name_dicts()
 
 # NOTE: BeerXML units are - Weight: Kg, Volume: L, Temperature: C, 
 # Time (mins default, unless specified by tag), Pressure: KPa
-def read_recipe(session, recipe, filepath):
+def read_recipe(session, recipe, filepath, core_style_id_to_dist):
   if recipe.type.lower() != 'all grain': return
   
   recipe_name   = recipe.name.strip() if isinstance(recipe.name, str) else str(recipe.name)
@@ -58,33 +63,6 @@ def read_recipe(session, recipe, filepath):
   else:
     postboil_vol = fermenter_vol
   
-  # Fermentation Stages, Bottling, Carb
-  aging_time  = recipe.age
-  aging_temp  = recipe.age_temp
-  carbonation = recipe.carbonation
-  num_ferment_stages = 0
-  ferment_stage_1_time = ferment_stage_1_temp = None
-  ferment_stage_2_time = ferment_stage_2_temp = None
-  ferment_stage_3_time = ferment_stage_3_temp = None
-
-  if recipe.fermentation_stages != None:
-    num_ferment_stages = int(recipe.fermentation_stages)
-    if num_ferment_stages == 0:
-      raise ValueError(f"No fermentation stages found in recipe: {recipe_name}")
-    if num_ferment_stages > 0:
-      ferment_stage_1_time = recipe.primary_age
-      ferment_stage_1_temp = recipe.primary_temp
-      if ferment_stage_1_time == None or ferment_stage_1_temp == None:
-        raise ValueError(f"'None' value(s) found for ferment stage 1 in recipe: {recipe_name}")
-      if num_ferment_stages > 1:
-        ferment_stage_2_time = recipe.secondary_age
-        ferment_stage_2_temp = recipe.secondary_temp
-        if ferment_stage_2_time == None or ferment_stage_2_temp == None: num_ferment_stages = 1
-        if num_ferment_stages > 2:
-          ferment_stage_3_time = recipe.tertiary_age
-          ferment_stage_3_temp = recipe.tertiary_temp
-          if ferment_stage_3_time == None or ferment_stage_3_temp == None: num_ferment_stages = 2
-
   # Style
   style = recipe.style
   if hasattr(style, 'style_guide'):
@@ -140,44 +118,106 @@ def read_recipe(session, recipe, filepath):
           raise ValueError(f"Failed to find style '{style.name}' for recipe: {recipe_name}")
       
   style = existing_style
+  style_dist = core_style_id_to_dist[style.core_style_id]
+
+  # Fermentation Stages, Bottling, Carb
+  aging_time  = recipe.age
+  aging_temp  = recipe.age_temp
+  if isinstance(recipe.carbonation, str):
+    carbonation = float(recipe.carbonation.replace(",","."))
+  else:
+    carbonation = recipe.carbonation
+  
+  num_ferment_stages = 0
+  ferment_stage_1_time = ferment_stage_1_temp = None
+  ferment_stage_2_time = ferment_stage_2_temp = None
+  ferment_stage_3_time = ferment_stage_3_temp = None
+
+  if recipe.fermentation_stages != None:
+    num_ferment_stages = int(recipe.fermentation_stages)
+    if num_ferment_stages == 0:
+      raise ValueError(f"No fermentation stages found in recipe: {recipe_name}")
+    if num_ferment_stages > 0:
+      ferment_stage_1_time = recipe.primary_age
+      ferment_stage_1_temp = recipe.primary_temp
+      if ferment_stage_1_time == None or ferment_stage_1_temp == None:
+        raise ValueError(f"'None' value(s) found for ferment stage 1 in recipe: {recipe_name}")
+      if num_ferment_stages > 1:
+        ferment_stage_2_time = recipe.secondary_age
+        ferment_stage_2_temp = recipe.secondary_temp
+        if ferment_stage_2_time == None or ferment_stage_2_temp == None: num_ferment_stages = 1
+        if num_ferment_stages > 2:
+          ferment_stage_3_time = recipe.tertiary_age
+          ferment_stage_3_temp = recipe.tertiary_temp
+          if ferment_stage_3_time == None or ferment_stage_3_temp == None: num_ferment_stages = 2
 
   # Mash/Sparge
   mash = recipe.mash
-  if mash == None: raise ValueError(f"No mash found, in recipe: {recipe_name}")
+  if mash == None:
+    # Look-up a reasonable mash schedule
+    mash = MockObj()
+    mash.ph = style_dist.sample_mash_ph()
+    mash.sparge_temp = style_dist.sample_sparge_temp()
+    mash.steps = None
+    
+    #raise ValueError(f"No mash found, in recipe: {recipe_name}")
 
   mash_ph = mash.ph
-  if mash_ph == None: raise ValueError(f"No mash pH found, in recipe: {recipe_name}")
+  if mash_ph == None:
+    # Look up a reasonable pH from the distribution
+    mash_ph = style_dist.sample_mash_ph()
 
-  sparge_temp = mash.sparge_temp
-  if sparge_temp < 35.0:
-    sparge_temp = None
+  if mash_ph < 5.0 or mash_ph > 5.8: raise ValueError(f"Out of range mash pH found ({mash_ph}), in recipe: {recipe_name}")
 
-  MAX_MASH_STEPS = 6
-  num_mash_steps = len(mash.steps)
-  if num_mash_steps > MAX_MASH_STEPS:
-    raise ValueError(f"Too many mash steps ({num_mash_steps}), in recipe: {recipe_name}")
-  elif num_mash_steps == 0:
-    raise ValueError(f"No mash steps found for recipe: {recipe_name}")
+  sparge_temp = mash.sparge_temp if mash.sparge_temp != None else style_dist.sample_sparge_temp()
 
-  first_step_type = mash.steps[0].type.lower()
-  if first_step_type != "infusion":
-    raise ValueError(f"Invalid starting mash type '{first_step_type}' found, in recipe: {recipe_name}")
-
+  num_mash_steps = len(mash.steps) if mash.steps != None else 0
   mash_step_vals = {}
-  for i in range(MAX_MASH_STEPS):
-    step = i+1
-    prefix = 'mash_step_' + str(step)
-    mash_step_vals[prefix+'_type'] = mash_step_vals[prefix+'_time'] = mash_step_vals[prefix+'_start_temp'] = mash_step_vals[prefix+'_end_temp'] = mash_step_vals[prefix+'_infuse_amt'] = None
-  for i, mash_step in enumerate(mash.steps):
-    step = i+1
-    prefix = 'mash_step_' + str(step)
-    m_step_type = mash_step.type.lower()
-    mash_step_vals[prefix+'_type'] = m_step_type # Type of the step {"Infusion", "Temperature", "Decoction"}
-    mash_step_vals[prefix+'_time'] = mash_step.step_time
-    mash_step_vals[prefix+'_start_temp'] = mash_step.step_temp
-    mash_step_vals[prefix+'_end_temp'] = mash_step.end_temp
-    if m_step_type == "infusion":
-      mash_step_vals[prefix+'_infuse_amt'] = mash_step.infuse_amount # Volume of water for infusion step (L)
+  for step in range(1, RecipeML.MAX_MASH_STEPS+1):
+    prefix = RecipeML.MASH_STEP_PREFIX + str(step)
+    for postfix in RecipeML.MASH_STEP_POSTFIXES:
+      mash_step_vals[prefix+postfix] = None
+
+  if num_mash_steps > RecipeML.MAX_MASH_STEPS:
+    raise ValueError(f"Too many mash steps ({num_mash_steps}), in recipe: {recipe_name}")
+
+  elif num_mash_steps == 0:
+    # Make a single infusion step based on the distribution of other infusion steps within the style
+    num_mash_steps = 1
+    prefix = RecipeML.MASH_STEP_PREFIX+"1"
+    for postfix in RecipeML.MASH_STEP_POSTFIXES:
+      mash_step_attr = prefix+postfix
+
+      # We need to adjust the infusion amount based on the recipe's preboil volume!
+      if mash_step_attr == "mash_step_1_infuse_amt":
+        s_preboil_vol, s_infuse_amt = style_dist.sample_named_values_conds(['preboil_vol', 'mash_step_1_infuse_amt'], [('num_mash_steps', 1), ('mash_step_1_type', 'infusion')])
+        if s_preboil_vol == None or s_infuse_amt == None:
+          raise ValueError(f"Could not find valid infuse amount to fill in, style does not have enough of a distribution to get one, for recipe {recipe_name}")
+        mash_step_vals[mash_step_attr] = preboil_vol * s_infuse_amt/s_preboil_vol
+      else:
+        step_attr_val = style_dist.sample_named_value_cond(mash_step_attr, 'mash_step_1_type', 'infusion')
+        if step_attr_val == None:
+          raise ValueError(f"Step attribute was None for sampled mash step in recipe {recipe_name}")
+        mash_step_vals[mash_step_attr] = step_attr_val
+
+  else:
+    for i, mash_step in enumerate(mash.steps):
+      step = i+1
+      prefix = RecipeML.MASH_STEP_PREFIX + str(step)
+      m_step_type = mash_step.type.lower()
+      mash_step_vals[prefix+'_type'] = m_step_type # Type of the step {"Infusion", "Temperature", "Decoction"}
+      
+      step_time = 60
+      if mash_step.step_time != None:
+        step_time = mash_step.step_time
+      elif num_mash_steps != 1:
+        raise ValueError(f"No mash step time found for non-single-infusion recipe: {recipe_name}")
+
+      mash_step_vals[prefix+'_time'] = step_time
+      mash_step_vals[prefix+'_start_temp'] = mash_step.step_temp
+      mash_step_vals[prefix+'_end_temp'] = mash_step.end_temp if mash_step.end_temp != None else mash_step.step_temp
+      # In properly formed beerxml, this should only be for an infusion step, but we can clean things up later
+      mash_step_vals[prefix+'_infuse_amt'] = mash_step.infuse_amount # Volume of water (L)
 
   # Hops
   hops_ats = []
@@ -190,9 +230,11 @@ def read_recipe(session, recipe, filepath):
 
     hop_name = str(hop.name).lower()
     found_hop_id = match_hop_id(hop_name, hop_name_to_id)
-    hop_names = [hop_name]
+    
+    hop_names = []
     if found_hop_id != None:
       hop_names += id_to_hop_names[found_hop_id]
+    hop_names = [hop_name] + hop_names
 
     for name in hop_names:
       existing_hop = session.scalars(select(Hop).filter((Hop.name.ilike(f"{name}")) & (Hop.origin.ilike(f"{hop.origin}%")))).first()
@@ -227,26 +269,30 @@ def read_recipe(session, recipe, filepath):
     f_name  = str(fermentable.name).lower()
     if hasattr(fermentable, 'type') and fermentable.type != None:
       f_type  = fermentable.type.lower()
+      if f_type != 'adjunct' or f_type != 'grain':
+        if f_type == 'base malt': 
+          f_type = 'grain'
+        elif 'extract' in f_type or 'sugar' in f_type: 
+          f_type = 'adjunct'
+        else:
+          f_type = 'grain'
     else:
       # This is frustrating... malformed beerxml and we're going to have to figure out if it's a grain or not
-      # Try a look-up by name and if that fails just ignore this recipe
-      existing_something = session.scalars(select(Adjunct).filter(Adjunct.name.ilike(f"%{f_name}%"))).first()
-      if existing_something == None:
-        existing_something = session.scalars(select(Grain).filter(Grain.name.ilike(f"%{f_name}%"))).first()
-        if existing_something == None:
-          raise ValueError(f"No fermentable type provided for {f_name}, couldn't find match in database, in recipe {recipe_name}")
-        else:
-          f_type = "grain"
-      else:
+      # Check to see if it's a malt extract
+      if ("liquid" in f_name or "dry" in f_name) and "extract" in f_name:
         f_type = "adjunct"
+      else:
+        f_type = "grain"
 
     f_amt   = fermentable.amount
     f_yield = fermentable._yield/100
 
     f_id = match_fermentable_id(f_name, fermentable_name_to_id)
-    f_names = [f_name]
+    
+    f_names = []
     if f_id != None:
       f_names += id_to_fermentable_names[f_id]
+    f_names = [f_name] + f_names
 
     def grain_addition_check_add():
       # Try to find the grain in our database...
@@ -257,7 +303,7 @@ def read_recipe(session, recipe, filepath):
           or_(Grain.supplier.ilike(f"{fermentable.supplier}%"), Grain.origin.ilike(f"{fermentable.origin}%"))
         )).first()
         if existing_grain == None:
-          existing_grain = session.scalars(select(Grain).filter(Grain.name.ilike(f"{name}"))).first()
+          existing_grain = session.scalars(select(Grain).filter(Grain.name.ilike(f"{name}%"))).first()
           if existing_grain == None:
             existing_grain = session.scalars(select(Grain).filter(Grain.name.ilike(f"%{name}%"))).first()
         if existing_grain != None: break
@@ -265,9 +311,9 @@ def read_recipe(session, recipe, filepath):
       if existing_grain == None:
         return False
       else:
-        moisture_override = fermentable.moisture/100
-        coarse_fine_diff_override = fermentable.coarse_fine_diff/100
-        protein_override = fermentable.protein/100
+        moisture_override = fermentable.moisture/100 if fermentable.moisture != None else existing_grain.moisture
+        coarse_fine_diff_override = fermentable.coarse_fine_diff/100 if fermentable.coarse_fine_diff != None else existing_grain.coarse_fine_diff
+        protein_override = fermentable.protein/100 if fermentable.protein != None else existing_grain.protein
         grains_ats.append(
           RecipeMLGrainAT(
             grain=existing_grain,
@@ -306,13 +352,22 @@ def read_recipe(session, recipe, filepath):
         if not grain_addition_check_add():
           raise ValueError(f"Failed to find adjunct/grain '{f_name}', in recipe: {recipe_name}")
 
+  # Check to make sure this is actually an all-grain recipe
+  if len(grains_ats) == 0:
+    raise ValueError(f"No grains found for recipe {recipe_name}")
+  if len(adjuncts_ats) > 0:
+    sorted(grains_ats, key=lambda x: x.amount, reverse=True)
+    sorted(adjuncts_ats, key=lambda x: x.amount, reverse=True)
+    first_adj_name = adjuncts_ats[0].adjunct.name.lower()
+    if ('extract' in first_adj_name or 'lme' in first_adj_name or 'dme' in first_adj_name) and adjuncts_ats[0].amount > grains_ats[0].amount:
+      raise ValueError(f"Found extract amount greater than highest grains amount (this is not an all-grain recipe!) in recipe {recipe_name}")
+
   # Misc
   miscs_ats = []
   for misc in recipe.miscs:
     m_name = misc.name.lower().strip()
     
-    if misc.type != None:
-      if misc.type.lower() == 'fining': continue
+    if misc.type == None or misc.type.lower() == 'fining': continue
 
     existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"%{m_name}%"))).first()
     if existing_misc == None:
@@ -352,7 +407,7 @@ def read_recipe(session, recipe, filepath):
   microorganisms_ats = []
   for microorganism in recipe.yeasts:
     m_name = microorganism.name
-    m_lab  = microorganism.laboratory
+    #m_lab  = microorganism.laboratory
     m_product_code = str(int(microorganism.product_id) if isinstance(microorganism.product_id, float) else microorganism.product_id)
 
     m_id = match_yeast_id(m_name, yeast_name_to_id)
@@ -365,9 +420,8 @@ def read_recipe(session, recipe, filepath):
         m_names += id_to_yeast_names[m_id]
 
     for m_name in m_names:
-      existing_microorganism = session.scalars(select(Microorganism).filter(
-        (Microorganism.name.ilike(f"{m_name}")) & 
-        or_(Microorganism.lab.ilike(f"{m_lab}%"), Microorganism.product_code.ilike(f"{m_product_code}%"))
+      existing_microorganism = session.scalars(select(Microorganism).filter( 
+        or_(Microorganism.name.ilike(f"{m_name}"), Microorganism.product_code.ilike(f"{m_product_code}%"))
       )).first()
       if existing_microorganism == None:
         existing_microorganism = session.scalars(select(Microorganism).filter(Microorganism.name.ilike(f"{m_name}"))).first()
@@ -388,6 +442,32 @@ def read_recipe(session, recipe, filepath):
         stage=stage
       )
     )
+
+  if recipe.fermentation_stages == None:
+    # No fermentation stages were provided... kewl.
+    # Manually find all recipes with at least one of the same microorganisms and style and pick a fermentation schedule based on that
+    similar_recipe_fermentations = session.query(
+      RecipeML.id, RecipeML.num_ferment_stages,
+      RecipeML.ferment_stage_1_time, RecipeML.ferment_stage_1_temp,
+      RecipeML.ferment_stage_2_time, RecipeML.ferment_stage_2_temp, 
+      RecipeML.ferment_stage_3_time, RecipeML.ferment_stage_3_temp,
+      
+    ) \
+    .join(RecipeMLMicroorganismAT, RecipeMLMicroorganismAT.recipe_ml_id == RecipeML.id) \
+    .join(Microorganism, Microorganism.id == RecipeMLMicroorganismAT.microorganism_id) \
+    .filter(RecipeML.style_id == style.id, or_(*[(RecipeMLMicroorganismAT.microorganism_id == m.microorganism.id) for m in microorganisms_ats])).all()
+
+    if len(similar_recipe_fermentations) == 0:
+      raise ValueError(f"Failed to find a fermentation schedule or a reasonable corresponding fill-in schedule for recipe {recipe_name}") # I give up.
+
+    random_ferment = random.choice(similar_recipe_fermentations)
+    num_ferment_stages   = random_ferment[1]
+    ferment_stage_1_time = random_ferment[2]
+    ferment_stage_1_temp = random_ferment[3]
+    ferment_stage_2_time = random_ferment[4]
+    ferment_stage_2_temp = random_ferment[5]
+    ferment_stage_3_time = random_ferment[6]
+    ferment_stage_3_temp = random_ferment[7]
 
   session.autoflush = False
   recipe_ml = RecipeML(
@@ -418,6 +498,10 @@ def read_recipe(session, recipe, filepath):
     miscs=miscs_ats,
     microorganisms=microorganisms_ats,
   )
+
+  if not clean_up_recipe_mash_steps(recipe_ml, recalc_hash=False):
+    raise ValueError(f"Unable to clean-up mash steps infusion(s) are all messed up, in recipe: {recipe_name}")
+
   recipe_ml.hash = recipe_ml.gen_hash()
   
   # Check whether the recipe already exists in the database via its hash
@@ -439,26 +523,36 @@ if __name__ == "__main__":
 
   def session_read_beerxml_files():
     beerxml_parser = Parser()
-    datapath = "/Users/callumhay/projects/brewbrain/data"
+    datapath = "/Users/callumhay/projects/brewbrain/data/_matched"
+    completed_datapath = "/Users/callumhay/projects/brewbrain/data/_completed"
+    failed_datapath = "/Users/callumhay/projects/brewbrain/data/_not_matched"
 
     with Session(engine) as session:
-      #for dirpath, dirnames, files in os.walk(datapath):
-      for filepath in glob.glob(os.path.join(datapath, "*.xml")):
-        try:
-          recipes = beerxml_parser.parse(filepath)
-        except Exception as e:
-          print(f"Erroneous file found ({filepath}), exception: {e} exiting.")
-          session.rollback()
-          return
+      core_style_id_to_dist = distributions_by_core_style_id(session)
 
-        for recipe in recipes:
+      #for filepath in glob.glob(os.path.join(datapath, "*.xml")):
+      for dirpath, dirnames, files in os.walk(datapath):
+        for filename in files:
+          if not filename.endswith(".xml"): continue
+          filepath = os.path.join(dirpath, filename)
           try:
-            read_recipe(session, recipe, filepath)
-          except ValueError as e:
-            print(f"Failed to read recipe: {e}, rolling back and continuing.")
+            recipes = beerxml_parser.parse(filepath)
+          except Exception as e:
+            print(f"Erroneous file found ({filepath}), exception: {e} exiting.")
             session.rollback()
-            continue
-        #print(f"Finished reading recipes from file {filepath}")
-      session.commit()
+            return
+
+          for i, recipe in enumerate(recipes):
+            try:
+              read_recipe(session, recipe, filepath, core_style_id_to_dist)
+              if i == len(recipes)-1:
+                os.rename(filepath, os.path.join(completed_datapath, filename))
+            except ValueError as e:
+              print(f"Failed to read recipe: {e} [{filepath}]. Rolling back and continuing.")
+              os.rename(filepath, os.path.join(failed_datapath, filename))
+              session.rollback()
+              continue
+          #print(f"Finished reading recipes from file {filepath}")
+          session.commit()
 
   session_read_beerxml_files()

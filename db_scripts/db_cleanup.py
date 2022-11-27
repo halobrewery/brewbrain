@@ -5,18 +5,115 @@ from sqlalchemy import select
 from sqlalchemy import or_, and_
 
 from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, RecipeML, Misc
-
+from distributions import distributions_by_style_id
 
 def remove_zero_mash_or_ferment_step_recipes(session):
   bad_recipes = session.query(RecipeML).filter(or_(RecipeML.num_mash_steps == 0, RecipeML.num_ferment_stages == 0)).all()
   for recipe in bad_recipes:
     session.delete(recipe)
 
+def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
+  DEFAULT_GRAIN_TO_WATER_RATIO = 2.6 # L/Kg
+  GRAIN_ABSORB_L_PER_KG = 1.00144835
+
+  # If this recipe is reasonable then the total infusion volume should add up to AT LEAST the grain absorption
+  total_infusion_vol = recipe.total_infusion_vol()
+  total_grain_mass   = recipe.total_grain_mass()
+  grain_absorb_vol   = GRAIN_ABSORB_L_PER_KG * total_grain_mass
+  if total_infusion_vol <= grain_absorb_vol:
+    # This recipe can't possibly have enough water in its mash... 
+    # Try to calculate an appropriate water volume as long as there's only one mash step to deal with
+    if recipe.num_mash_steps == 1 and (recipe.mash_step_1_start_temp >= 60 or recipe.mash_step_1_end_temp >= 60):
+      recipe.mash_step_1_type = "infusion"
+      recipe.mash_step_1_infuse_amt = total_grain_mass * DEFAULT_GRAIN_TO_WATER_RATIO
+      recipe.mash_step_1_time = max(45, recipe.mash_step_1_time)
+      if recalc_hash:
+        recipe.hash = recipe.gen_hash()
+      return True
+    else:
+      return False
+
+  # If the first infuse step is enough to actually soak the grains then we're ok
+  if recipe.mash_step_1_infuse_amt != None and recipe.mash_step_1_infuse_amt > grain_absorb_vol:
+    return True
+  
+  # There appears enough water to make the mash happen, we just need to find it 
+  # in the other infusion steps and move it into the first infusion step... 
+  if recipe.num_mash_steps == 1 and recipe.mash_step_1_type != "infusion":
+    return False
+  
+  # First thing we need to do is to make the initial mash step an infusion (can't do a mash without water!)
+  # Heating up the grains is not a relevant step for our purposes
+  if recipe.mash_step_1_type != "infusion":
+    recipe.mash_step_1_type = "infusion"
+    recipe.mash_step_1_infuse_amt = max(0, recipe.mash_step_1_infuse_amt)
+
+  def remove_mash_step(step_idx):
+    assert step_idx >= 1 and step_idx <= recipe.num_mash_steps
+    for idx in range(step_idx, recipe.num_mash_steps+1):
+      prefix_prev = RecipeML.MASH_STEP_PREFIX+str(idx)
+      if idx == 6:
+        for attr in RecipeML.MASH_STEP_POSTFIXES:
+          setattr(recipe, prefix_prev+attr, None)
+      else:
+        prefix_curr = RecipeML.MASH_STEP_PREFIX+str(idx+1)
+        for attr in RecipeML.MASH_STEP_POSTFIXES:
+          setattr(recipe, prefix_prev+attr, getattr(recipe, prefix_curr+attr))
+    recipe.num_mash_steps -= 1
+
+  curr_infuse_amt  = recipe.mash_step_1_infuse_amt or 0
+  curr_infuse_start_temp = recipe.mash_step_1_start_temp
+  curr_infuse_end_temp = recipe.mash_step_1_end_temp
+  curr_infuse_time = recipe.mash_step_1_time
+  i = 2
+  first_infusion_fixed = False
+  steps_inbetween = False
+  while i <= recipe.num_mash_steps:
+    prefix = RecipeML.MASH_STEP_PREFIX+str(i)
+    type = getattr(recipe, prefix+"_type")
+    if type == "infusion":
+      # If the infusion amount is zero then we need to get rid of this step
+      infuse_amt = getattr(recipe, prefix+"_infuse_amt") or 0
+      if not first_infusion_fixed:
+        # Merge this mash step with the first mash step (infusion) and remove this step
+        curr_infuse_amt += infuse_amt
+        curr_infuse_start_temp = max(curr_infuse_start_temp, getattr(recipe, prefix+"_start_temp"))
+        curr_infuse_end_temp = max(curr_infuse_end_temp, getattr(recipe, prefix+"_end_temp"))
+        curr_infuse_time += getattr(recipe, prefix+"_time")
+        first_infusion_fixed = curr_infuse_amt > grain_absorb_vol # Update whether there's a reasonable amount of water yet
+        remove_mash_step(i)
+        continue
+      if infuse_amt == None or infuse_amt <= 0:
+        # This should probably be a temperature step, not an infuse step.
+        if not steps_inbetween:
+          # If there were no steps between this one and the first mash step then merge this infusion with the first one
+          curr_infuse_start_temp =  max(curr_infuse_start_temp, getattr(recipe, prefix+"_start_temp"))
+          curr_infuse_end_temp = max(curr_infuse_end_temp, getattr(recipe, prefix+"_end_temp"))
+          curr_infuse_time += getattr(recipe, prefix+"_time")
+          remove_mash_step(i)
+          continue
+        else:
+          # Change this step to be a temperature step
+          setattr(recipe, prefix+"_type", "temperature")
+    else:
+      steps_inbetween = True
+    i += 1
+
+  if first_infusion_fixed:
+    recipe.mash_step_1_time = curr_infuse_time
+    recipe.mash_step_1_start_temp = curr_infuse_start_temp
+    recipe.mash_step_1_end_temp = curr_infuse_end_temp
+    recipe.mash_step_1_infuse_amt = curr_infuse_amt
+  
+  if recalc_hash:
+    recipe.hash = recipe.gen_hash()
+  return True
+
+
 def clean_up_mash_steps(session):
   MAX_L_PER_KG_DECOC = 3.12953
   MIN_L_PER_KG_DECOC = 2.607939
-  GRAIN_ABSORB_L_PER_KG = 1.00144835
-
+  
   # Find all starting decoctions or temperatures and just remove them
   bad_recipes = session.query(RecipeML).filter(or_(RecipeML.mash_step_1_type == "temperature", RecipeML.mash_step_1_type == "decoction")).all()
   for recipe in bad_recipes:
@@ -50,85 +147,11 @@ def clean_up_mash_steps(session):
       )
     )
   ).all()
+
   for recipe in bad_recipes:
-    # If this recipe is reasonable then the total infusion volume should add up to AT LEAST the grain absorption
-    total_infusion_vol = recipe.total_infusion_vol()
-    total_grain_mass   = recipe.total_grain_mass()
-    grain_absorb_vol   = GRAIN_ABSORB_L_PER_KG * total_grain_mass
-    if total_infusion_vol <= grain_absorb_vol:
-      # This recipe can't possibly have enough water in its mash, delete it
+    if not clean_up_recipe_mash_steps(recipe):
       session.delete(recipe)
-      continue
-
-    # If the first infuse step is enough to actually soak the grains then we're ok
-    if recipe.mash_step_1_infuse_amt > grain_absorb_vol:
-      continue
-    
-    # There appears enough water to make the mash happen, we just need to find it 
-    # in the other infusion steps and move it into the first infusion step... 
-    assert recipe.num_mash_steps > 1 and recipe.mash_step_1_type == "infusion"
-
-    postfixes = ["_type", "_time", "_start_temp", "_end_temp", "_infuse_amt"]    
-    def remove_mash_step(step_idx):
-      assert step_idx >= 1 and step_idx <= recipe.num_mash_steps
-      for idx in range(step_idx, recipe.num_mash_steps+1):
-        prefix_prev = "mash_step_"+str(idx)
-        if idx == 6:
-          for attr in postfixes:
-            setattr(recipe, prefix_prev+attr, None)
-        else:
-          prefix_curr = "mash_step_"+str(idx+1)
-          for attr in postfixes:
-            setattr(recipe, prefix_prev+attr, getattr(recipe, prefix_curr+attr))
-      recipe.num_mash_steps -= 1
-
-    curr_infuse_amt  = recipe.mash_step_1_infuse_amt
-    curr_infuse_start_temp = recipe.mash_step_1_start_temp
-    curr_infuse_end_temp = recipe.mash_step_1_end_temp
-    curr_infuse_time = recipe.mash_step_1_time
-    i = 2
-    first_infusion_fixed = False
-    steps_inbetween = False
-    while i <= recipe.num_mash_steps:
-      prefix = "mash_step_"+str(i)
-      type = getattr(recipe, prefix+"_type")
-      if type == "infusion":
-        # If the infusion amount is zero then we need to get rid of this step
-        infuse_amt = getattr(recipe, prefix+"_infuse_amt")
-        if not first_infusion_fixed:
-          # Merge this mash step with the first mash step (infusion) and remove this step
-          curr_infuse_amt += infuse_amt if infuse_amt != None else 0
-          curr_infuse_start_temp = max(curr_infuse_start_temp, getattr(recipe, prefix+"_start_temp"))
-          curr_infuse_end_temp = max(curr_infuse_end_temp, getattr(recipe, prefix+"_end_temp"))
-          curr_infuse_time += getattr(recipe, prefix+"_time")
-          first_infusion_fixed = curr_infuse_amt > grain_absorb_vol # Update whether there's a reasonable amount of water yet
-          remove_mash_step(i)
-          continue
-        if infuse_amt == None or infuse_amt <= 0:
-          # This should probably be a temperature step, not an infuse step.
-          if not steps_inbetween:
-            # If there were no steps between this one and the first mash step then merge this infusion with the first one
-            curr_infuse_start_temp =  max(curr_infuse_start_temp, getattr(recipe, prefix+"_start_temp"))
-            curr_infuse_end_temp = max(curr_infuse_end_temp, getattr(recipe, prefix+"_end_temp"))
-            curr_infuse_time += getattr(recipe, prefix+"_time")
-            remove_mash_step(i)
-            continue
-          else:
-            # Change this step to be a temperature step
-            setattr(recipe, prefix+"_type", "temperature")
-      else:
-        steps_inbetween = True
-      i += 1
-
-    if first_infusion_fixed:
-      recipe.mash_step_1_time = curr_infuse_time
-      recipe.mash_step_1_start_temp = curr_infuse_start_temp
-      recipe.mash_step_1_end_temp = curr_infuse_end_temp
-      recipe.mash_step_1_infuse_amt = curr_infuse_amt
-      
-    recipe.hash = recipe.gen_hash()
     session.commit()
-
 
   #RecipeML.mash_step_2_infuse_amt == None,  RecipeML.mash_step_3_infuse_amt == None, 
   #RecipeML.mash_step_4_infuse_amt == None, RecipeML.mash_step_5_infuse_amt == None,
@@ -172,10 +195,27 @@ def clean_up_mash_steps(session):
   recipe.mash_step_1_infuse_amt = total_infusion
   '''
 
+
+def clean_up_bad_mash_ph_recipes(session):
+  recipes_to_remove = session.scalars(select(RecipeML).filter(or_(RecipeML.mash_ph < 5.0, RecipeML.mash_ph > 5.8))).all()
+  for recipe in recipes_to_remove:
+    session.delete(recipe)
+
+
+def clean_up_no_sparge_temp(session):
+  style_dists = distributions_by_style_id(session)
+  recipes_to_update = session.scalars(select(RecipeML).filter(RecipeML.sparge_temp == None)).all()
+  for recipe in recipes_to_update:
+    sparge_temp = style_dists[recipe.style_id].sample_sparge_temp()
+    if sparge_temp == None:
+      sparge_temp = 75.5555556
+    recipe.sparge_temp = sparge_temp
+
 def clean_up_misc(session):
   bad_miscs = session.scalars(select(Misc).filter(Misc.type == "fining")).all()
   for misc in bad_miscs:
     session.delete(misc)
+
 
 if __name__ == "__main__":
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=True, future=True)
@@ -185,10 +225,13 @@ if __name__ == "__main__":
     #clean_up_mash_steps(session)
     #remove_zero_mash_or_ferment_step_recipes(session)
     #clean_up_misc(session)
-    ids_to_remove = [9914]
+
+    ids_to_remove = [6948, 7056, 22066, 27256, 39472]
     recipes_to_remove = session.scalars(select(RecipeML).filter(or_(*[RecipeML.id == id for id in ids_to_remove]))).all()
     for recipe in recipes_to_remove:
       session.delete(recipe)
     
-    
+    #clean_up_bad_mash_ph_recipes(session)
+    #clean_up_no_sparge_temp(session)
+
     session.commit()

@@ -62,6 +62,9 @@ def match_hop_id(hop_name, hop_name_to_id):
           best_id_s2  = dict_id
 
   if best_len_s1 == 0:
-    if best_len_s2 == 0: return None
-    else: return best_id_s2
-  else: return best_id_s1
+    if best_len_s2 == 0:
+      return None
+    else: 
+      return best_id_s2
+  else: 
+    return best_id_s1 if best_len_s1 > best_len_s2 else best_id_s2

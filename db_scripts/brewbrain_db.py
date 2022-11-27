@@ -282,13 +282,16 @@ class RecipeML(Base):
   style_id = Column(Integer, ForeignKey("styles.id"))
   style    = relationship("Style", back_populates="recipes")
 
+  MAX_MASH_STEPS = 6
+  MASH_STEP_PREFIX = "mash_step_"
+  MASH_STEP_POSTFIXES = ["_type", "_time", "_start_temp", "_end_temp", "_infuse_amt"]
+
   def mash_steps(self):
     steps = []
-    postfixes = ["_type", "_time", "_start_temp", "_end_temp", "_infuse_amt"]
     for i in range(self.num_mash_steps):
       prefix = "mash_step_"+str(i+1)
       step = {}
-      for postfix in postfixes:
+      for postfix in self.MASH_STEP_POSTFIXES:
         step[prefix+postfix] = getattr(self, prefix+postfix)
       steps.append(step)
     return steps
