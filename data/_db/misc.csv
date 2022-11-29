@@ -19,28 +19,34 @@ Blackberry Extract
 Cherry Extract
 Cranberry Extract
 Oak Chips
+Cherry Wood Chips;Cherry Wood
 Oak Essence (Liquid)
 Raspberry Extract
 Spruce Extract
-Vanilla Beans
+Vanilla Beans;Vanilla Bean;Vanilla Pod;Vanilla Pods;Vanilla;vanila beans;vanila
 Chocolate
+Dark Chocolate;Chocolate (Dark);Chocolate, Baker's Dark;Baker's Chocolate;Bakers Chocolate;Bittersweet Chocolate;Bittersweet Baker's;cocoa, baker's;dark baker's;dark bakers
 Agave Nectar
 Prickly Pear Flower Buds (Opuntia)
 Lemon Grass;lemongrass;citrongræs;Sitrongress
 Saguaro Fruit
-Cacao Nibs
+Cacao Nibs;Chocolate Nibs;Chocolate;Cocoa Nibs;cocao nibs;caocao nibs;caco nibs;coco nibs
+Cocoa Powder;Coco Powder;caocao powder;Chocolate Powder;cocao powder;caco powder;cacao powder;cocoa
+Cocoa Extract;Chocolate Extract;Creme de Cacao;cream cacao;cocao extract;caocao extract;coco extract;caco extract;cacao extract
 Grapefruit Peel;grapefruit, flesh
-American Oak Infusion Spirals
-Juniper Berries;juniper
+American Oak Infusion Spirals;American Oak Spiral
+French Oak Infusion Spirals;French Oak Spiral
+Powdered Peanut Butter;PB2 powdered peanut butter;peanut butter, powdered;peanut butter powder;peanut butter flavour;peanut butter flavor;PB2
+Juniper Berries;juniper;juiper
 Apple Extract
-French Oak Infusion Spirals
-American Oak Cubes - Medium Toast
-American Oak Cubes, Medium-Heavy Toast
-American Oak Cubes - Heavy Toast
-French Oak Cubes - Medium Toast
-French Oak Cubes Medium - Heavy Toast
-French Oak Cubes - Heavy Toast
-Licorice Root
+French Oak Infusion Spirals;Oak Spiral
+American Oak Cubes - Medium Toast;American Oak Cubes (Medium Toast);oak cubes medium;oak cubes medium toasted,Oak cubes
+American Oak Cubes, Medium-Heavy Toast;American Oak Cubes (Medium-Heavy Toast)
+American Oak Cubes - Heavy Toast;American Oak Cubes (Heavy Toast);oak cubes, heavy char
+French Oak Cubes - Medium Toast;French Oak Cubes (Medium Toast)
+French Oak Cubes Medium - Heavy Toast;French Oak Cubes (Medium-Heavy Toast)
+French Oak Cubes - Heavy Toast;French Oak Cubes (Heavy Toast)
+Licorice Root;licorice stick;licorice;liquorice;liquorice root
 Peach Extract
 Strawberry Extract
 Boysenberry Extract
@@ -54,10 +60,11 @@ Raspberry Puree
 Blackberry Puree
 Cherry Puree
 Apricot Puree
-Peach Puree
+Peach Puree;Peach Nectar
+Blueberry Puree
 Ginger Root
-Ginger, Crystallized
-Amylase Enzyme
+Ginger, Crystallized;candied ginger
+Amylase Enzyme;Amyloglucosidase;amylo
 Bottle Caps
 Heading Liquid
 Yeast Nutrient;servomyces;superfood;wyeast nutrient;yeastex 61;yeastex
@@ -74,7 +81,7 @@ Potassium Sorbate
 Potassium Metabisulfite;campden;campden (potassium metabisulphite);potassium metabisulphite
 Liquid Pectic Enzyme
 Potasium Bicarbonate
-Pectic Enzyme
+Pectic Enzyme;Pectin Enzyme
 Nutriferm
 Glycerin
 Calcium Carbonate
@@ -102,23 +109,23 @@ Sur Lie
 Lysozyme
 Wine Conditioner
 Fermaid
-Anise, Star
+Anise, Star;Star Anise;Anise
 Cinnamon Stick
 Coriander Seed
 Gale, Sweet
-Orange Peel, Bitter
-Orange Peel, Sweet
+Bitter Orange Peel;Orange Peel, Bitter
+Sweet Orange Peel;Orange Peel, Sweet;orange peel
 Sassafras Root Bark
 Seeds of Paradise;Paradise Seed
-Cinnamon Powder
-Cardamom
-Chilis
+Cinnamon Powder;cinnamon (ground);ground cinnamon;Cinnamon;cinammon
+Cardamom;Cardamom Seed;cardomon pods;cardomon
+Chilis;Chilli Pepper;Chilli Peppers
 Chili Powder
-Nutmeg
-Vanilla Extract
+Nutmeg;nutemeg
+Vanilla Extract;Vanilla Powder
 Gesho Kitel (Ethiopian Hop Powder)
 Baking Soda;bicarbonato de sódio;Sodium Bicarbonate
-Burton Water Salts
+Burton;Burton Water Salts
 Calcium Chloride;cloreto de cálcio
 Chalk
 Epsom Salt (MgSO4);sulfato de magnésio;epsom salt;epsom salts;magnesium sulphate;magnesium sulfate
@@ -135,7 +142,7 @@ Campden Tablets
 Green Tea
 Black Tea
 Jasmine;Jasmine Flowers;Jasmine Tea
-Spruce Tips
+Spruce Tips;Fir Tips
 Elderflower
 Pumpkin Puree;Pumpkin
 Thai Chilis;thai chili pepper;thai chili
@@ -145,10 +152,66 @@ Lavender
 Cloves;Clove
 Orange Zest;sweet orange zest
 Kaffir Lime;kaffir lime leaves
-Habanero Peppers;Habanero
+Habanero Peppers;Habanero;Habanero Chili;habenero pepper
 Black Pepper
 Lemon Zest
 Basil
 Blood Orange Zest
 Tamarind
 Hibiscus;Hibiscus Flowers;Hibiscus Flower
+Espresso
+Coffee Beans;Coffee;Coffee Grounds;Ground Coffee;Coffe;Cofee
+Allspice Powder;Allspice
+Pumpkin Spice;Pumpkin Pie Spice
+Toasted Coconut
+Coconut
+Guajillo Peppers;Guajillo Pepper - dried;Guajillo Chili;Guajillo Chillis;Guajillo;Guajilo
+Pasilla Peppers;Pasilla Pepper - dried;Pasilla Chili;Pasilla Chillis;Pasilla;Pacilla;Pasilia;pasillia
+Ancho Peppers;Ancho Pepper - dried;Ancho Chili;Ancho Chillis;Ancho
+Chipotle Peppers;Chipotle Pepper - dried;Chipotle Chili;Chipotle Chillis;Chipotle
+Caraway Seed;Caraway
+Pipal;Fig;Figs
+Maple Extract;Maple Flavour
+Caramel Extract;Creme Brulee;Butterscotch Extract;Caramel Topping
+Cherries;Cherry
+Blackberries;Blackberry
+Black Currant;Blackcurrant
+Raspberries;Raspberry
+Peaches
+Blueberries
+Fennel Seed;Fennel
+Pecans;pecan nuts;pecan
+Serrano Peppers;Serrano Chili;Serrano;Serrano Pepper;Serrano Pepper - dried;Serrano Chillis
+Hemp Seed;Hemp
+Cayenne Powder
+Cayenne pepper;cayenne peppers;Cayenne
+Peppermint
+Cranberries;Cranberry
+Raisins;Raisin;Rasins;Rasin
+Spearmint
+Lime Zest
+Lime Juice
+Banana;Bananas
+ginger extract
+Cholaca;chokladkaka
+Apricots;Apricot
+Chicory;Chicory Root
+Rootbeer Extract;Root beer Extract
+peppercorn;peppercorns;pepercorn;pepercorns
+Aleppo Peppers;Aleppo Pepper;Aleppo
+Dates
+Macadamia Nuts;Macadamia
+Graham Cracker;Graham Crackers;Graham Cracker Crumbs
+Carolina Reaper Peppers;Carolina Reaper Pepper;Carolina Reaper;Reaper Pepper;Reaper Chile;Reaper Chillis;Reaper Chilis;Reaper Chilli
+Pablano Peppers;Pablano Pepper;Pablano
+Jalapeno Peppers;Jalapeno Pepper;Jalapeno;Jalapenos;jalepeno
+Mesquite;Mesquite Powder;Mesquite Pod
+Sesame;Sesame Seed;Sesame seeds
+Almond Extract;Almond Flavour
+Almonds;Almond;Almond Nut;Almond Nuts
+Elderberries;Elderberry
+Pear Puree
+Pears;Pear
+Wormwood
+Butternut Squash
+Walnut;Walnus

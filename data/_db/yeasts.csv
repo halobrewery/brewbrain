@@ -188,7 +188,7 @@ SafAle F-2;;;Fermentis;;Safale;Saf Ale;F-2;F 2,F2;ale;dry;high;;high;80;15;25
 Safale American;;;Fermentis;;Safale;Saf Ale;US-05;US 05,US05,uso5,US - 05;ale;dry;low;;medium;81;12;25
 Safale US-56;;;Fermentis;;Safale;Saf Ale;US-56;US 56,US56;ale;dry;medium;;medium;72;15;24
 Belgian Saison Ale;;;Fermentis;;Safale;Saf Ale;BE-134;BE 134,BE134;ale;dry;;;low;90;18;28
-English Ale;;;Fermentis;;Safale;Saf Ale;S-04;S 04,S04;ale;dry;;9.75;high;75;12;25
+SafAle S-04;SafAle English Ale;;Fermentis;;Safale;Saf Ale;S-04;S 04,S04;ale;dry;;9.75;high;75;12;25
 German Ale;;;Fermentis;;Safale;Saf Ale;K-97;K 97,K97;ale;dry;;10.4;high;81;12;25
 Abbaye;SafBrew Abeye;;Fermentis;;Safale;Saf Ale;BE-256;BE 256,BE256;ale;dry;;11;high;82;12;25
 General/Belgian;;;Fermentis;;Safale;Saf Ale;S-33;S 33,S33;ale;dry;;11.5;high;70;12;25
@@ -525,7 +525,7 @@ American Farmhouse Blend;;;White Labs;White Lab;;;WLP670;WLP 670,WLP-670;ale;liq
 American Hefeweizen Ale;;;White Labs;White Lab;;;WLP320;WLP 320,WLP-320;ale;liquid;medium;;low;72.5;18;21
 American Lager;;;White Labs;White Lab;;;WLP840;WLP 840,WLP-840;lager;liquid;medium;;medium;77.5;10;13
 Fast Lager Yeast;Fast Lager;;White Labs;White Lab;;;WLP845;WLP 845,WLP-845;lager;liquid;medium;7.5;medium;76.5;16;20
-American Whiskey;;;White Labs;White Lab;;;WLP065;WLP 065,WLP-065;ale;liquid;high;;medium;79;24;28
+American Whisky Yeast;American Whiskey;;White Labs;White Lab;;;WLP065;WLP 065,WLP-065;ale;liquid;high;;medium;79;24;28
 Antwerp Ale;;;White Labs;White Lab;;;WLP515;WLP 515,WLP-515;ale;liquid;medium;;medium;76.5;19;21
 Artisanal Country Ale;;;White Labs;White Lab;;;WLP073;WLP 073,WLP-073;ale;liquid;medium;;medium;77.5;21;28
 Australian Ale;;;White Labs;White Lab;;;WLP009;WLP 009,WLP-009;ale;liquid;medium;;high;72.5;18;21
@@ -561,7 +561,7 @@ California Ale;Cal Ale,Cali;;White Labs;White Lab;;;WLP001;WLP 001,WLP-001;ale;l
 Champagne;;;White Labs;White Lab;;;WLP715;WLP 715,WLP-715;wine-cider;liquid;;17;low;90;21;24
 Coastal Haze Ale Blend;Coastal Haze;;White Labs;White Lab;;;WLP067;WLP 067;ale;liquid;high;;medium;78;18;26
 Copenhagen Lager;;;White Labs;White Lab;;;WLP850;WLP 850;lager;liquid;medium;;medium;75;10;14
-Cream Ale Blend;;;White Labs;White Lab;;;WLP080;WLP 080;ale;liquid;medium;;medium;77.5;18;21
+Cream Ale Blend;Cream Ale Yeast,Cream Ale Yeast Blend;;White Labs;White Lab;;;WLP080;WLP 080;ale;liquid;medium;;medium;77.5;18;21
 Cry Havoc;;;White Labs;White Lab;;;WLP862;WLP 862;ale;liquid;medium;;medium-low;68;20;23
 Czech Budejovice Lager;;;White Labs;White Lab;;;WLP802;WLP 802;lager;liquid;medium;;medium;77.5;10;13
 Dry English Ale;;;White Labs;White Lab;;;WLP007;WLP 007,WLP-007;ale;liquid;medium;;medium-high;75;18;21
@@ -596,7 +596,7 @@ London Fog Ale;;;White Labs;White Lab;;;WLP066;WLP 066,WLP-066;ale;liquid;high;;
 Manchester Ale;;;White Labs;White Lab;;;WLP038;WLP 038,WLP-038;ale;liquid;medium;;medium-high;72;18;21
 Marañón Canyon Wild Cacao;;;White Labs;White Lab;;;WLP546;WLP 546,WLP-546;ale;liquid;medium;;low;67.5;18;24
 Mexican Lager;;;White Labs;White Lab;;;WLP940;WLP 940,WLP-940;lager;liquid;medium;;medium;74;10;13
-Monastary Ale;;;White Labs;White Lab;;;WLP500;WLP 500,WLP-500;ale;liquid;high;;medium;77.5;18;22
+Trappist Ale;Monastary Ale;;White Labs;White Lab;;;WLP500;WLP 500,WLP-500;ale;liquid;high;;medium;77.5;18;22
 Munich Helles;;;White Labs;White Lab;;;WLP860;WLP 860,WLP-860;lager;liquid;medium;;medium;70;9;11
 Neutral Grain;;;White Labs;White Lab;;;WLP078;WLP 078,WLP-078;ale;liquid;high;;medium;81;24;29
 New Nordic Ale;;;White Labs;White Lab;;;WLP611;WLP 611,WLP-611;ale;liquid;medium;;medium;70;10;30
@@ -614,12 +614,12 @@ Sake #7;;;White Labs;White Lab;;;WLP705;WLP 705,WLP-705;wine-cider;liquid;high;;
 Sake #9;;;White Labs;White Lab;;;WLP709;WLP 709,WLP-709;wine-cider;liquid;low;;low;75;17;20
 San Diego Super;;;White Labs;White Lab;;;WLP090;WLP 090,WLP-090;ale;liquid;high;;medium-high;79.5;18;20
 San Francisco Lager;San Fran Lager;;White Labs;White Lab;;;WLP810;WLP 810,WLP-810;lager;liquid;medium;;high;67.5;14;18
-Scotch Whiskey;;;White Labs;White Lab;;;WLP045;WLP 045,WLP-045;ale;liquid;high;;medium;77;22;25
+Scotch Whiskey Yeast;Scotch Whiskey;;White Labs;White Lab;;;WLP045;WLP 045,WLP-045;ale;liquid;high;;medium;77;22;25
 Southern German Lager;;;White Labs;White Lab;;;WLP838;WLP 838,WLP-838;lager;liquid;medium;;medium-high;72;10;13
 Southwold Ale;;;White Labs;White Lab;;;WLP025;WLP 025,WLP-025;ale;liquid;medium;;medium;71.5;19;21
 Super High Gravity Ale;;;White Labs;White Lab;;;WLP099;WLP 099,WLP-099;ale;liquid;high;;medium;85;18;21
 Sweet Mead/Wine;;;White Labs;White Lab;;;WLP720;WLP 720,WLP-720,WL720;wine-cider;liquid;;15;low;75;21;24
-Tennessee Whiskey;;;White Labs;White Lab;;;WLP050;WLP 050,WLP-050;ale;liquid;high;;medium;77;24;26
+Tennessee Whisky Yeast;Tennessee Whiskey;;White Labs;White Lab;;;WLP050;WLP 050,WLP-050;ale;liquid;high;;medium;77;24;26
 Whitbread Ale;;;White Labs;White Lab;;;WLP017;WLP 017,WLP-017;ale;liquid;medium;;high;70;19;21
 Hazy Daze;;;White Labs;White Lab;;;WLP4044;;ale;liquid;low;;low;81;18;21
 Charlie;;;White Labs;White Lab;;;WLP1983;;ale;liquid;medium;;low;68;20;23

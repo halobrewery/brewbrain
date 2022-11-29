@@ -30,7 +30,7 @@ from misc_names import build_misc_name_dicts, match_misc_id
 
 hop_name_to_id, id_to_hop_names = build_hop_name_dicts()
 fermentable_name_to_id, id_to_fermentable_names = build_fermentable_name_dicts()
-yeast_name_to_id, _, id_to_yeast_names = build_yeast_dicts()
+yeast_name_to_id, yeast_brand_to_ids, id_to_yeast_names = build_yeast_dicts()
 style_name_to_id, id_to_style_names = build_style_dicts()
 misc_name_to_id, id_to_misc_names = build_misc_name_dicts()
 
@@ -266,7 +266,7 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
     if not hasattr(fermentable, 'name') or fermentable.name == None:
       raise ValueError(f"No fermentable name found in recipe: {recipe_name}")
 
-    f_name  = str(fermentable.name).lower()
+    f_name  = str(fermentable.name).lower().strip()
     if hasattr(fermentable, 'type') and fermentable.type != None:
       f_type  = fermentable.type.lower()
       if f_type != 'adjunct' or f_type != 'grain':
@@ -275,7 +275,11 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
         elif 'extract' in f_type or 'sugar' in f_type: 
           f_type = 'adjunct'
         else:
-          f_type = 'grain'
+          existing_adjunct = session.scalars(select(Adjunct).filter(Adjunct.name.ilike(f"{f_name}"))).first()
+          if existing_adjunct != None:
+            f_type = "adjunct"
+          else:
+            f_type = 'grain'
     else:
       # This is frustrating... malformed beerxml and we're going to have to figure out if it's a grain or not
       # Check to see if it's a malt extract
@@ -283,9 +287,11 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
         f_type = "adjunct"
       else:
         f_type = "grain"
-
+    
     f_amt   = fermentable.amount
     f_yield = fermentable._yield/100
+
+    if f_yield > 1: f_yield = None
 
     f_id = match_fermentable_id(f_name, fermentable_name_to_id)
     
@@ -327,6 +333,7 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
       return True
 
     def adjunct_addition_check_add():
+      nonlocal f_amt
        # Try to find the adjunct in our database...
       existing_adjunct = None
       for name in f_names:
@@ -337,6 +344,8 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
       if existing_adjunct == None:
         return False
       else:
+        if "sugar equiv" in f_name:
+          f_amt *= 1.0 / existing_adjunct.yield_amt
         adjuncts_ats.append(RecipeMLAdjunctAT(adjunct=existing_adjunct, amount=f_amt, yield_override=f_yield))
       return True
 
@@ -367,25 +376,26 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
   for misc in recipe.miscs:
     m_name = misc.name.lower().strip()
     
-    if misc.type == None or misc.type.lower() == 'fining': continue
+    if misc.type != None and misc.type.lower() == 'fining': continue
+    m_id = match_misc_id(m_name, misc_name_to_id)
+    if m_id == 'ignore': continue
 
-    existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"%{m_name}%"))).first()
+    existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"{m_name}"))).first()
     if existing_misc == None:
-      m_id = match_misc_id(m_name, misc_name_to_id)
-      if m_id == 'ignore':
+      if m_id == None:
+        print(f"Failed to find misc '{m_name}', in recipe: {recipe_name}")
         continue
-      elif m_id == None:
-        raise ValueError(f"Failed to find misc ingredient: {m_name}, in recipe {recipe_name}")
       else:
         m_names = id_to_misc_names[m_id]
         for name in m_names:
-          existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"{name}"))).first()
+          existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"{name}%"))).first()
           if existing_misc == None:
             existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"%{name}%"))).first()
           if existing_misc != None: break
 
     if existing_misc == None:
-      raise ValueError(f"Failed to find misc '{m_name}', in recipe: {recipe_name}")
+      print(f"Failed to find misc '{m_name}', in recipe: {recipe_name}")
+      continue
 
     amount = misc.amount
     amount_is_weight = misc.amount_is_weight
@@ -410,12 +420,12 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
     #m_lab  = microorganism.laboratory
     m_product_code = str(int(microorganism.product_id) if isinstance(microorganism.product_id, float) else microorganism.product_id)
 
-    m_id = match_yeast_id(m_name, yeast_name_to_id)
+    m_id = match_yeast_id(m_name, yeast_name_to_id, yeast_brand_to_ids)
     m_names = [m_name]
     if m_id != None:
       m_names += id_to_yeast_names[m_id]
     elif len(m_product_code) > 0:
-      m_id = match_yeast_id(m_product_code, yeast_name_to_id)
+      m_id = match_yeast_id(m_product_code, yeast_name_to_id, yeast_brand_to_ids)
       if m_id != None:
         m_names += id_to_yeast_names[m_id]
 

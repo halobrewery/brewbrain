@@ -36,7 +36,7 @@ def build_yeast_dicts(yeast_db_filepath="./data/_db/yeasts.csv"):
 
   return yeast_name_to_id, brand_to_ids, id_to_yeast_names
 
-def match_yeast_id(yeast_name, yeast_name_to_id):
+def match_yeast_id(yeast_name, yeast_name_to_id, brand_to_ids):
   def clean_replace(s, target):
     return s.replace(target, '').replace("  ", " ").strip()
 
@@ -111,8 +111,17 @@ def match_yeast_id(yeast_name, yeast_name_to_id):
       if best_len < group_len:
         best_len = group_len
         best_name = dict_name
-
-  if best_len == 0: return None
+  if best_len == 0:
+    for dict_name in brand_to_ids:
+      name_opts = f"({dict_name})"
+      s = re.search(name_opts, yeast_name)
+      if s != None and len(s.group()) > 0:
+        group_len = len(s.group())
+        if best_len < group_len:
+          best_len = group_len
+          best_name = dict_name
+    if best_len == 0: return None
+    else: return brand_to_ids[best_name]
   else: return yeast_name_to_id[best_name]
 
 def build_style_to_common_yeast_dict(

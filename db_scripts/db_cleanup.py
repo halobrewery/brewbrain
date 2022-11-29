@@ -46,7 +46,7 @@ def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
   # Heating up the grains is not a relevant step for our purposes
   if recipe.mash_step_1_type != "infusion":
     recipe.mash_step_1_type = "infusion"
-    recipe.mash_step_1_infuse_amt = max(0, recipe.mash_step_1_infuse_amt)
+    recipe.mash_step_1_infuse_amt = max(0, recipe.mash_step_1_infuse_amt) if recipe.mash_step_1_infuse_amt != None else 0
 
   def remove_mash_step(step_idx):
     assert step_idx >= 1 and step_idx <= recipe.num_mash_steps
