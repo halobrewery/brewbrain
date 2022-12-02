@@ -23,7 +23,7 @@ def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
   if total_infusion_vol <= grain_absorb_vol:
     # This recipe can't possibly have enough water in its mash... 
     # Try to calculate an appropriate water volume as long as there's only one mash step to deal with
-    if recipe.num_mash_steps == 1 and (recipe.mash_step_1_start_temp >= 60 or recipe.mash_step_1_end_temp >= 60):
+    if recipe.num_mash_steps == 1 and recipe.mash_step_1_start_temp != None and (recipe.mash_step_1_start_temp >= 60 or recipe.mash_step_1_end_temp >= 60):
       recipe.mash_step_1_type = "infusion"
       recipe.mash_step_1_infuse_amt = total_grain_mass * DEFAULT_GRAIN_TO_WATER_RATIO
       recipe.mash_step_1_time = max(45, recipe.mash_step_1_time)
@@ -216,6 +216,23 @@ def clean_up_misc(session):
   for misc in bad_miscs:
     session.delete(misc)
 
+def remove_duplicate_malts(session):
+  from collections import defaultdict
+  recipes = session.scalars(select(RecipeML)).filter(len(RecipeML.grains) > 1).all()
+  for recipe in recipes:
+    grain_map = defaultdict(lambda: 0)
+    for grainAT in recipe.grains:
+      grain_map[grainAT.grain_id] += grainAT.amount
+    # Check for duplicates...
+    if len(grain_map) < len(recipe.grains):
+      updated_ids = set()
+      for grainAT in recipe.grains:
+        if grainAT.grain_id in updated_ids:
+          session.delete(grainAT)
+        else:
+          grainAT.amount = grain_map[grainAT.grain_id]
+          updated_ids.add(grainAT.grain_id)
+      session.commit()
 
 if __name__ == "__main__":
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=True, future=True)
@@ -226,12 +243,14 @@ if __name__ == "__main__":
     #remove_zero_mash_or_ferment_step_recipes(session)
     #clean_up_misc(session)
 
-    ids_to_remove = [6948, 7056, 22066, 27256, 39472]
-    recipes_to_remove = session.scalars(select(RecipeML).filter(or_(*[RecipeML.id == id for id in ids_to_remove]))).all()
-    for recipe in recipes_to_remove:
-      session.delete(recipe)
+    #ids_to_remove = [6948, 7056, 22066, 27256, 39472]
+    #recipes_to_remove = session.scalars(select(RecipeML).filter(or_(*[RecipeML.id == id for id in ids_to_remove]))).all()
+    #for recipe in recipes_to_remove:
+    #  session.delete(recipe)
     
     #clean_up_bad_mash_ph_recipes(session)
     #clean_up_no_sparge_temp(session)
+
+    remove_duplicate_malts(session)
 
     session.commit()

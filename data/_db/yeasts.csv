@@ -271,28 +271,28 @@ Harvest;;;Imperial Yeast;Imperial;;;L17;;lager;liquid;;;medium;70;10;16
 Pilgrimage;;;Imperial Yeast;Imperial;;;L26;;lager;liquid;medium;;medium;75;7;13
 Urkel;;;Imperial Yeast;Imperial;;;L28;;lager;liquid;;;medium;73;11;14
 Suburban Brett;;;Imperial Yeast;Imperial;;;W15;;brett;liquid;;;low;77.5;18;23
-American Ale;;;Inland Island Yeast;Inland Island;;;INIS-007;;ale;liquid;high;;medium;71;20;23
-Belgian Gnome Ale;;;Inland Island Yeast;Inland Island;;;INIS-222;;ale;liquid;high;;high;74;18;24
-Brett Barrel III;;;Inland Island Yeast;Inland Island;;;INIS-913;;brett;liquid;medium;;medium;90;16;24
-Colorado IPA;;;Inland Island Yeast;Inland Island;;;INIS-003;;ale;liquid;high;;medium;76;17;24
-Eccentric Ale;;;Inland Island Yeast;Inland Island;;;INIS-006;;ale;liquid;medium;;medium;72;20;22
-English Ale V;;;Inland Island Yeast;Inland Island;;;INIS-315;;ale;liquid;medium;;very-high;66.5;18;20
-English Dry Ale;;;Inland Island Yeast;Inland Island;;;INIS-318;;ale;liquid;medium;;medium-high;75;18;21
-German Monk Lager;;;Inland Island Yeast;Inland Island;;;INIS-711;;lager;liquid;medium;;medium;73;10;12
-East Coast IPA;;;Inland Island Yeast;Inland Island;;;INIS-008;;ale;liquid;high;;high;73;18;23
-Fog Machine;;;Inland Island Yeast;Inland Island;;;INIS-009;;ale;liquid;medium;;medium;74;19;23
-American Weizen;;;Inland Island Yeast;Inland Island;;;INIS-055;;ale;liquid;medium;;low;72;18;21
-Belgian Wit Ale;;;Inland Island Yeast;Inland Island;;;INIS-241;;ale;liquid;high;;medium;74;18;23
-Saison : Baron;;;Inland Island Yeast;Inland Island;;;INIS-298;;ale;liquid;medium;;medium;75;21;26
-Norwegian Farmhouse;;;Inland Island Yeast;Inland Island;;;INIS-441;;ale;liquid;medium;;high;80;21;38
-French Ale;;;Inland Island Yeast;Inland Island;;;INIS-451;;ale;liquid;medium;;high;72;17;23
-Golden Kolsch Style Ale;;;Inland Island Yeast;Inland Island;;;INIS-572;;ale;liquid;medium;;medium;76;13;18
-German Hybrid Ale;;;Inland Island Yeast;Inland Island;;;INIS-573;;ale;liquid;medium;;medium;75;18;21
-Session Lager;;;Inland Island Yeast;Inland Island;;;INIS 701;;lager;liquid;medium;;medium;77.5;10;13
-Northern California Ale;NorCal;;Inland Island Yeast;Inland Island;;;INIS-001;;ale;liquid;high;;medium;75;16;22
-Saison Farmhouse;;;Inland Island Yeast;Inland Island;;;INIS-291;;ale;liquid;high;;medium;76.5;21;35
-Oregon IPA;Oregon;;Inland Island Yeast;Inland Island;;;INIS-004;INIS 004;ale;liquid;high;;high;72.5;18;22
-Southern California Ale Yeast;SoCal,Southern California Ale,Southern California Yeast,Southern California;;Inland Island Yeast;Inland Island;;;INIS-005;INIS 005;ale;liquid;high;;high;81;18;20
+American Ale;;;Inland Island Yeast;Inland Island;;;INIS-007;INIS 007,INIS007;ale;liquid;high;;medium;71;20;23
+Belgian Gnome Ale;;;Inland Island Yeast;Inland Island;;;INIS-222;INIS 222,INIS222;ale;liquid;high;;high;74;18;24
+Brett Barrel III;;;Inland Island Yeast;Inland Island;;;INIS-913;INIS 913,INIS913;brett;liquid;medium;;medium;90;16;24
+Colorado IPA;;;Inland Island Yeast;Inland Island;;;INIS-003;INIS 003,INIS003;ale;liquid;high;;medium;76;17;24
+Eccentric Ale;;;Inland Island Yeast;Inland Island;;;INIS-006;INIS 006,INIS006;ale;liquid;medium;;medium;72;20;22
+English Ale V;;;Inland Island Yeast;Inland Island;;;INIS-315;INIS 315,INIS315;ale;liquid;medium;;very-high;66.5;18;20
+English Dry Ale;;;Inland Island Yeast;Inland Island;;;INIS-318;INIS 318,INIS318;ale;liquid;medium;;medium-high;75;18;21
+German Monk Lager;;;Inland Island Yeast;Inland Island;;;INIS-711;INIS 711,INIS711;lager;liquid;medium;;medium;73;10;12
+East Coast IPA;;;Inland Island Yeast;Inland Island;;;INIS-008;INIS 008,INIS008;ale;liquid;high;;high;73;18;23
+Fog Machine;;;Inland Island Yeast;Inland Island;;;INIS-009;INIS 009,INIS009;ale;liquid;medium;;medium;74;19;23
+American Weizen;;;Inland Island Yeast;Inland Island;;;INIS-055;INIS 055,INIS055;ale;liquid;medium;;low;72;18;21
+Belgian Wit Ale;;;Inland Island Yeast;Inland Island;;;INIS-241;INIS 241,INIS241;ale;liquid;high;;medium;74;18;23
+Saison : Baron;;;Inland Island Yeast;Inland Island;;;INIS-298;INIS 298,INIS298;ale;liquid;medium;;medium;75;21;26
+Norwegian Farmhouse;;;Inland Island Yeast;Inland Island;;;INIS-441;INIS 441,INIS441;ale;liquid;medium;;high;80;21;38
+French Ale;;;Inland Island Yeast;Inland Island;;;INIS-451;INIS 451,INIS451;ale;liquid;medium;;high;72;17;23
+Golden Kolsch Style Ale;;;Inland Island Yeast;Inland Island;;;INIS-572;INIS 572,INIS572;ale;liquid;medium;;medium;76;13;18
+German Hybrid Ale;;;Inland Island Yeast;Inland Island;;;INIS-573;INIS 573,INIS573;ale;liquid;medium;;medium;75;18;21
+Session Lager;;;Inland Island Yeast;Inland Island;;;INIS-701;INIS 701,INIS701;lager;liquid;medium;;medium;77.5;10;13
+Northern California Ale;NorCal;;Inland Island Yeast;Inland Island;;;INIS-001;INIS 001,INIS001;ale;liquid;high;;medium;75;16;22
+Saison Farmhouse;;;Inland Island Yeast;Inland Island;;;INIS-291;INIS 291,INIS291;ale;liquid;high;;medium;76.5;21;35
+Oregon IPA;Oregon;;Inland Island Yeast;Inland Island;;;INIS-004;INIS 004,INIS004;ale;liquid;high;;high;72.5;18;22
+Southern California Ale Yeast;SoCal,Southern California Ale,Southern California Yeast,Southern California;;Inland Island Yeast;Inland Island;;;INIS-005;INIS 005,INIS005;ale;liquid;high;;high;81;18;20
 West Coast;American West Coast Ale;;Lallemand;Danstar;LalBrew;;BRY-97;BRY97,BRY 97,BRY - 97;ale;dry;high;;high;75;15;22
 Abbaye Belgian Ale;;Abbaye Ale;Lallemand;Danstar;LalBrew;;;;ale;dry;high;;medium;88;17;25
 Belle Saison;;;Lallemand;Danstar;LalBrew;;;;ale;dry;high;;low;90;15;35
@@ -304,7 +304,7 @@ London English-Style Ale;London ESB Yeast,Danstar ESB;;Lallemand;Danstar;LalBrew
 Munich Classic Wheat Beer;Munich Dry Wheat Yeast,Munich,Danstar Munich Wheat;;Lallemand;Danstar;LalBrew;;;;ale;dry;high;;low;78;18;22
 Nottingham Ale;Nottingham High Performance Ale Yeast,Notty,Danstar Notty;Nottingham;Lallemand;Danstar;LalBrew;;;;ale;dry;medium;;high;80;10;22
 Voss Kveik Ale;;;Lallemand;;LalBrew;;;;ale;dry;high;;high;80;25;40
-Windsor Ale;Windsor British-Style Beer Yeast;Windsor;Lallemand;Danstar;LalBrew;;;;ale;dry;medium;;low;70;15;22
+Windsor Ale;Windsor British-Style Beer Yeast,Danstar ESB;Windsor;Lallemand;Danstar;LalBrew;;;;ale;dry;medium;;low;70;15;22
 Verdant IPA;Verdant;;Lallemand;;LalBrew;;;;ale;dry;high;;high;80;18;23
 Lalvin 71B;Narbonne,I.N.R.A.-Narbonne;;Lallemand;;Lalvin;;71B;;wine-cider;dry;high;;high;100;15;30
 Lalvin EC-1118;;;Lallemand;;Lalvin;;EC-1118;EC1118,EC 1118,KV-1118;wine-cider;dry;high;;high;65;15;25
@@ -541,14 +541,14 @@ Belgian Saison III;;;White Labs;White Lab;;;WLP585;WLP 585,WLP-585;ale;liquid;me
 Belgian Sour Mix 1;;;White Labs;White Lab;;;WLP655;WLP 655,WLP-655;brett-bacteria;liquid;medium;;medium-low;75;27;29
 Belgian Strong Ale;;;White Labs;White Lab;;;WLP545;WLP 545,WLP-545;ale;liquid;high;;medium;81.5;19;22
 Belgian Style Ale Blend;;;White Labs;White Lab;;;WLP575;WLP 575,WLP-575;ale;liquid;medium;;medium;77;20;24
-Belgian Style Saison Blend;;;White Labs;White Lab;;;WLP568;WLP 568,WLP-568;ale;liquid;medium;;medium;75;21;27
+Belgian Style Saison Ale Yeast Blend;Belgian Style Saison Blend;;White Labs;White Lab;;;WLP568;WLP 568,WLP-568;ale;liquid;medium;;medium;75;21;27
 Belgian Wit Ale;;;White Labs;White Lab;;;WLP400;WLP 400,WLP-400;ale;liquid;medium;;low;76;19;23
 Belgian Wit II Ale;;;White Labs;White Lab;;;WLP410;WLP 410,WLP-410;ale;liquid;medium;;low;72.5;19;23
 Berliner Weisse Blend;;;White Labs;White Lab;;;WLP630;WLP 630,WLP-630;brett-bacteria;liquid;medium;;medium;76.5;20;21
 Best Of Both Worlds;;;White Labs;White Lab;;;WLP200;WLP 200,WLP-200;ale;liquid;medium;;medium;76.5;18;23
 Bourbon;;;White Labs;White Lab;;;WLP070;WLP 070,WLP-070;ale;liquid;high;;medium;77;22;25
 Brettanomyces Anomalus;;;White Labs;White Lab;;;WLP640;WLP 640,WLP-640;brett;liquid;medium;;low;77;21;29
-Brettanomyces Bruxellensis Trois Vrai;Brettanomyces Brux Trois,Brux Trois;;White Labs;White Lab;;;WLP648;WLP 648,WLP-648;brett;liquid;medium;;low;85;21;29
+Brettanomyces Bruxellensis Trois Vrai;Brettanomyces Brux Trois,Brux Trois,Brettanomcyes Bruxellensis Trois;;White Labs;White Lab;;;WLP648;WLP 648,WLP-648;brett;liquid;medium;;low;85;21;29
 Brettanomyces Bruxellensis;Brett Brux,B. Brux,B. Bruxellensis,Brettanomyces B,Brett Brux,Bret Brux;;White Labs;White Lab;;;WLP650;WLP 650,WLP-650;brett;liquid;medium;;low;78;29;35
 Brettanomyces Claussenii;Brett C,Brett Claussenii,Brettanomyces C;;White Labs;White Lab;;;WLP645;WLP 645,WLP-645;brett;liquid;medium;;low;78;29;35
 Brettanomyces Lambicus;Brett L,Brett Lambicus,Brettanomyces L;;White Labs;White Lab;;;WLP653;WLP 653,WLP-653;brett;liquid;medium;;low;78;29;35
@@ -567,7 +567,7 @@ Czech Budejovice Lager;;;White Labs;White Lab;;;WLP802;WLP 802;lager;liquid;medi
 Dry English Ale;;;White Labs;White Lab;;;WLP007;WLP 007,WLP-007;ale;liquid;medium;;medium-high;75;18;21
 Dusseldorf Alt;;;White Labs;White Lab;;;WLP036;WLP 036,WLP-036;ale;liquid;medium;;medium;68.5;18;22
 East Coast Ale;;;White Labs;White Lab;;;WLP008;WLP 008,WLP-008;ale;liquid;medium;;medium-low;72.5;20;23
-East Midlands Ale;;;White Labs;White Lab;;;WLP039;WLP 039,WLP-039;ale;liquid;medium;;medium-high;77.5;19;21
+Nottingham Ale Yeast;East Midlands Ale;;White Labs;White Lab;;;WLP039;WLP 039,WLP-039;ale;liquid;medium;;medium-high;77.5;19;21
 Edinburgh Scottish Ale;Edinburgh Ale;;White Labs;White Lab;;;WLP028;WLP0028,WLP 028,WLP-028;ale;liquid;medium;;medium;72.5;18;21
 English Ale Blend;;;White Labs;White Lab;;;WLP085;;ale;liquid;medium;;medium-high;72.5;20;22
 English Ale;;;White Labs;White Lab;;;WLP002;WLP 002,WLP-002;ale;liquid;medium;;very-high;66.5;18;20
@@ -608,7 +608,7 @@ Pacific Ale;;;White Labs;White Lab;;;WLP041;WLP 041,WLP-041;ale;liquid;medium;;h
 Pilsner Lager;;;White Labs;White Lab;;;WLP800;WLP 800,WLP-800;lager;liquid;medium;;medium-high;74.5;10;13
 Premium Bitter Ale;;;White Labs;White Lab;;;WLP026;WLP 026,WLP-026;ale;liquid;medium;;medium;72.5;19;16
 Ringwood Ale: Strain 1187;;;White Labs;White Lab;;;;;ale;liquid;high;;high;77;20;22
-"Saccharomyces ""Bruxellensis"" Trois";Saccharomyces "Brett" Trois,Brettanomyces Bruxellensis Trois;;White Labs;White Lab;;;WLP644;WLP 644,WLP-644;ale;liquid;medium;;low;85;21;29
+Brettanomyces Bruxellensis Trois;"Saccharomyces ""Bruxellensis"" Trois",Saccharomyces "Brett" Trois,Sacc Trois,Sach Trois,Saccharomyces Bruxellensis Trois;;White Labs;White Lab;;;WLP644;WLP 644,WLP-644;ale;liquid;medium;;low;85;21;29
 Flor Sherry Yeast;Flor Sherry,Flor;;White Labs;White Lab;;;WLP700;WLP 700,WLP-700;wine;liquid;high;;;90;23;40
 Sake #7;;;White Labs;White Lab;;;WLP705;WLP 705,WLP-705;wine-cider;liquid;high;;low;90;21;38
 Sake #9;;;White Labs;White Lab;;;WLP709;WLP 709,WLP-709;wine-cider;liquid;low;;low;75;17;20
@@ -652,7 +652,7 @@ Belgian Strong Ale;;;Wyeast;;;;1388;;ale;liquid;;12;low;76;18;27
 Belgian Wheat;;;Wyeast;;;;3942;;wheat;liquid;;12;medium;74;18;23
 Belgian Witbier;;;Wyeast;;;;3944;;ale;liquid;;12;medium-low;74;17;24
 Berliner Weisse Blend;;;Wyeast;;;;3191;;brett-bacteria;liquid;;6;low;75;20;22
-Bier de Garde;;;Wyeast;;;;3725;;ale;liquid;;12;low;76;21;35
+Biere de Garde;Bier de Garde;;Wyeast;;;;3725;;ale;liquid;;12;low;76;21;35
 Bohemian Lager;;;Wyeast;;;;2124;;lager;liquid;;9;medium;75;9;14
 Brettanomyces bruxellensis;;;Wyeast;;;;5112;;brett;liquid;;12;medium;90;16;24
 Brettanomyces Claussenii;Brett C.,Brettanomyces C.,Brett Claussenii;;Wyeast;;;;5151-PC;wy5151pc,5151PC,5151 PC;brett;dry;high;;medium;80;16;24
@@ -680,8 +680,8 @@ German Ale;;;Wyeast;;;;1007;;ale;liquid;;11;low;75;13;20
 German Wheat;;;Wyeast;;;;3333;;wheat;liquid;;10;high;73;17;24
 Hella Bock;;;Wyeast;;;;2487;;ale;liquid;;12;medium;72;9;13
 Irish Ale;;;Wyeast;;;;1084;;ale;liquid;;10;medium;73;17;22
-Kölsch;;;Wyeast;;;;2565;;ale;liquid;;10;low;75;13;21
-Kölsch II;;;Wyeast;;;;2575;;ale;liquid;;10;low;75;13;21
+Kölsch;Kolsch;;Wyeast;;;;2565;;ale;liquid;;10;low;75;13;21
+Kölsch II;Kolsch II;;Wyeast;;;;2575;;ale;liquid;;10;low;75;13;21
 Lactobacillus Brevis;Lacto Brevis,Lacto B.,Lacto B,L Brevis,L. Brevis;;Wyeast;;;;5223-PC;;bacteria;liquid;high;;low;;16;35
 Lactobacillus;;;Wyeast;;;;5335;;bacteria;liquid;;9;;75;16;35
 Leuven Pale Ale;;;Wyeast;;;;3538;;ale;liquid;;12;high;76;18;27
@@ -690,7 +690,7 @@ London Ale III;;;Wyeast;;;;1318;;ale;liquid;;10;high;73;18;23
 London ESB Ale;ESB;;Wyeast;;;;1968;;ale;liquid;;10;very-high;69;18;22
 Munich Lager;;;Wyeast;;;;2308;;lager;liquid;;9;medium;72;9;13
 Munich Lager II;;;Wyeast;;;;2352;;lager;liquid;;10;medium;73;11;17
-NB NeoBritannia;;;Wyeast;;;;1945;;ale;liquid;;10;medium-high;74;19;23
+NeoBritannia;NB NeoBritannia;;Wyeast;;;;1945;;ale;liquid;;10;medium-high;74;19;23
 North American Lager;;;Wyeast;;;;2272;;lager;liquid;;9;high;73;11;14
 Northwest Ale;NW Ale,North West Ale;;Wyeast;;;;1332;;ale;liquid;;10;high;69;18;24
 Octoberfest Lager Blend;Wyeast Lager Blend;;Wyeast;;;;2633;;lager;liquid;;9;medium-low;75;9;14
@@ -710,12 +710,12 @@ Scottish Ale;;;Wyeast;;;;1728;;ale;liquid;;12;high;71;13;24
 Staro Prague Lager;;;Wyeast;;;;2782;;lager;liquid;;11;high;72;10;14
 Sweet Mead;;;Wyeast;;;;4184;;wine-cider;liquid;;11;medium;75;18;24
 Thames Valley Ale;;;Wyeast;;;;1275;;ale;liquid;;10;medium-low;77;17;22
-Thames Valley II;;;Wyeast;;;;1882;;ale;liquid;;10;high;75;16;21
+Thames Valley Ale II;Thames Valley II;;Wyeast;;;;1882;;ale;liquid;;10;high;75;16;21
 Trappist Blend;Trappist Style Blend,3789;;Wyeast;;;;3789;;ale;liquid;;12;medium;77;20;29
 Trappist High Gravity;;;Wyeast;;;;3787;;ale;liquid;;12;medium-high;76;18;26
 Urquell Lager;;;Wyeast;;;;2001;;lager;liquid;;9;medium-high;74;9;14
 Weihenstephan Weizen;;;Wyeast;;;;3068;;ale;liquid;;10;low;75;18;24
-West Yorkshire;;;Wyeast;;;;1469;;ale;liquid;;9;high;69;18;22
+West Yorkshire;Yorkshire Ale Yeast;;Wyeast;;;;1469;;ale;liquid;;9;high;69;18;22
 Whitbread Ale;;;Wyeast;;;;1099;;ale;liquid;;10;high;70;18;24
 Burton IPA Blend;Burton IPA;;Wyeast;;;;1203-PC;1203,1203PC,1203 PC;ale;liquid;;10;high;72.5;18;23
 Old Ale Blend;pc-old;;Wyeast;;;;9097-PC;9097,9097PC,9097 PC,#9097;ale-brett;liquid;;13;high;77.5;20;24

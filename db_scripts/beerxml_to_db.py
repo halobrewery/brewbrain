@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from sqlalchemy import or_, and_
 
-from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, Style, Hop, Grain, Adjunct, Misc, Microorganism, RecipeML
+from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, Style, Hop, Grain, Adjunct, Misc, Microorganism, RecipeML, CoreStyle
 from brewbrain_db import RecipeMLHopAT, RecipeMLGrainAT, RecipeMLAdjunctAT, RecipeMLMiscAT, RecipeMLMicroorganismAT
 from distributions import distributions_by_core_style_id
 from db_cleanup import clean_up_recipe_mash_steps
@@ -118,8 +118,10 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
           raise ValueError(f"Failed to find style '{style.name}' for recipe: {recipe_name}")
       
   style = existing_style
-  style_dist = core_style_id_to_dist[style.core_style_id]
-
+  if style.core_style_id == None:
+    raise ValueError(f"No core style found for '{style.name}', in recipe {recipe_name}")
+  style_dist = core_style_id_to_dist[style.core_style_id] if style.core_style_id in core_style_id_to_dist else None
+  
   # Fermentation Stages, Bottling, Carb
   aging_time  = recipe.age
   aging_temp  = recipe.age_temp
@@ -153,7 +155,7 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
 
   # Mash/Sparge
   mash = recipe.mash
-  if mash == None:
+  if mash == None and style_dist != None:
     # Look-up a reasonable mash schedule
     mash = MockObj()
     mash.ph = style_dist.sample_mash_ph()
@@ -163,13 +165,12 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
     #raise ValueError(f"No mash found, in recipe: {recipe_name}")
 
   mash_ph = mash.ph
-  if mash_ph == None:
+  if mash_ph == None and style_dist != None:
     # Look up a reasonable pH from the distribution
     mash_ph = style_dist.sample_mash_ph()
 
-  if mash_ph < 5.0 or mash_ph > 5.8: raise ValueError(f"Out of range mash pH found ({mash_ph}), in recipe: {recipe_name}")
-
-  sparge_temp = mash.sparge_temp if mash.sparge_temp != None else style_dist.sample_sparge_temp()
+  if mash_ph == None or mash_ph < 5.0 or mash_ph > 5.8: mash_ph = 5.4
+  sparge_temp = mash.sparge_temp if mash.sparge_temp != None else style_dist.sample_sparge_temp() if style_dist != None else 76.0
 
   num_mash_steps = len(mash.steps) if mash.steps != None else 0
   mash_step_vals = {}
@@ -199,7 +200,6 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
         if step_attr_val == None:
           raise ValueError(f"Step attribute was None for sampled mash step in recipe {recipe_name}")
         mash_step_vals[mash_step_attr] = step_attr_val
-
   else:
     for i, mash_step in enumerate(mash.steps):
       step = i+1
@@ -219,6 +219,14 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
       # In properly formed beerxml, this should only be for an infusion step, but we can clean things up later
       mash_step_vals[prefix+'_infuse_amt'] = mash_step.infuse_amount # Volume of water (L)
 
+  # Check steps...
+  check_postfixes = ["_type", "_time", "_start_temp", "_end_temp"]
+  for step in range(1,num_mash_steps+1):
+    prefix = RecipeML.MASH_STEP_PREFIX + str(step)
+    for postfix in check_postfixes:
+      if mash_step_vals[prefix+postfix] == None:
+        raise ValueError(f"Invalid mash step value found after reading steps, in recipe {recipe_name}")
+
   # Hops
   hops_ats = []
   for hop in recipe.hops:
@@ -227,6 +235,8 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
     # do a lookup into a long list of aliases and perform a select 'like' query on all those aliases
     if not hasattr(hop, 'name') or hop.name == None:
       raise ValueError(f"No hop name found in recipe: {recipe_name}")
+    if hop.use == None:
+      raise ValueError(f"No hop use found for hop in recipe: {recipe_name}")
 
     hop_name = str(hop.name).lower()
     found_hop_id = match_hop_id(hop_name, hop_name_to_id)
@@ -374,7 +384,7 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
   # Misc
   miscs_ats = []
   for misc in recipe.miscs:
-    m_name = misc.name.lower().strip()
+    m_name = str(misc.name).lower().strip()
     
     if misc.type != None and misc.type.lower() == 'fining': continue
     m_id = match_misc_id(m_name, misc_name_to_id)
@@ -461,14 +471,26 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
       RecipeML.ferment_stage_1_time, RecipeML.ferment_stage_1_temp,
       RecipeML.ferment_stage_2_time, RecipeML.ferment_stage_2_temp, 
       RecipeML.ferment_stage_3_time, RecipeML.ferment_stage_3_temp,
-      
     ) \
     .join(RecipeMLMicroorganismAT, RecipeMLMicroorganismAT.recipe_ml_id == RecipeML.id) \
     .join(Microorganism, Microorganism.id == RecipeMLMicroorganismAT.microorganism_id) \
-    .filter(RecipeML.style_id == style.id, or_(*[(RecipeMLMicroorganismAT.microorganism_id == m.microorganism.id) for m in microorganisms_ats])).all()
+    .filter(RecipeML.style_id == style.id, or_(False, *[(RecipeMLMicroorganismAT.microorganism_id == m.microorganism.id) for m in microorganisms_ats])).all()
 
     if len(similar_recipe_fermentations) == 0:
-      raise ValueError(f"Failed to find a fermentation schedule or a reasonable corresponding fill-in schedule for recipe {recipe_name}") # I give up.
+      similar_recipe_fermentations = session.query(
+        RecipeML.id, RecipeML.num_ferment_stages,
+        RecipeML.ferment_stage_1_time, RecipeML.ferment_stage_1_temp,
+        RecipeML.ferment_stage_2_time, RecipeML.ferment_stage_2_temp, 
+        RecipeML.ferment_stage_3_time, RecipeML.ferment_stage_3_temp,
+      ) \
+      .join(RecipeMLMicroorganismAT, RecipeMLMicroorganismAT.recipe_ml_id == RecipeML.id) \
+      .join(Microorganism, Microorganism.id == RecipeMLMicroorganismAT.microorganism_id) \
+      .join(Style, Style.id == RecipeML.style_id) \
+      .join(CoreStyle, CoreStyle.id == Style.core_style_id) \
+      .filter(CoreStyle.id == style.core_style_id).all()
+
+      if len(similar_recipe_fermentations) == 0:
+        raise ValueError(f"Failed to find a fermentation schedule or a reasonable corresponding fill-in schedule for recipe {recipe_name}") # I give up.
 
     random_ferment = random.choice(similar_recipe_fermentations)
     num_ferment_stages   = random_ferment[1]

@@ -40,7 +40,8 @@ class StyleDistribution:
       if all([v == conds_name_value_tuples[tuple_idx][1] for tuple_idx, v in enumerate(dist)]):
         idx_choices.append(i)
 
-    if len(idx_choices) == 0: return [None for val in arr_names]
+    idx_choices = [idx for idx in idx_choices if all([idx < len(self.dist_map[name]) for name in arr_names])]
+    if len(idx_choices) == 0: return [None for _ in arr_names]
     choice = random.choice(idx_choices)
     return [self.dist_map[val][choice] for val in arr_names]
 

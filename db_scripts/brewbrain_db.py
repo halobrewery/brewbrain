@@ -320,7 +320,7 @@ class RecipeML(Base):
     hash.update(str(int(self.num_mash_steps)).encode())
 
     for i in range(self.num_mash_steps):
-      prefix = "mash_step_"+str(i+1)
+      prefix = self.MASH_STEP_PREFIX + str(i+1)
       step_type = getattr(self, prefix+"_type")
       step_time = getattr(self, prefix+"_time")
       step_start_temp = getattr(self,prefix+"_start_temp")

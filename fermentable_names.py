@@ -58,10 +58,10 @@ def match_fermentable_id(fermentable_name, fermentable_name_to_id):
   
   if re.search(r"pale\s*2-row$", f_name) != None:
     f_name = "2-row"
-  elif re.search(r"crystal\s+\d+\s?l?", f_name) != None:
-    crystal_num = re.sub(r"crystal\s+(\d+\s?l?)", r"\1", f_name, flags=re.IGNORECASE)
+  elif re.search(r"crystal\s+\d+\s*\-\s*\d+\s?l?", f_name) != None:
+    crystal_num = re.sub(r"crystal\s+(\d+\s*\-\s*\d+\s?l?)", r"\1", f_name, flags=re.IGNORECASE)
     if 'l' in crystal_num:
-      f_name = re.sub(r".*(crystal\s+\d+\s?l?).*", r"\1", f_name, flags=re.IGNORECASE)
+      f_name = re.sub(r".*(crystal\s+\d+\s*\-\s*\d+\s?l?).*", r"\1", f_name, flags=re.IGNORECASE)
     else:
       # The number could be ebc... this is a bit tricky, try to be reasonable, if the number is quite large then it is very likely EBC
       crystal_num = int(crystal_num)

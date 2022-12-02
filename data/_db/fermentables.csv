@@ -112,33 +112,36 @@ CaraPils / CaraFoam;grain;cara_crystal;CaraFoam,CaraPils,Cara Clair,Gladiator,De
 CaraMunich I;grain;cara_crystal;;CaraMunich,Caramunich Malt,Cara Malt Munich I,Cara Malt Münch I,Cara Malt Münchner I,Cara Malt Dunkel I,Cara Malt Dunkel,caramünch type i,caramünch i,caramünch
 CaraMunich II;grain;cara_crystal;;Cara Malt Munich II,Cara Malt Münch II,Cara Malt Münchner II,Cara Malt Dunkel II,CaraMunich 45L,Munich 45L,Caramel Munich 45L,caramünch ii,caramünich ii,caramünch 2
 CaraMunich III;grain;cara_crystal;;Cara Malt Munich III,Cara Malt Münch III,Cara Malt Münchner III,Cara Malt Dunkel III,CaraMunich 60L,Munich 60L,Caramel Munich Dark 150,Caramel Munich 60L,Munich - 60L,Crystal Munich 60,Caramel Munich 120,Crystal Munich 120,Caramel Munich 80,Crystal Munich 80
-CaraBelge;grain;cara_crystal;;Cara Malt Belge,Cara Belgisch,Beligisches Cara,GoldSwaen©Belge
+CaraBelge;grain;cara_crystal;;Cara Malt Belge,Cara Belgisch,Beligisches Cara,GoldSwaen©Belge,cara belge
 CaraBohemian;grain;cara_crystal;;Cara Malt Bohemian,Cara Böhmisch,Böhmisches Cara,Bohemian Floor-Malted Dark,bohemian floor malted dark
 CaraAroma;grain;cara_crystal;;Cara Malt Aroma,Aroma Cara,karmelowy ciemny
 CaraAmber;grain;cara_crystal;;Cara Malt Amber,Amber Cara
 CaraVienne;grain;cara_crystal;;Cara Malt Vienne,Cara Malt Vienna,Cara Wiener,Wiener Cara
 Caramel/Crystal Malt - 10L;grain;cara_crystal;Crystal Malt 10L,Caramel Malt 10L,Caramel/Crystal 10L,Crystal 10,Caramel 10,C10;,gold swaen light,swaen light,karmelowy 30,c-10,caraplus 10,finland - colorado 10l,denhoff
-Caramel/Crystal Malt - 15L;grain;cara_crystal;Crystal Malt 15L,Caramel Malt 15L,carastan,Carastan Light,Caramel/Crystal 15L,Crystal 15,Caramel 15,C15;Light Carastan,Light Carastan Malt,Karamel Svetly,light carstan,c-15,Opal 22
+Caramel/Crystal Malt - 15L;grain;cara_crystal;Crystal Malt 15L,Caramel Malt 15L,carastan,Carastan Light,Caramel/Crystal 15L,Crystal 15,Caramel 15,C15;Light Carastan,Light Carastan Malt,Karamel Svetly,light carstan,c-15,Opal 22,crystal (15)
 Caramel/Crystal Malt - 20L;grain;cara_crystal;Crystal Malt 20L,Caramel Malt 20L,Caramel/Crystal 20L,Crystal 20,Caramel 20,C20;Carablond,c-20,carablon,carablonde,Cara Malt
+Crystal 25 Patagonia;grain;cara_crystal;;crystal 25l,caramel 25
 Caramel/Crystal Malt - 30L;grain;cara_crystal;Crystal Malt 30L,Caramel Malt 30L,Pale Caramel,Caramel/Crystal 30L,C30;carastan (30/37),carastan 30l,Pale Crystal,Cara Pale,Pale Cara,Crystal 30,Caramel 30,Opal 44,krystallmalt 70 ebc,crystal 135
 Caramel/Crystal Malt - 40L;grain;cara_crystal;Crystal Malt 40L,Caramel Malt 40L,Light Caramel,Caramel/Crystal 40L,C40;Light Crystal,Cara Malt Munich 40L,Light Cara,Cara Light,Caralight,Crystal 40,Caramel 40,Redback,Red Back
 Caramel/Crystal Malt - 45L;grain;cara_crystal;Crystal Malt 45L,Caramel Malt 45L,Caramel/Crystal 45L,Crystal 45,Caramel 45,C45;karmelowy 120ebc,karmelowy 120,patagonia 45,patagonia 45L
 Caramel/Crystal Malt - 50L;grain;cara_crystal;Crystal Malt 50L,Caramel Malt 50L,C50;Caramel/Crystal 50L,Crystal 50,Caramel 50,simpsons t50,sacchra 50,saccharine-50
 Caramel/Crystal Malt - 55L;grain;cara_crystal;Crystal Malt 55L,Caramel Malt 55L,Caramel/Crystal 55L,Crystal 55,Caramel 55,C55;caraplus 150
 Caramel/Crystal Malt - 60L;grain;cara_crystal;Crystal Malt 60L,Caramel Malt 60L,Medium Caramel,Medium Crystal,Crystal Medium,Caramel/Crystal 60L,Crystal 60,Caramel 60,C60;Château Crystal,Supernova,simpsons medium,norsk karamell,C-60
+Caramel/Crystal Malt - 65L;grain;cara_crystal;;crystal 65l,caramel 65,crystal 65
 Caramel/Crystal Malt - 70L;grain;cara_crystal;Crystal Malt 70L,Caramel Malt 70L,Caramel/Crystal 70L,Crystal 70,Caramel 70,C70;dark malt 70
-Caramel/Crystal Malt - 75L;grain;cara_crystal;Crystal Malt 75L,Caramel Malt 75L,Caramel/Crystal 75L,Crystal 75,Caramel 75,C75;77L,viking caraplus 200
+Caramel/Crystal Malt - 75L;grain;cara_crystal;Crystal Malt 75L,Caramel Malt 75L,Caramel/Crystal 75L,Crystal 75,Caramel 75,C75;77L,viking caraplus 200,crystal dark (77)
 Caramel/Crystal Malt - 80L;grain;cara_crystal;Crystal Malt 80L,Caramel Malt 80L,Caramel/Crystal 80L,Crystal 80,Caramel 80,C80;skagit dark 80,Dark Crystal 80L
+Caramel/Crystal Malt - 85L;grain;cara_crystal;Crystal Malt 85L,Caramel Malt 85L,Caramel/Crystal 85L,Crystal 85,Caramel 85,C80;crystal 85l,caramel 85l
 Caramel/Crystal Malt - 90L;grain;cara_crystal;Crystal Malt 90L,Caramel Malt 90L,Caramel/Crystal 90L,Crystal 90,Caramel 90,C90;Caradark,Cara Dark,simpsons dark,simpsons dark crystal
+Viking Caramel 100;grain;cara_crystal;Crystal Malt 100L,Caramel Malt 100L,Caramel/Crystal 100L,Crystal 100,Caramel 100,C100;Caramel/Crystal Malt - 100L
+Caramel/Crystal Malt - 110L;grain;cara_crystal;C110,Crystal 110,Caramel 110;english crystal 95-115;crystal 95-115L,crystal 95-115 l
 Caramel/Crystal Malt - 120L;grain;cara_crystal;Crystal Malt 120L,Caramel Malt 120L,Caramel/Crystal 120L,Crystal 120,Caramel 120,C120,Gold Classic,Dark Caramel,Dark Crystal,DRC Malt;Dark Cara,Dark Cara II,Cara Dark,Cara Munich 120L,Crystal Extra Dark 120L,DRC,shepards delight,Shepherds Delight,shepherd's delight,shephards delight,shephard's delight,barvící,shepherd delight,sherpherds delight,sheps delight,shepard's delight,sheperds delight,meussdoerffer rost,rost malt,especial 140l,sherpards delight,shepherds dlight,spécial b
-Caramel/Crystal Malt - 140L;grain;cara_crystal;Crystal Malt 140L,Caramel Malt 140L,Caramel/Crystal 140L,Crystal 140,Caramel 140,C140;Pategonia Especial Malt,Patagonia Especial Malt,british crytal 135/165
-Caramel/Crystal Malt - 150L;grain;cara_crystal;Crystal Malt 150L,Caramel Malt 150L,Caramel/Crystal 150L,Crystal Extra Dark,Crystal 150,Caramel 150,C150,karmelowy 150;
+Caramel/Crystal Malt - 140L;grain;cara_crystal;Crystal Malt 140L,Caramel Malt 140L,Caramel/Crystal 140L,Crystal 140,Caramel 140,C140;Pategonia Especial Malt,Patagonia Especial Malt,british crytal 135/165,crystal 145l
+Caramel/Crystal Malt - 150L;grain;cara_crystal;Crystal Malt 150L,Caramel Malt 150L,Caramel/Crystal 150L,Crystal Extra Dark,Crystal 150,Caramel 150,C150,karmelowy 150;cara plus 150
 Caramel/Crystal Malt - 160L;grain;cara_crystal;Extra Dark Crystal 160L,C160;karamel záhlinice,Simpsons Extra Dark,Extra Dark,karmelowy 300
 Caramel/Crystal Malt - 160L;grain;cara_crystal;;C180,C-180,kawowy 480
 Caramel/Crystal Malt - 190L;grain;cara_crystal;;C190,C-190
 Caramel/Crystal Malt - 225L;grain;cara_crystal;C225,Caramel 225,Crystal 225,Caramel/Crystal 225L;karmelowy 600
-Crystal 25 Patagonia;grain;cara_crystal;;crystal 25l,caramel 25
-Caramel/Crystal Malt - 65L;grain;cara_crystal;;crystal 65l,caramel 65
 Special B;grain;cara_crystal;;special-b,spesial b,Special W,Special X,spesial x
 Extra Special Malt;grain;cara_crystal;;Extra Special
 cara gold;grain;cara_crystal;;Caragold
@@ -195,7 +198,7 @@ Cashew;fruit;;;
 Celery;fruit;;;
 Cherry;fruit;;cherries;
 Crabapple;fruit;;;
-Cranberry;fruit;;;
+Cranberries;fruit;;;Cranberry
 Cucumber ;fruit;;;
 Currant;fruit;;;
 Date;fruit;;;
@@ -276,7 +279,7 @@ Gummi Bears;sugar;candy;Gummy Bears;
 Brewvint Alcohol Boost;sugar;;Brewvint,Brewvint Boost;mr beer booster,mr. beer booster
 Jaggery;sugar;;;
 Fructose;sugar;;;
-Bread Syrup;sugar;;Breadsyrup;ljus sirap,ljussirap,Dansukker
+Lyle's Golden Syrup;sugar;;Breadsyrup;ljus sirap,ljussirap,Dansukker,Bread Syrup,Golden Syrup,king syrup,blonde syrup,bread syrup - amber,bread syrup - gold,bread syrup - light
 Corn Sugar;sugar;;Dextrose,Glucose;
 Corn Syrup;sugar;;Brewers Crystals;
 Marshmallows;sugar;;Marshmallow;Marshmellow,Marshmellows
@@ -295,7 +298,7 @@ Maple Syrup;sugar;;;Maple Sugar
 Maple Sap;sugar;;;
 nutella;sugar;;;
 Molasses;sugar;;;Melasse,molassas,blackstrap
-Butterscotch;sugar;;lyles golden syrup,lyle's golden syrup,Golden Syrup,king syrup,blonde syrup;cane ribbon syrup,butter scotch candy
+Butterscotch;sugar;;lyles golden syrup,lyle's golden syrup;cane ribbon syrup,butter scotch candy
 Muscovado;sugar;;muscavado;mascavo,mascabado,muscovdao,muscavado sugar dark,muscavado sugar
 Rapadura Sugar;sugar;;Panela;Rapadura
 Rice Syrup;sugar;;;
@@ -335,6 +338,7 @@ Cinnamon;spice_herb;;;Canela,Cinammon,Cinnimon
 Clementine;spice_herb;;;
 Clove;spice_herb;;;
 Coca;spice_herb;;;
+cacao nibs;spice_herb;;;Chocolate Nibs,Chocolate,Cocoa Nibs,cocao nibs,caocao nibs,caco nibs,coco nibs,cacoa nibs
 Cocoa Powder;spice_herb;;Cokoladovy,Czekoladowy,Cocoa,Cocao;semolina choco,coco powder,Chocolate Powder
 Coconut;spice_herb;;Toasted Coconut,kokosmasse røsta,kokosmasse;
 Coconut Water;spice_herb;;;
