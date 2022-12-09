@@ -22,18 +22,20 @@ Oak Chips
 Cherry Wood Chips;Cherry Wood
 Oak Essence (Liquid)
 Raspberry Extract
-Spruce Extract
-Vanilla Beans;Vanilla Bean;Vanilla Pod;Vanilla Pods;Vanilla;vanila beans;vanila;vainilla
+Spruce Extract;Spruce Essence;Spruce tincture
+Vanilla Beans;Vanilla Bean;Vanilla Pod;Vanilla Pods;Vanilla;vanila beans;vanila;vainilla;vanilj;vinilla bean
 Chocolate
-Dark Chocolate;Chocolate (Dark);Chocolate, Baker's Dark;Baker's Chocolate;Bakers Chocolate;Bittersweet Chocolate;Bittersweet Baker's;cocoa, baker's;dark baker's;dark bakers
+Dark Chocolate;Chocolate (Dark);Chocolate, Baker's Dark;Baker's Chocolate;Bakers Chocolate;Bittersweet Chocolate;Bittersweet Baker's;cocoa, baker's;dark baker's;dark bakers;bitter choc;unsweetened choc
 Agave Nectar
 Prickly Pear Flower Buds (Opuntia)
 Lemon Grass;lemongrass;citrongræs;Sitrongress
 Saguaro Fruit
-Cacao Nibs;Chocolate Nibs;Chocolate;Cocoa Nibs;cocao nibs;caocao nibs;caco nibs;coco nibs;cacoa nibs
-Cocoa Powder;Coco Powder;caocao powder;Chocolate Powder;cocao powder;caco powder;cacao powder;cocoa
-Cocoa Extract;Chocolate Extract;Creme de Cacao;cream cacao;cocao extract;caocao extract;coco extract;caco extract;cacao extract
+Cacao Nibs;Chocolate Nibs;Chocolate;Cocoa Nibs;cocao nibs;caocao nibs;caco nibs;coco nibs;cacoa nibs;Coca Nibs;roasted cacao beans;Nibs;cacao nibe
+Cocoa Powder;Coco Powder;caocao powder;Chocolate Powder;cocao powder;caco powder;cacao powder;cocoa;cacao
+Cocoa Extract;Chocolate Extract;Creme de Cacao;cream cacao;cocao extract;caocao extract;coco extract;caco extract;cacao extract;cacoa nib tincture
 Grapefruit Peel;grapefruit, flesh
+Oak (General)
+Hungarian Oak
 American Oak Infusion Spirals;American Oak Spiral
 French Oak Infusion Spirals;French Oak Spiral
 Powdered Peanut Butter;PB2 powdered peanut butter;peanut butter, powdered;peanut butter powder;peanut butter flavour;peanut butter flavor;PB2;powdered pb;peanut butter, de-oiled;peanut butter;dry peaunt butter;peanut flavor;peanut flavour
@@ -41,7 +43,7 @@ Juniper Berries;juniper;juiper
 Apple Extract
 French Oak Infusion Spirals;Oak Spiral
 American Oak Cubes - Medium Toast;American Oak Cubes (Medium Toast);oak cubes medium;oak cubes medium toasted,Oak cubes
-American Oak Cubes, Medium-Heavy Toast;American Oak Cubes (Medium-Heavy Toast)
+American Oak Cubes Medium-Heavy Toast;American Oak Cubes (Medium-Heavy Toast)
 American Oak Cubes - Heavy Toast;American Oak Cubes (Heavy Toast);oak cubes, heavy char
 French Oak Cubes - Medium Toast;French Oak Cubes (Medium Toast)
 French Oak Cubes Medium - Heavy Toast;French Oak Cubes (Medium-Heavy Toast)
@@ -50,6 +52,7 @@ Licorice Root;licorice stick;licorice;liquorice;liquorice root
 Peach Extract;Peach Flavor;Peach Flavoring
 Strawberry Extract;Strawberry Flavor;Strawberry Flavoring
 Boysenberry Extract;boysenberry fruit flavor;boysenberry flavor;boysenberry flavoring
+boysenberries;boysenberry
 Blueberry Extract;Blueberry flavor;Blueberry flavoring
 Hazelnut;hazel nuts;hazel nut
 Oak Powder
@@ -60,21 +63,20 @@ Raspberry Puree
 Blackberry Puree
 Cherry Puree
 Apricot Puree
-Peach Puree;Peach Nectar
+Peach Puree;Peach Nectar;puree peche
 Blueberry Puree
-Ginger Root;ginger
+Ginger Root;ginger;jengibre
 Ginger, Crystallized;candied ginger
-Amylase Enzyme;Amyloglucosidase;amylo;amalayse;amalayse enzyme
+Amylase Enzyme;Amyloglucosidase;amylo;amalayse;amalayse enzyme;beano;amalyse extract
 Bottle Caps
 Heading Liquid
-Yeast Nutrient;servomyces;superfood;wyeast nutrient;yeastex 61;yeastex
+Yeast Nutrient;servomyces;superfood;wyeast nutrient;yeastex 61;yeastex;gjærnæring
 Sinamar
 Fermax
 Fermaid O
 Fizz Drops
 Tartaric Acid
 Citric Acid
-Wine Tannin
 GoFerm Protect
 Acid Blend
 Potassium Sorbate
@@ -109,17 +111,17 @@ Sur Lie
 Lysozyme
 Wine Conditioner
 Fermaid
-Anise, Star;Star Anise;Anise;star anice;anice
+Anise, Star;Star Anise;Anise;star anice;anice;anis;anese;Star anese
 Cinnamon Stick
-Coriander Seed;Coriander;Corriander
-Sweet Gale;Gale, Sweet;Bog Myrtle
+Coriander Seed;Coriander;Corriander;coriandolo;Coriandre;corieander;koriander;coriandr;cooriander;corrinder;graines de coriande;coriande;corinader
+Sweet Gale;Gale, Sweet;Bog Myrtle;Sweetgale;Bogmurtle;Bog Murtle;BogMyrtle
 Bitter Orange Peel;Orange Peel, Bitter
-Sweet Orange Peel;Orange Peel, Sweet;orange peel
+Sweet Orange Peel;Orange Peel, Sweet;orange peel;curaçao
 Sassafras Root Bark;sassafras root;sassafras
-Seeds of Paradise;Paradise Seed;grains of paradise;paradise grain
-Cinnamon Powder;cinnamon (ground);ground cinnamon;Cinnamon;cinammon;cinamon;cinnimon
-Cardamom;Cardamom Seed;cardomon pods;cardomon
-Chilis;Chilli Pepper;Chilli Peppers
+Seeds of Paradise;Paradise Seed;grains of paradise;paradise grain;grain of paradise;paradise grains
+Cinnamon Powder;cinnamon (ground);ground cinnamon;Cinnamon;cinammon;cinamon;cinnimon;cinanmon
+Cardamom;Cardamom Seed;cardomon pods;cardomon;cardomom;cardamon
+Chilis;Chilli Pepper;Chilli Peppers;Chili pepper
 Chili Powder
 Nutmeg;nutemeg
 Vanilla Extract;Vanilla Powder
@@ -142,27 +144,27 @@ Campden Tablets
 Green Tea;Tea, Green;Tea,Green
 Black Tea;Tea, Black;Tea,Black
 Jasmine;Jasmine Flowers;Jasmine Tea
-Spruce Tips;Fir Tips
+Spruce Tips;Fir Tips;Spruce
 Elderflower
 Pumpkin Puree;Pumpkin
 Thai Chilis;thai chili pepper;thai chili
 Sea Buckthorn Berries;Sea Buckthorn
 Pickling Lime (Calcium Hydroxide);Pickling Lime;calcium hydroxide;slaked lime
-Lavender
+Lavender;lavendar;lavandar
 Cloves;Clove
 Orange Zest;sweet orange zest
-Kaffir Lime;kaffir lime leaves
+Kaffir Lime;kaffir lime leaves;kefir lime
 Habanero Peppers;Habanero;Habanero Chili;habenero pepper;Habenero
 Black Pepper;Black Peppercorn;Black Peppercorns;pepper, whole black;pepper, black;fresh ground pepper;ground pepper;pepper
-Lemon Zest;Citrus Zest
+Lemon Zest;Citrus Zest;Citron Zest
 Basil
 Blood Orange Zest
 Tamarind
 Hibiscus;Hibiscus Flowers;Hibiscus Flower;hybiscus
 Espresso
 Coffee Beans;Coffee;Coffee Grounds;Ground Coffee;Coffe;Cofee
-Allspice Powder;Allspice
-Pumpkin Spice;Pumpkin Pie Spice
+Allspice Powder;Allspice;All Spice
+Pumpkin Spice;Pumpkin Pie Spice;Pumkin Spice
 Toasted Coconut
 Coconut
 Guajillo Peppers;Guajillo Pepper - dried;Guajillo Chili;Guajillo Chillis;Guajillo;Guajilo
@@ -173,11 +175,13 @@ Caraway Seed;Caraway;carraway;carraway seed;carraway seeds;Caraway Seeds
 Pipal;Fig;Figs
 Maple Extract;Maple Flavour
 Maple Sap
-Caramel Extract;Creme Brulee;Butterscotch Extract;Caramel Topping
+Caramel Extract;Creme Brulee;Butterscotch Extract;Caramel Flavor;Caramel Flavour;Caramel Flavouring;Caramel Flavoring
+Caramel;Caramel Topping;Caramel Syrup
 Cherries;Cherry
 Blackberries;Blackberry
+Blackberry Juice;blackberris (juiced);Juice, Blackberry;Blackberries Juiced;Juiced Blackberries
 Black Currant;Blackcurrant;currant;blackcurrents
-Raspberries;Raspberry;rasberry
+Raspberries;Raspberry;rasberry;rasberries
 Peaches;Peach
 Blueberries;blueberry
 Fennel Seed;Fennel
@@ -205,7 +209,7 @@ Macadamia Nuts;Macadamia
 Graham Cracker;Graham Crackers;Graham Cracker Crumbs
 Carolina Reaper Peppers;Carolina Reaper Pepper;Carolina Reaper;Reaper Pepper;Reaper Chile;Reaper Chillis;Reaper Chilis;Reaper Chilli
 Pablano Peppers;Pablano Pepper;Pablano;poblano
-Jalapeno Peppers;Jalapeno Pepper;Jalapeno;Jalapenos;jalepeno
+Jalapeno Peppers;Jalapeno Pepper;Jalapeno;Jalapenos;jalepeno;jalepanos;jalapeño;jalapeños;jalapeño pepper;jalapeño peppers;jalapeã±o
 Mesquite;Mesquite Powder;Mesquite Pod
 Sesame;Sesame Seed;Sesame seeds
 Almond Extract;Almond Flavour
@@ -222,7 +226,7 @@ Mugwort
 Heather;Heather Flower;Heather Flowers
 Pomegranate;Pomegranates;pomogranate;pomogranates
 Ghost Peppers;Ghost Pepper
-Indian Sarsaparilla;Sarsaparilla
+Indian Sarsaparilla;Sarsaparilla;sasparilla
 Tangerine Peel;Tangerine Skin
 Tangerine Zest
 Tangerines;Tangerine
@@ -233,7 +237,7 @@ Strawberries;Strawberry
 White Pepper;White Peppercorn;White Peppercorns
 Oranges;Orange
 bay leaf;bay leaves;bay leafs
-Honey
+Honey;orange blossom honey;wildflower honey
 Marmalade
 Pineapple;Pineapples
 Pineapple Juice
@@ -241,7 +245,7 @@ Blueberry Juice
 Watermelon;Watermelons
 Rosehips;Rose hips;Rosehip;Rose hip
 Sage
-Turmeric
+Turmeric;tumeric
 Rosemary
 Chamomile;Chamomile flowers
 Dragon Fruit;Dragonfruit
@@ -271,7 +275,7 @@ Yuzu Zest;Yuzu Peel
 Yuzu Juice
 Grapefruit Extract;Grapefruit Flavor;Grapefruit Flavour;Grapefruit Flavoring;Grapefruit Flavouring
 Birch Bark;Birch
-Meadowsweet;Meadow Sweet
+Meadowsweet;Meadow Sweet;medowsweet
 Yarrow
 Juniper Branches
 Mint
@@ -280,10 +284,104 @@ Prunes;Prune
 Yuzu Extract;Yuzu Flavour;Yuzu Flavor;Yuzu Flavoring;Yuzu Flavouring
 Rhubarb
 Quince;Quinces
-Gooseberries;Gooseberry
+Gooseberries;Gooseberry;Goosberries;Goosberry
 Cucumber;Cucumbers;Cucumber Slices
 Sumac
 Kumquat;Cumquat
 Lemon Verbena
 Kiwi;Kiwis;Kiwi Fruit
 Camomile;Camomile Flower;Camomile Tea
+Grapefruit
+Nectarine;Nectarines
+Lime;Limes
+Passionfruit;Passionfruits;Passion fruit;Passion fruits
+Passionfruit Extract;Passion fruit extract
+Passionfruit Puree;Passion fruit puree
+Lychee;Lychees
+Lychee Extract
+Lychee Puree
+Pawpaw;paw paw
+Wintergreen
+Saffron
+Apples;Apple
+Chesnuts;Chesnut;Chestnut;Chestnuts
+Lime Extract;Lime Flavor;Lime Flavoring;Lime Flavour;Lime Flavouring
+Papaya;Papayas
+Papaya Puree
+Papaya Extract;Papaya Flavor;Papaya Flavoring;Papaya Flavour;Papaya Flavouring
+Lingonberries;Lingonberry
+burdock root;burdock
+Rose Petals;Rose Pedals;rose pedel;Rose Petal;Rose
+Mushrooms;Mushroom
+Mace
+Yams;sweet potato;Yam;sweet potatoes
+Potatoes;Potato
+Hyssop;Hyssops
+Treacle;Black Treacle
+Kola Nut;Kola;Cola Nut
+Lapsang Soughong;Lapsang Soughong Tea;Lapsang Tea;Lapsang;Soughong Tea;Soughong
+Lactose
+Maltodextrin
+Sucrose
+Dextrose
+Garam Masala;Garam
+Candi Sugar
+Oolong Tea;Oolong
+Hydrochloric Acid;HCl;Hydrochloric
+Poppy Seeds;Poppy Seed
+Tea Leaves;Tea Leaf
+Carrots;Carrot
+Curry Leaves;Curry Leaf
+Fenugreek;Fengreek
+Prune Juice
+Mandarin Oranges;Mandarin Orange;Satsuma;Satsumas
+Mandarin Orange Juice;Satsuma Juice;Mandarin Juice
+Mandarin Orange Zest;Satsuma Zest;Mandarin Zest
+Grape Extract
+Grape Juice/Must;Grape Juice;Juice, Grape;Grape Must
+Grape Concentrate
+Passionfruit Tea;Passion fruit Tea
+Mixed Berries;Mixed Berry;Berry Blend;Mixed Barry
+Clementines;Clementine
+Pectin;Fruit Pectin
+Chilis;Chili;Chilli;Chillis;Hot Pepper;Hot Peppers
+Grapes
+Blood Orange Juice;Orange Juice, Blood
+Blood Oranges;Blood Orange
+Waxberries;Waxberry;Yangmei
+Turbinado Sugar;Turbinado
+Nettles;Nettle
+Molasses
+Butterfly Pea Flower;Butterfly Pea
+Squash
+Rooibos Tea;Tea, Rooibos;Roobios Tea
+Honeydew
+Cantaloupe
+Curry Powder;Curry
+Date Syrup
+Jaggery
+Star Fruit;Starfruit
+Wine Tannin;Tannin Powder;Grape Tannin;Tannin
+Scotch Bonnet Peppers;Scotch Bonnet
+Thai Tea;Tea, Thai
+Loquat;Loquats
+Golden Syrup;Lyle's Golden Syrup;Breadsyrup;ljus sirap;ljussirap;Dansukker;Bread Syrup;king syrup;blonde syrup
+Mayhaw;Mayhaws
+Galia Melon
+Coconut Extract;Coconut tincture
+Chinese Five Spice;Chinese 5 spice
+Dill;Dill Seed
+Anaheim Peppers;Anaheim Pepper
+Hazelnut Extract;Hazelnut Tincture
+Acorns;Acorn
+Damiana
+Yohimbe
+Ginseng
+Piloncillo
+Celery
+Onion
+Pomegranate Juice;POM Juice
+Demerara Sugar;Demerara;Dememera
+Blood Orange Peel
+Mahleb;Mahlab;mahaleb
+Assam Tea;Tea, Assam

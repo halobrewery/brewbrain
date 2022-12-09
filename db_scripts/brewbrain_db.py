@@ -169,7 +169,20 @@ class RecipeMLGrainAT(Base):
   
   recipe_ml = relationship("RecipeML", back_populates="grains")
   grain     = relationship("Grain")
-
+  
+  # Calculate the Dry-Basis Coarse Grind of the grain addition.
+  def calc_dbcg(self):
+    dbfg = self.fgdb_override if self.fgdb_override != None else self.grain.dbfg
+    fgcg_diff = self.grain.coarse_fine_diff
+    return dbfg - fgcg_diff
+  
+  # Calculate the Coarse-Grind-As-Is (accounting for moisture) of the grain addition.
+  # This is the number that should be used to calculate the actual ppg or pkl for the addition.
+  def calc_coarse_grid_as_is(self):
+    dbcg = self.calc_dbcg()
+    moisture = self.moisture_override if self.moisture_override != None else self.grain.moisture
+    return dbcg * (1.0 - moisture)
+  
 
 # Association Table (AT) for many-to-many relationship between RecipeMLs and Adjuncts
 class RecipeMLAdjunctAT(Base):
@@ -217,6 +230,7 @@ class RecipeML(Base):
   __tablename__ = "recipes_ml"
   id = Column(Integer, primary_key=True)
   hash = Column(String(64), unique=True)
+  data_version = Column(Integer, default=None)
 
   name = Column(String(128)) # Name, for reference / readability
   preboil_vol   = Column(Float(2), default=None) # The pre-boil volume in L
@@ -308,7 +322,7 @@ class RecipeML(Base):
     mass_total = 0
     for grain in self.grains:
       mass_total += grain.amount
-    return mass_total
+    return mass_total   
 
   # Generates a unique identifier hash for this machine learning recipe 
   # to avoid duplicates of the same recipes in the database

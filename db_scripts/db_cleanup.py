@@ -1,10 +1,10 @@
 import numpy as np
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy import or_, and_
 
-from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, RecipeML, Misc
+from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, RecipeML, Misc, RecipeMLGrainAT, RecipeMLAdjunctAT, RecipeMLHopAT, RecipeMLMiscAT
 from distributions import distributions_by_style_id
 
 def remove_zero_mash_or_ferment_step_recipes(session):
@@ -216,26 +216,70 @@ def clean_up_misc(session):
   for misc in bad_miscs:
     session.delete(misc)
 
+def clean_up_bad_volumes(session):
+  bad_recipes = session.scalars(select(RecipeML).filter(RecipeML.preboil_vol < RecipeML.postboil_vol)).all()
+  for recipe in bad_recipes:
+    session.delete(recipe)
+  session.commit()
+
+def remove_zero_amounts(session):
+  # Grains...
+  grainATs = session.scalars(select(RecipeMLGrainAT).filter(RecipeMLGrainAT.amount <= 0)).all()
+  for grainAT in grainATs:
+    session.delete(grainAT)
+  session.commit()
+  # Make sure there are no recipes with zero grains now
+  recipes = session.scalars(select(RecipeML).join(RecipeML.grains).group_by(RecipeML.id).having(func.count() == 0)).all()
+  for recipe in recipes:
+    session.delete(recipe)
+  session.commit()
+  # Adjuncts...
+  adjunctATs = session.scalars(select(RecipeMLAdjunctAT).filter(RecipeMLAdjunctAT.amount <= 0)).all()
+  for adjunctAT in adjunctATs:
+    session.delete(adjunctAT)
+  session.commit()
+  # Hops...
+  hopATs = session.scalars(select(RecipeMLHopAT).filter(RecipeMLHopAT.amount <= 0)).all()
+  for hopAT in hopATs:
+    session.delete(hopAT)
+  session.commit()
+  # Miscs...
+  miscATs = session.scalars(select(RecipeMLMiscAT).filter(RecipeMLMiscAT.amount <= 0)).all()
+  for miscAT in miscATs:
+    session.delete(miscAT)
+  session.commit()
+
 def remove_duplicate_malts(session):
   from collections import defaultdict
-  recipes = session.scalars(select(RecipeML)).filter(len(RecipeML.grains) > 1).all()
-  for recipe in recipes:
+  recipes = session.scalars(select(RecipeML).join(RecipeML.grains).group_by(RecipeML.id).having(func.count() > 1)).all()
+  for i, recipe in enumerate(recipes):
     grain_map = defaultdict(lambda: 0)
     for grainAT in recipe.grains:
       grain_map[grainAT.grain_id] += grainAT.amount
+      
     # Check for duplicates...
     if len(grain_map) < len(recipe.grains):
       updated_ids = set()
+      num_deleted = 0
       for grainAT in recipe.grains:
         if grainAT.grain_id in updated_ids:
           session.delete(grainAT)
+          num_deleted += 1
         else:
           grainAT.amount = grain_map[grainAT.grain_id]
           updated_ids.add(grainAT.grain_id)
+          if grainAT.amount <= 0:
+            session.delete(grainAT)
+            num_deleted += 1
+            
+      # No grains left?... (totally bogus recipe with 0 for all the amounts)
+      if num_deleted == len(recipe.grains):
+        session.delete(recipe)
+        
       session.commit()
 
 if __name__ == "__main__":
-  engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=True, future=True)
+  engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
 
   with Session(engine) as session:
@@ -251,6 +295,8 @@ if __name__ == "__main__":
     #clean_up_bad_mash_ph_recipes(session)
     #clean_up_no_sparge_temp(session)
 
-    remove_duplicate_malts(session)
+    #clean_up_bad_volumes(session)
+    #remove_duplicate_malts(session)
+    remove_zero_amounts(session)
 
     session.commit()

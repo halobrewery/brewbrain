@@ -5,6 +5,8 @@ import sys
 import re
 import random
 
+from collections import defaultdict
+
 class MockObj: pass
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -14,7 +16,7 @@ from pybeerxml.parser import Parser
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy import or_, and_
 
 from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, Style, Hop, Grain, Adjunct, Misc, Microorganism, RecipeML, CoreStyle
@@ -28,20 +30,164 @@ from yeast_names import build_yeast_dicts, match_yeast_id
 from style_names import build_style_dicts, match_style_id
 from misc_names import build_misc_name_dicts, match_misc_id
 
-hop_name_to_id, id_to_hop_names = build_hop_name_dicts()
-fermentable_name_to_id, id_to_fermentable_names = build_fermentable_name_dicts()
-yeast_name_to_id, yeast_brand_to_ids, id_to_yeast_names = build_yeast_dicts()
-style_name_to_id, id_to_style_names = build_style_dicts()
+#hop_name_to_id, id_to_hop_names = build_hop_name_dicts()
+#fermentable_name_to_id, id_to_fermentable_names = build_fermentable_name_dicts()
+#yeast_name_to_id, yeast_brand_to_ids, id_to_yeast_names = build_yeast_dicts()
+#style_name_to_id, id_to_style_names = build_style_dicts()
 misc_name_to_id, id_to_misc_names = build_misc_name_dicts()
+
+def clean_recipe_name(recipe):
+  return recipe.name.strip() if isinstance(recipe.name, str) else str(recipe.name)
+def recipe_efficiency(recipe):
+  return recipe.efficiency/100.0
+
+
+def update_recipe_misc(session, recipe, filepath):
+  recipe_name = clean_recipe_name(recipe)
+  boil_time   = recipe.boil_time
+  aging_time  = recipe.age
+  aging_temp  = recipe.age_temp
+  efficiency = round(recipe_efficiency(recipe),4)
+  fermenter_vol = round(recipe.batch_size,4)
+  
+  # Try to find the corresponding recipe in the database using various values from the recipe
+  query = select(RecipeML).filter(
+    or_(RecipeML.data_version == None, RecipeML.data_version < 1),
+    RecipeML.name == recipe_name, 
+    RecipeML.boil_time == boil_time, 
+    RecipeML.aging_time == aging_time, 
+    RecipeML.aging_temp == aging_temp,
+    func.round(RecipeML.efficiency,4) == efficiency,
+    func.round(RecipeML.fermenter_vol,4) == fermenter_vol
+  )
+  db_recipes = session.scalars(query).all()
+
+  if len(db_recipes) > 1:
+    # Try to narrow it down a bit more...
+    equipment = recipe.equipment
+    if recipe.boil_size != None and recipe.boil_size != 0:
+      preboil_vol = recipe.boil_size
+    else:
+      if equipment == None:
+        raise ValueError(f"No equipment and no boil size, in recipe: {recipe_name}")
+      preboil_vol = (equipment.batch_size - equipment.top_up_water - equipment.trub_chiller_loss) * (1 + equipment.boil_time/60 * equipment.evap_rate/100)
+
+    if equipment != None and equipment.evap_rate > preboil_vol:
+      raise ValueError(f"Invalid evaporation rate for recipe: {recipe_name}")
+    if equipment != None and equipment.evap_rate:
+      postboil_vol = preboil_vol - (preboil_vol * equipment.evap_rate/100 * boil_time/60)
+    else:
+      postboil_vol = fermenter_vol
+    query = query.filter(func.round(RecipeML.preboil_vol,4) == round(preboil_vol,4), func.round(RecipeML.postboil_vol,4) == round(postboil_vol,4))
+    db_recipes = session.scalars(query).all()
+    if len(db_recipes) > 1:
+      # Check the hops...
+      query = query.join(RecipeMLHopAT).group_by(RecipeML.id).having(func.count() == len(recipe.hops))
+      db_recipes = session.scalars(query).all()
+      if len(db_recipes) > 1:
+        # Compare amounts and alphas
+        sorted_amts   = sorted([h.amount for h in recipe.hops])
+        sorted_alphas = sorted([h.alpha for h in recipe.hops])
+        matched_recipes = []
+        for db_recipe in db_recipes:
+          db_sorted_amts   = sorted([h.amount for h in db_recipe.hops])
+          db_sorted_alphas = sorted([h.alpha for h in db_recipe.hops])
+          matched = True
+          for i in range(len(sorted_amts)):
+            if sorted_amts[i] != db_sorted_amts[i] or sorted_alphas[i] != db_sorted_alphas[i]:
+              matched = False
+              break
+          if matched:
+            matched_recipes += [db_recipe]
+        db_recipes = [random.choice(matched_recipes)]
+        
+      if len(db_recipes) > 1:
+        raise ValueError(f"Too many recipes found by query for recipe {recipe_name}")
+    
+  if len(db_recipes) == 0:
+    raise ValueError(f"No recipes found in database for {recipe_name}")
+  
+  db_recipe = db_recipes[0]
+  
+  existing_miscs_dict = defaultdict(lambda: [])
+  for misc in db_recipe.miscs:
+    existing_miscs_dict[misc.misc_id].append(misc)
+  
+  miscs_ats = []
+  for misc in recipe.miscs:
+    m_name = str(misc.name).lower().strip()
+    
+    m_amount = misc.amount
+    if m_amount == None or m_amount <= 0:
+      #print(f"Misc '{m_name}' found with <=0 amount, removing and continuing, in recipe: {recipe_name}.")
+      continue
+    
+    if misc.type != None and misc.type.lower() == 'fining': continue
+    if misc.use  != None and misc.use.lower()  == 'bottle': continue
+    
+    m_id = match_misc_id(m_name, misc_name_to_id, recipe_version=0)
+
+    skip_exists_check = False
+    if m_id == None:
+      m_id = match_misc_id(m_name, misc_name_to_id, recipe_version=1)
+      skip_exists_check = True
+      
+    if m_id == 'ignore': continue
+
+    existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"{m_name}"))).first()
+    if existing_misc == None and m_id != None:
+      m_names = id_to_misc_names[m_id]
+      for name in m_names:
+        existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"{name}%"))).first()
+        if existing_misc == None:
+          existing_misc = session.scalars(select(Misc).filter(Misc.name.ilike(f"%{name}%"))).first()
+        if existing_misc != None: break
+
+    if existing_misc == None:
+      print(f"Failed to find misc '{m_name}', in recipe: {recipe_name}")
+      continue
+    
+    if misc.use == None: continue
+    m_stage = misc.use.lower()
+    m_time  = misc.time
+    m_amount_is_weight = misc.amount_is_weight
+    
+    # Do we already have a misc. of the same type?
+    if not skip_exists_check and existing_misc.id in existing_miscs_dict:
+      # Check to see if the attributes match
+      found = False
+      for misc in existing_miscs_dict[existing_misc.id]:
+        if round(misc.amount, 2) == round(m_amount, 2) and misc.amount_is_weight == m_amount_is_weight and misc.stage == m_stage and misc.time == m_time:
+          found = True
+          break
+      if found: continue
+
+    assert existing_misc != None
+    m_time = m_time or 0
+    miscs_ats.append(
+      RecipeMLMiscAT(
+        misc=existing_misc, 
+        amount=m_amount,
+        amount_is_weight=m_amount_is_weight,
+        stage=m_stage,
+        time=m_time,
+    ))
+
+  if len(miscs_ats) > 0:
+    db_recipe.miscs += miscs_ats
+    db_recipe.data_version = 1
+    session.commit()
+    print(f"Updated miscs for recipe {recipe_name} in file {filepath}")
+  
 
 # NOTE: BeerXML units are - Weight: Kg, Volume: L, Temperature: C, 
 # Time (mins default, unless specified by tag), Pressure: KPa
 def read_recipe(session, recipe, filepath, core_style_id_to_dist):
   if recipe.type.lower() != 'all grain': return
   
-  recipe_name   = recipe.name.strip() if isinstance(recipe.name, str) else str(recipe.name)
+  recipe_name   = clean_recipe_name(recipe)
   boil_time     = recipe.boil_time
-  efficiency    = recipe.efficiency/100
+  efficiency    = recipe_efficiency(recipe)
   fermenter_vol = recipe.batch_size
   
   equipment = recipe.equipment
@@ -63,6 +209,9 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
   else:
     postboil_vol = fermenter_vol
   
+  if preboil_vol < postboil_vol:
+    raise ValueError(f"Preboil volume is less than postboil volume in recipe: {recipe_name}")
+
   # Style
   style = recipe.style
   if hasattr(style, 'style_guide'):
@@ -239,6 +388,11 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
       raise ValueError(f"No hop use found for hop in recipe: {recipe_name}")
 
     hop_name = str(hop.name).lower()
+    hop_amt = hop.amount
+    if hop_amt <= 0:
+      print(f"Hop '{hop_name} found with <=0 amount, removing and continuing, in recipe {recipe_name}")
+      continue
+    
     found_hop_id = match_hop_id(hop_name, hop_name_to_id)
     
     hop_names = []
@@ -261,7 +415,7 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
     hops_ats.append(
       RecipeMLHopAT(
         hop=existing_hop,
-        amount=hop.amount,
+        amount=hop_amt,
         stage=hop.use.lower(),
         time=hop.time,
         form=hop.form,
@@ -298,9 +452,12 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
       else:
         f_type = "grain"
     
-    f_amt   = fermentable.amount
-    f_yield = fermentable._yield/100
-
+    f_amt = fermentable.amount
+    if f_amt <= 0:
+      print(f"Grain/Adjunct '{f_name}' found with <=0 amount, removing and continuing, in recipe {recipe_name}")
+      continue
+    
+    f_yield = fermentable._yield / 100.0
     if f_yield > 1: f_yield = None
 
     f_id = match_fermentable_id(f_name, fermentable_name_to_id)
@@ -386,6 +543,11 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
   for misc in recipe.miscs:
     m_name = str(misc.name).lower().strip()
     
+    m_amount = misc.amount
+    if m_amount <= 0:
+      print(f"Misc '{m_name}' found with <=0 amount, removing and continuing, in recipe: {recipe_name}.")
+      continue
+    
     if misc.type != None and misc.type.lower() == 'fining': continue
     m_id = match_misc_id(m_name, misc_name_to_id)
     if m_id == 'ignore': continue
@@ -407,20 +569,19 @@ def read_recipe(session, recipe, filepath, core_style_id_to_dist):
       print(f"Failed to find misc '{m_name}', in recipe: {recipe_name}")
       continue
 
-    amount = misc.amount
-    amount_is_weight = misc.amount_is_weight
+    m_amount_is_weight = misc.amount_is_weight
     if misc.use == None: continue
-    stage = misc.use.lower()
-    time  = misc.time
+    m_stage = misc.use.lower()
+    m_time  = misc.time
 
     assert existing_misc != None
     miscs_ats.append(
       RecipeMLMiscAT(
         misc=existing_misc, 
-        amount=amount,
-        amount_is_weight=amount_is_weight,
-        stage=stage,
-        time=time,
+        amount=m_amount,
+        amount_is_weight=m_amount_is_weight,
+        stage=m_stage,
+        time=m_time,
     ))
 
   # Yeast/Microorganisms
@@ -576,11 +737,12 @@ if __name__ == "__main__":
 
           for i, recipe in enumerate(recipes):
             try:
-              read_recipe(session, recipe, filepath, core_style_id_to_dist)
+              update_recipe_misc(session, recipe, filepath)
+              #read_recipe(session, recipe, filepath, core_style_id_to_dist)
               if i == len(recipes)-1:
                 os.rename(filepath, os.path.join(completed_datapath, filename))
             except ValueError as e:
-              print(f"Failed to read recipe: {e} [{filepath}]. Rolling back and continuing.")
+              print(f"Failed to read/update recipe: {e} [{filepath}]. Rolling back and continuing.")
               os.rename(filepath, os.path.join(failed_datapath, filename))
               session.rollback()
               continue
@@ -588,3 +750,5 @@ if __name__ == "__main__":
           session.commit()
 
   session_read_beerxml_files()
+
+# TODO: Update Misc (use fermentables csv): Lactose, Corn Sugar, Maltodextrin, molasses, brown sugar, jaggery, agave, candi sugar ... across recipes

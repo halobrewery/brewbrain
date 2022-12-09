@@ -1,5 +1,3 @@
-
-
 def read_text_content(attribute):
   return attribute.contents[0] if len(attribute.contents) > 0 else ""
 
