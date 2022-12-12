@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, func
 from sqlalchemy import or_, and_
 
-from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, RecipeML, Misc, RecipeMLGrainAT, RecipeMLAdjunctAT, RecipeMLHopAT, RecipeMLMiscAT
+from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, RecipeML, Misc, Adjunct, RecipeMLGrainAT, RecipeMLAdjunctAT, RecipeMLHopAT, RecipeMLMiscAT
 from distributions import distributions_by_style_id
 
 def remove_zero_mash_or_ferment_step_recipes(session):
@@ -278,6 +278,65 @@ def remove_duplicate_malts(session):
         
       session.commit()
 
+
+def misc_adjunct_to_adjunct(session):
+  from temp_list import misc_to_adj_lookup
+  '''
+  # Try to find all of the adjuncts in the miscs table in the adjuncts table
+  misc_adjs = session.scalars(select(Misc).filter(Misc.type == 'adjunct')).all()
+  for misc_adj in misc_adjs:
+    if misc_adj.name in misc_to_adj_lookup: continue
+    found_adjs = session.scalars(select(Adjunct).filter(Adjunct.name.ilike(f"%{misc_adj.name}%"))).all()
+    if len(found_adjs) == 0:
+      print(f"No match found for misc:         {misc_adj.name}")
+    elif len(found_adjs) > 1:
+      print(f"Too many matches found for misc: {misc_adj.name}")
+    else:
+      print(f"Misc: '{misc_adj.name}' -> adjunct: {found_adjs[0].name}")
+  '''
+  
+  # Convert misc adjuncts into a proper adjunct for all recipes...
+  recipes = session.scalars(
+    select(RecipeML)
+    .join(RecipeMLMiscAT, RecipeMLMiscAT.recipe_ml_id == RecipeML.id)
+    .join(Misc, Misc.id == RecipeMLMiscAT.misc_id)
+    .filter(Misc.type == 'adjunct')
+  ).all()
+  
+  for recipe in recipes:
+    miscATs_to_convert = [miscAT for miscAT in recipe.miscs if miscAT.misc.type == 'adjunct']
+    for miscAT in miscATs_to_convert:
+      misc = miscAT.misc
+      if misc.name in misc_to_adj_lookup:
+        adjunct_id = misc_to_adj_lookup[misc.name]
+        adjunct = session.scalar(select(Adjunct).filter_by(id=adjunct_id))
+      else:
+        adjunct = session.scalars(select(Adjunct).filter(Adjunct.name.ilike(f"%{misc.name}%"))).first()
+      
+      assert adjunct != None
+      # Convert the misc to an adjunct and add it to the recipe
+      adjunctAT = RecipeMLAdjunctAT(
+        adjunct=adjunct,
+        amount=miscAT.amount, 
+        yield_override=None,
+        stage=miscAT.stage,
+        time=miscAT.time,
+        amount_is_weight=miscAT.amount_is_weight
+      )
+      recipe.adjuncts.append(adjunctAT)
+      
+      # Remove the misc assoc table from the database and the recipe
+      session.delete(miscAT)
+    session.commit()
+      
+
+def aroma_to_whirlpool_hops(session):
+  hopATs = session.scalars(select(RecipeMLHopAT).filter_by(stage="aroma")).all()
+  for hopAT in hopATs:
+    hopAT.stage = "whirlpool"
+    session.flush()
+
+
 if __name__ == "__main__":
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
@@ -292,11 +351,18 @@ if __name__ == "__main__":
     #for recipe in recipes_to_remove:
     #  session.delete(recipe)
     
+    #ids_to_remove = []
+    #misc_ats_to_remove = session.scalars(select(RecipeMLMiscAT).filter(or_(*[RecipeMLMiscAT.id == id for id in ids_to_remove]))).all()
+    #for misc_at in misc_ats_to_remove:
+    #  session.delete(misc_at)
+    
     #clean_up_bad_mash_ph_recipes(session)
     #clean_up_no_sparge_temp(session)
 
     #clean_up_bad_volumes(session)
     #remove_duplicate_malts(session)
-    remove_zero_amounts(session)
+    #remove_zero_amounts(session)
 
+    #misc_adjunct_to_adjunct(session)
+    aroma_to_whirlpool_hops(session)
     session.commit()

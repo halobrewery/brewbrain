@@ -43,14 +43,25 @@ class Adjunct(Base):
   __tablename__ = "adjuncts"
   id = Column(Integer, primary_key=True)
   name = Column(String(128))
-  origin = Column(String(64))
-  supplier = Column(String(64))
   colour_srm = Column(Float(2))
   is_fermentable = Column(Boolean())
   yield_amt = Column(Float(4))
+  
+  core_adjunct_id = Column(Integer(), ForeignKey("core_adjuncts.id"))
+  core_adjunct = relationship("CoreAdjunct", back_populates="adjuncts")
 
   def __repr__(self):
     return f"Adjunct(id={self.id!r}, name={self.name!r}, origin={self.origin!r}, supplier={self.supplier!r})"
+
+
+class CoreAdjunct(Base):
+  __tablename__ = "core_adjuncts"
+  id = Column(Integer, primary_key=True)
+  name = Column(String(128), unique=True)
+  adjuncts = relationship("Adjunct", back_populates="core_adjunct")
+
+  def __repr__(self):
+    return f"CoreAdjunct(id={self.id!r}, name={self.name!r})"
 
 
 class Misc(Base):
@@ -194,6 +205,10 @@ class RecipeMLAdjunctAT(Base):
   amount = Column(Float(6))                       # Quantity of adjunct used in kg
   yield_override = Column(Float(2), default=None) # Override for the yield of the adjunct (percent by weight of sugars)
   
+  stage = Column(String(32), default=None) # Stage of use {"boil", "mash", "whirlpool", "primary", "secondary", "bottling"}
+  time  = Column(Integer(),  default=None) # Amount of time the ingredient was used, in mins
+  amount_is_weight = Column(Boolean())     # If True the amount is in kg, if False then L
+  
   recipe_ml = relationship("RecipeML", back_populates="adjuncts")
   adjunct   = relationship("Adjunct")
 
@@ -229,7 +244,7 @@ class RecipeMLMicroorganismAT(Base):
 class RecipeML(Base):
   __tablename__ = "recipes_ml"
   id = Column(Integer, primary_key=True)
-  hash = Column(String(64), unique=True)
+  #hash = Column(String(64), unique=True) # No longer needed.
   data_version = Column(Integer, default=None)
 
   name = Column(String(128)) # Name, for reference / readability
@@ -303,7 +318,7 @@ class RecipeML(Base):
   def mash_steps(self):
     steps = []
     for i in range(self.num_mash_steps):
-      prefix = "mash_step_"+str(i+1)
+      prefix = self.MASH_STEP_PREFIX+str(i+1)
       step = {}
       for postfix in self.MASH_STEP_POSTFIXES:
         step[prefix+postfix] = getattr(self, prefix+postfix)
@@ -313,7 +328,7 @@ class RecipeML(Base):
   def total_infusion_vol(self):
     infuse_total = 0
     for i in range(self.num_mash_steps):
-      prefix = "mash_step_"+str(i+1)
+      prefix = self.MASH_STEP_PREFIX+str(i+1)
       infuse_amt = getattr(self, prefix+"_infuse_amt")
       infuse_total += infuse_amt if infuse_amt != None else 0
     return infuse_total

@@ -99,7 +99,11 @@ def update_recipe_misc(session, recipe, filepath):
               break
           if matched:
             matched_recipes += [db_recipe]
-        db_recipes = [random.choice(matched_recipes)]
+            
+        if len(matched_recipes) == 0:
+          db_recipes = []
+        else: 
+          db_recipes = [random.choice(matched_recipes)]
         
       if len(db_recipes) > 1:
         raise ValueError(f"Too many recipes found by query for recipe {recipe_name}")
@@ -123,7 +127,7 @@ def update_recipe_misc(session, recipe, filepath):
       continue
     
     if misc.type != None and misc.type.lower() == 'fining': continue
-    if misc.use  != None and misc.use.lower()  == 'bottle': continue
+    #if misc.use  != None and misc.use.lower()  == 'bottle': continue
     
     m_id = match_misc_id(m_name, misc_name_to_id, recipe_version=0)
 
@@ -157,7 +161,7 @@ def update_recipe_misc(session, recipe, filepath):
       # Check to see if the attributes match
       found = False
       for misc in existing_miscs_dict[existing_misc.id]:
-        if round(misc.amount, 2) == round(m_amount, 2) and misc.amount_is_weight == m_amount_is_weight and misc.stage == m_stage and misc.time == m_time:
+        if misc.amount != None and round(misc.amount, 2) == round(m_amount, 2) and misc.amount_is_weight == m_amount_is_weight and misc.stage == m_stage and misc.time == m_time:
           found = True
           break
       if found: continue
@@ -750,5 +754,3 @@ if __name__ == "__main__":
           session.commit()
 
   session_read_beerxml_files()
-
-# TODO: Update Misc (use fermentables csv): Lactose, Corn Sugar, Maltodextrin, molasses, brown sugar, jaggery, agave, candi sugar ... across recipes

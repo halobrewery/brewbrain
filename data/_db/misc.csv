@@ -116,7 +116,7 @@ Cinnamon Stick
 Coriander Seed;Coriander;Corriander;coriandolo;Coriandre;corieander;koriander;coriandr;cooriander;corrinder;graines de coriande;coriande;corinader
 Sweet Gale;Gale, Sweet;Bog Myrtle;Sweetgale;Bogmurtle;Bog Murtle;BogMyrtle
 Bitter Orange Peel;Orange Peel, Bitter
-Sweet Orange Peel;Orange Peel, Sweet;orange peel;curaçao
+Sweet Orange Peel;Orange Peel, Sweet;orange peel;curaçao;curacao
 Sassafras Root Bark;sassafras root;sassafras
 Seeds of Paradise;Paradise Seed;grains of paradise;paradise grain;grain of paradise;paradise grains
 Cinnamon Powder;cinnamon (ground);ground cinnamon;Cinnamon;cinammon;cinamon;cinnimon;cinanmon
@@ -162,7 +162,7 @@ Blood Orange Zest
 Tamarind
 Hibiscus;Hibiscus Flowers;Hibiscus Flower;hybiscus
 Espresso
-Coffee Beans;Coffee;Coffee Grounds;Ground Coffee;Coffe;Cofee
+Coffee Beans;Coffee;Coffee Grounds;Ground Coffee;Coffe;Cofee;Kona
 Allspice Powder;Allspice;All Spice
 Pumpkin Spice;Pumpkin Pie Spice;Pumkin Spice
 Toasted Coconut
@@ -176,7 +176,8 @@ Pipal;Fig;Figs
 Maple Extract;Maple Flavour
 Maple Sap
 Caramel Extract;Creme Brulee;Butterscotch Extract;Caramel Flavor;Caramel Flavour;Caramel Flavouring;Caramel Flavoring
-Caramel;Caramel Topping;Caramel Syrup
+Caramel;Caramel Topping;Caramel Syrup;Carmel
+Butterscotch
 Cherries;Cherry
 Blackberries;Blackberry
 Blackberry Juice;blackberris (juiced);Juice, Blackberry;Blackberries Juiced;Juiced Blackberries
@@ -231,7 +232,7 @@ Tangerine Peel;Tangerine Skin
 Tangerine Zest
 Tangerines;Tangerine
 Apple Puree
-Apple Cider
+Apple Cider;Cider
 Maple Syrup
 Strawberries;Strawberry
 White Pepper;White Peppercorn;White Peppercorns
@@ -247,7 +248,7 @@ Rosehips;Rose hips;Rosehip;Rose hip
 Sage
 Turmeric;tumeric
 Rosemary
-Chamomile;Chamomile flowers
+Chamomile;Chamomile flowers;cammomille;camomille
 Dragon Fruit;Dragonfruit
 Mango;Mangoes;Mangos
 Guava;Guavas
@@ -381,7 +382,26 @@ Piloncillo
 Celery
 Onion
 Pomegranate Juice;POM Juice
-Demerara Sugar;Demerara;Dememera
+Demerara Sugar;Demerara;Dememera;damerara
 Blood Orange Peel
 Mahleb;Mahlab;mahaleb
 Assam Tea;Tea, Assam
+Pine Needles
+Teaberries;Teaberry
+Galangal;Galanga
+Horseradish
+Calamus
+Pistachio;Pistachios;Pistachioes
+Cedar;Cedar Spiral
+Muscovado Sugar;Muscovado
+Chai Tea;Tea, Chai
+Buddha's Hand;Buddhas Hand
+Buddha's Hand Zest;Buddhas Hand Zest
+Lilac;Lilacs
+Brown Sugar
+Tarragon;Terragon
+Chokeberries
+Chokeberry Juice Concentrate
+Chokeberry Juice
+Yuzu;Yuzus
+Bergamot

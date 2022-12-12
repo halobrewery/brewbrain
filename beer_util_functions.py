@@ -44,3 +44,32 @@ def oe_ae_re_abv_atten(original_extract, apparent_extract, final_gravity=None):
 
 def coarsegrindasis_to_ppg(cgai): return cgai * 46.0  # Convert Coarse-Grind-As-Is of a grain addition into Points-Per-Pound-Per-Gallon
 def coarsegrindasis_to_pkl(cgai): return cgai * 384.0 # Convert Coarse-Grind-As-Is of a grain addition into Points-Per-Kilogram-Per-Litre
+
+# Alpha Acid and IBU Calculations
+PELLET_UTIL_MULTIPLIER = 1.15
+PLUG_UTIL_MULTIPLIER   = 1.02
+LEAF_UTIL_MULTIPLIER   = 1.00
+
+def hop_form_utilization(form):
+  """Get the utilization for the given form (e.g., pellet,leaf,plug) of a hop.
+  Args:
+      form (string): The form type of the hop {pellet,leaf,plug}.
+  Returns:
+      float: The utilization multiplier for calculating final IBUs or alpha acid concentrations from that hop.
+  """
+  if form == 'pellet': return PELLET_UTIL_MULTIPLIER
+  elif form == 'plug': return PLUG_UTIL_MULTIPLIER,
+  else: return LEAF_UTIL_MULTIPLIER
+
+def alpha_acid_mg_per_l(aa_dec, hop_amt_g, postboil_vol_l):
+  """Calculates the added alpha acids in mg/L for a given hop boil addition.
+  Args:
+    aa_dec (float): Decimal alpha acid value for the hop addition.
+    hop_amt_g (float): Hop quantity in grams.
+    postboil_vol_l (float): Post-boil volume in Liters.
+  Returns:
+    float: The alpha acids in mg/L for the hop addition.
+  """
+  return aa_dec * hop_amt_g * 1000 / postboil_vol_l
+  
+  

@@ -19,7 +19,7 @@ def build_misc_name_dicts():
 
 def cleanup_misc_name(misc_name, recipe_version):
   misc_name = misc_name.lower()
-  if re.search(r"(cacl|flour|starch|brew(bri|tan)|clearex|gjær|wln\s*1000|prota|polyc|oxygen|biofi|ferm\s?cap|kleer|foam|clari(fy|ty)|delete|floc|flock|(irish|super)\s*moss|nutri|chiller|chiiler|recirculate|pump[^k]|cooler|device|gelat|ph\s*stab|5\.2|hop\s?shot|oysters?|(rice|oat)\s*(hull|husk|shell)s?)", misc_name) != None: return "ignore"
+  if re.search(r"(colou?ring|diammon|phosphat|ising|cacl|flour|starch|brew(bri|tan)|clearex|gjær|wln\s*1000|prota|polyc|oxygen|biofi|ferm\s?cap|kleer|foam|clari(fy|ty)|delete|floc|flock|(irish|super)\s*moss|nutri|chiller|chiiler|recirculate|pump[^k]|cooler|device|gelat|ph\s*stab|5\.2|hop\s?shot|oysters?|(rice|oat)\s*(hull|husk|shell)s?)", misc_name) != None: return "ignore"
   if re.search(r"\b(camp?den|bacon|yeast|dap|tequila|whiskey|cognac|rum|hops?|vodka|bo?urbon|brandy|daniels?|maker'?s|rye)\b", misc_name) != None: return "ignore"
   if re.search(r"(calcium\s*(sul(ph|f)ate)|caso4|gyp?sum|sulfato(.){2,4}c(á|a)lc)", misc_name) != None: return "gypsum"
   if re.search(r"(junip)", misc_name) != None: return "juniper"
@@ -29,7 +29,7 @@ def cleanup_misc_name(misc_name, recipe_version):
     if re.search(r"(molas|black\s?str)", misc_name) != None: "molasses"
     if re.search(r"(lactos|milk\s*sugar)", misc_name) != None: return "lactose"
     if re.search(r"(maltodr?ex)", misc_name) != None: return "maltodextrin"
-    if re.search(r"(sucr|(table|cane)\s*sug|sugar\s*cane)", misc_name) != None: return "sucrose"
+    if re.search(r"(sucr|(raw|table|cane)\s*sug|sugar\s*cane)", misc_name) != None: return "sucrose"
     if re.search(r"(dextro|(corn|prime?ing?)\s*sug)", misc_name) != None: return "dextrose"
     if re.search(r"(molass|black\s*strap)", misc_name) != None: return "molasses"
     if re.search(r"(agave|fruct)", misc_name) != None: return "agave nectar"
@@ -37,7 +37,7 @@ def cleanup_misc_name(misc_name, recipe_version):
     if re.search(r"(\bpb\b|peanut but)", misc_name) != None: return "powdered peanut butter"
     if re.search(r"(grape\s*conc)", misc_name) != None: return "grape concentrate"
     if re.search(r"(wild\s*grapes?)", misc_name) != None: return "grapes"
-    if re.search(r"((cabernet|sauvignon|chardonay|riesling|grape)\s*(grape)?\s*must)", misc_name) != None: return "grape juice/must"
+    if re.search(r"((cabernet|sauvignon|chardonay|riesling|grape|sauvignon|pinot)\s*(blanc|noir)?\s*(grape)?\s*must)", misc_name) != None: return "grape juice/must"
     if re.search(r"\b(honey)\b", misc_name) != None: return "honey"
     
     if re.search(r"(oak)", misc_name) != None:
