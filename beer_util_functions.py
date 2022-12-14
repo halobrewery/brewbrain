@@ -53,12 +53,12 @@ LEAF_UTIL_MULTIPLIER   = 1.00
 def hop_form_utilization(form):
   """Get the utilization for the given form (e.g., pellet,leaf,plug) of a hop.
   Args:
-      form (string): The form type of the hop {pellet,leaf,plug}.
+      form (string): The form type of the hop {pellet,leaf,plug}, must be lowercase - values other than pellet or plug are treated as a default (1.0 multiplier).
   Returns:
       float: The utilization multiplier for calculating final IBUs or alpha acid concentrations from that hop.
   """
   if form == 'pellet': return PELLET_UTIL_MULTIPLIER
-  elif form == 'plug': return PLUG_UTIL_MULTIPLIER,
+  elif form == 'plug': return PLUG_UTIL_MULTIPLIER
   else: return LEAF_UTIL_MULTIPLIER
 
 def alpha_acid_mg_per_l(aa_dec, hop_amt_g, postboil_vol_l):
@@ -70,6 +70,6 @@ def alpha_acid_mg_per_l(aa_dec, hop_amt_g, postboil_vol_l):
   Returns:
     float: The alpha acids in mg/L for the hop addition.
   """
-  return aa_dec * hop_amt_g * 1000 / postboil_vol_l
+  return (aa_dec * hop_amt_g * 1000.0) / postboil_vol_l
   
   
