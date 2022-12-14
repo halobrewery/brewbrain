@@ -321,7 +321,7 @@ class RecipeML(Base):
       prefix = self.MASH_STEP_PREFIX+str(i+1)
       step = {}
       for postfix in self.MASH_STEP_POSTFIXES:
-        step[prefix+postfix] = getattr(self, prefix+postfix)
+        step[postfix] = getattr(self, prefix+postfix)
       steps.append(step)
     return steps
 
