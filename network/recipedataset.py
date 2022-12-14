@@ -139,7 +139,7 @@ class RecipeDataset(torch.utils.data.Dataset):
           assert adjunctAT.adjunct.core_adjunct_id != None
           adjunct_core_type_inds[idx] = core_adjs_dbid_to_idx[adjunctAT.adjunct.core_adjunct_id]
           vol = recipeML.fermenter_vol if adjunctAT.stage == None else _recipe_vol_at_stage(recipeML, infusion_vol, adjunctAT.stage)
-          assert vol != None
+          assert vol != None and vol > 0
           adjunct_amts[idx] = (adjunctAT.amount * 1000.0) / vol
         recipe_data['adjunct_core_type_inds'] = adjunct_core_type_inds
         recipe_data['adjunct_amts'] = adjunct_amts
@@ -169,7 +169,9 @@ class RecipeDataset(torch.utils.data.Dataset):
         misc_stage_inds = np.zeros((self.NUM_MISC_SLOTS), dtype=np.int32) # stage (index)
         for idx, miscAT in enumerate(recipeML.miscs):
           misc_type_inds[idx] = miscs_dbid_to_idx[miscAT.misc_id]
-          misc_amts[idx] = (miscAT.amount * 1000.0) / _recipe_vol_at_stage(miscAT.stage)
+          vol =  _recipe_vol_at_stage(recipeML, infusion_vol, miscAT.stage)
+          assert vol != None and vol > 0
+          misc_amts[idx] = (miscAT.amount * 1000.0) / vol
           misc_times[idx] = miscAT.time
           misc_stage_inds[idx] = misc_stage_name_to_idx[miscAT.stage]
         recipe_data['misc_type_inds'] = misc_type_inds
