@@ -12,7 +12,20 @@ def remove_zero_mash_or_ferment_step_recipes(session):
   for recipe in bad_recipes:
     session.delete(recipe)
 
-def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
+def remove_mash_step(recipe, step_num):
+  assert step_num >= 1 and step_num <= recipe.num_mash_steps
+  for step in range(step_num, recipe.num_mash_steps+1):
+    prefix_prev = RecipeML.MASH_STEP_PREFIX+str(step)
+    if step == 6:
+      for attr in RecipeML.MASH_STEP_POSTFIXES:
+        setattr(recipe, prefix_prev+attr, None)
+    else:
+      prefix_curr = RecipeML.MASH_STEP_PREFIX+str(step+1)
+      for attr in RecipeML.MASH_STEP_POSTFIXES:
+        setattr(recipe, prefix_prev+attr, getattr(recipe, prefix_curr+attr))
+  recipe.num_mash_steps -= 1
+
+def condense_mash_steps(recipe):
   DEFAULT_GRAIN_TO_WATER_RATIO = 2.6 # L/Kg
   GRAIN_ABSORB_L_PER_KG = 1.00144835
 
@@ -27,8 +40,7 @@ def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
       recipe.mash_step_1_type = "infusion"
       recipe.mash_step_1_infuse_amt = total_grain_mass * DEFAULT_GRAIN_TO_WATER_RATIO
       recipe.mash_step_1_time = max(45, recipe.mash_step_1_time)
-      if recalc_hash:
-        recipe.hash = recipe.gen_hash()
+      session.flush()
       return True
     else:
       return False
@@ -39,27 +51,15 @@ def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
   
   # There appears enough water to make the mash happen, we just need to find it 
   # in the other infusion steps and move it into the first infusion step... 
-  if recipe.num_mash_steps == 1 and recipe.mash_step_1_type != "infusion":
-    return False
-  
-  # First thing we need to do is to make the initial mash step an infusion (can't do a mash without water!)
-  # Heating up the grains is not a relevant step for our purposes
-  if recipe.mash_step_1_type != "infusion":
+  if recipe.mash_step_1_type != "infusion" or recipe.mash_step_1_type != "decoction":
     recipe.mash_step_1_type = "infusion"
-    recipe.mash_step_1_infuse_amt = max(0, recipe.mash_step_1_infuse_amt) if recipe.mash_step_1_infuse_amt != None else 0
+    if recipe.num_mash_steps == 1:
+      session.flush()
+      return True
+    else:
+      recipe.mash_step_1_infuse_amt = max(0, recipe.mash_step_1_infuse_amt) if recipe.mash_step_1_infuse_amt != None else 0
 
-  def remove_mash_step(step_idx):
-    assert step_idx >= 1 and step_idx <= recipe.num_mash_steps
-    for idx in range(step_idx, recipe.num_mash_steps+1):
-      prefix_prev = RecipeML.MASH_STEP_PREFIX+str(idx)
-      if idx == 6:
-        for attr in RecipeML.MASH_STEP_POSTFIXES:
-          setattr(recipe, prefix_prev+attr, None)
-      else:
-        prefix_curr = RecipeML.MASH_STEP_PREFIX+str(idx+1)
-        for attr in RecipeML.MASH_STEP_POSTFIXES:
-          setattr(recipe, prefix_prev+attr, getattr(recipe, prefix_curr+attr))
-    recipe.num_mash_steps -= 1
+
 
   curr_infuse_amt  = recipe.mash_step_1_infuse_amt or 0
   curr_infuse_start_temp = recipe.mash_step_1_start_temp
@@ -81,7 +81,7 @@ def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
         curr_infuse_end_temp = max(curr_infuse_end_temp, getattr(recipe, prefix+"_end_temp"))
         curr_infuse_time += getattr(recipe, prefix+"_time")
         first_infusion_fixed = curr_infuse_amt > grain_absorb_vol # Update whether there's a reasonable amount of water yet
-        remove_mash_step(i)
+        remove_mash_step(recipe, i)
         continue
       if infuse_amt == None or infuse_amt <= 0:
         # This should probably be a temperature step, not an infuse step.
@@ -90,7 +90,7 @@ def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
           curr_infuse_start_temp =  max(curr_infuse_start_temp, getattr(recipe, prefix+"_start_temp"))
           curr_infuse_end_temp = max(curr_infuse_end_temp, getattr(recipe, prefix+"_end_temp"))
           curr_infuse_time += getattr(recipe, prefix+"_time")
-          remove_mash_step(i)
+          remove_mash_step(recipe, i)
           continue
         else:
           # Change this step to be a temperature step
@@ -104,33 +104,158 @@ def clean_up_recipe_mash_steps(recipe, recalc_hash=True):
     recipe.mash_step_1_start_temp = curr_infuse_start_temp
     recipe.mash_step_1_end_temp = curr_infuse_end_temp
     recipe.mash_step_1_infuse_amt = curr_infuse_amt
-  
-  if recalc_hash:
-    recipe.hash = recipe.gen_hash()
+
+  session.flush()
   return True
+
+def fix_non_temp_mash_steps(session):
+  # Make sure all the temperature steps are _actually_ temperature steps (no infusion amounts)
+  # and all infusion steps are actually infusions (have infusion amounts)
+  bad_recipes = session.scalars(select(RecipeML).filter(
+    or_(
+    and_(RecipeML.mash_step_1_infuse_amt > 0, RecipeML.mash_step_1_type == 'temperature'), and_(or_(RecipeML.mash_step_1_infuse_amt <= 0, RecipeML.mash_step_1_infuse_amt == None), RecipeML.mash_step_1_type != 'temperature'),
+    and_(RecipeML.mash_step_2_infuse_amt > 0, RecipeML.mash_step_2_type == 'temperature'), and_(or_(RecipeML.mash_step_2_infuse_amt <= 0, RecipeML.mash_step_2_infuse_amt == None), RecipeML.mash_step_2_type != 'temperature'),
+    and_(RecipeML.mash_step_3_infuse_amt > 0, RecipeML.mash_step_3_type == 'temperature'), and_(or_(RecipeML.mash_step_3_infuse_amt <= 0, RecipeML.mash_step_3_infuse_amt == None), RecipeML.mash_step_3_type != 'temperature'),
+    and_(RecipeML.mash_step_4_infuse_amt > 0, RecipeML.mash_step_4_type == 'temperature'), and_(or_(RecipeML.mash_step_4_infuse_amt <= 0, RecipeML.mash_step_4_infuse_amt == None), RecipeML.mash_step_4_type != 'temperature'),
+    and_(RecipeML.mash_step_5_infuse_amt > 0, RecipeML.mash_step_5_type == 'temperature'), and_(or_(RecipeML.mash_step_5_infuse_amt <= 0, RecipeML.mash_step_5_infuse_amt == None), RecipeML.mash_step_5_type != 'temperature'),
+    and_(RecipeML.mash_step_6_infuse_amt > 0, RecipeML.mash_step_6_type == 'temperature'), and_(or_(RecipeML.mash_step_6_infuse_amt <= 0, RecipeML.mash_step_6_infuse_amt == None), RecipeML.mash_step_6_type != 'temperature'),
+  ))).all()
+  for recipe in bad_recipes:
+    for step in range(1, recipe.num_mash_steps+1):
+      prefix = RecipeML.MASH_STEP_PREFIX+str(step)
+      step_type  = getattr(recipe, prefix+"_type")
+      infuse_amt = getattr(recipe, prefix+"_infuse_amt")
+      if step_type == 'temperature':
+        if infuse_amt != None and infuse_amt > 0:
+          setattr(recipe, prefix+"_type", "infusion")
+          session.flush()
+      else:
+        if infuse_amt == None or infuse_amt <= 0:
+          setattr(recipe, prefix+"_type", "temperature")
+          setattr(recipe, prefix+"_infuse_amt", None)
+          session.flush()
+          
+          
+def remove_sparge_from_mash_steps(session):
+  # Remove sparge steps from mash steps
+  bad_recipes = session.scalars(select(RecipeML).filter(
+    RecipeML.num_mash_steps > 1,
+    or_(
+      RecipeML.mash_step_2_start_temp >= RecipeML.sparge_temp, 
+      RecipeML.mash_step_3_start_temp >= RecipeML.sparge_temp,
+      RecipeML.mash_step_4_start_temp >= RecipeML.sparge_temp, 
+      RecipeML.mash_step_5_start_temp >= RecipeML.sparge_temp, 
+      RecipeML.mash_step_6_start_temp >= RecipeML.sparge_temp,
+      RecipeML.mash_step_2_time <= 0, 
+      RecipeML.mash_step_3_time <= 0,
+      RecipeML.mash_step_4_time <= 0, 
+      RecipeML.mash_step_5_time <= 0, 
+      RecipeML.mash_step_6_time <= 0,
+    )
+  )).all()
+  for recipe in bad_recipes:
+    prefix = RecipeML.MASH_STEP_PREFIX+str(recipe.num_mash_steps)
+    last_step_infuse_amt = getattr(recipe, prefix+"_infuse_amt")
+    last_step_temp = getattr(recipe, prefix+"_start_temp")
+    last_step_time = getattr(recipe, prefix+"_time")
+    last_step_type = getattr(recipe, prefix+"_type")
+    if last_step_infuse_amt != None and last_step_infuse_amt > 0 and (last_step_temp >= recipe.sparge_temp or last_step_time <= 0):
+      # Remove the last step from the mash - it's actually the sparge 
+      # or has no time associated with it
+      for postfix in RecipeML.MASH_STEP_POSTFIXES:
+        setattr(recipe, prefix+postfix, None)
+      recipe.num_mash_steps -= 1
+      session.flush()
+    elif last_step_infuse_amt == None or last_step_infuse_amt <= 0:
+      if last_step_type == "infusion":
+        setattr(recipe, prefix+"_type", "temperature")
+        session.flush()
+    else:
+      # There is an infusion amount ... make sure the step is not "temperature"
+      if last_step_type == "temperature":
+        setattr(recipe, prefix+"_type", "infusion")
+        session.flush()
+
+def fix_min_max_step_time(session):
+  MIN_STEP_TIME = 0
+  MAX_STEP_TIME = 90
+  # Make sure the time and temperatures of all mash steps makes sense
+  bad_recipes = session.scalars(select(RecipeML).filter(or_(
+    RecipeML.mash_step_1_time < MIN_STEP_TIME, RecipeML.mash_step_2_time < MIN_STEP_TIME, RecipeML.mash_step_3_time < MIN_STEP_TIME,
+    RecipeML.mash_step_4_time < MIN_STEP_TIME, RecipeML.mash_step_5_time < MIN_STEP_TIME, RecipeML.mash_step_6_time < MIN_STEP_TIME,
+    RecipeML.mash_step_1_time > MAX_STEP_TIME, RecipeML.mash_step_2_time > MAX_STEP_TIME, RecipeML.mash_step_3_time > MAX_STEP_TIME,
+    RecipeML.mash_step_4_time > MAX_STEP_TIME, RecipeML.mash_step_5_time > MAX_STEP_TIME, RecipeML.mash_step_6_time > MAX_STEP_TIME,
+  ))).all()
+  for recipe in bad_recipes:
+    recipe.mash_step_1_time = max(MIN_STEP_TIME, min(MAX_STEP_TIME, recipe.mash_step_1_time))
+    recipe.mash_step_2_time = max(MIN_STEP_TIME, min(MAX_STEP_TIME, recipe.mash_step_2_time)) if recipe.mash_step_2_time != None else None
+    recipe.mash_step_3_time = max(MIN_STEP_TIME, min(MAX_STEP_TIME, recipe.mash_step_3_time)) if recipe.mash_step_3_time != None else None
+    recipe.mash_step_4_time = max(MIN_STEP_TIME, min(MAX_STEP_TIME, recipe.mash_step_4_time)) if recipe.mash_step_4_time != None else None
+    recipe.mash_step_5_time = max(MIN_STEP_TIME, min(MAX_STEP_TIME, recipe.mash_step_5_time)) if recipe.mash_step_5_time != None else None
+    recipe.mash_step_6_time = max(MIN_STEP_TIME, min(MAX_STEP_TIME, recipe.mash_step_6_time)) if recipe.mash_step_6_time != None else None
+    session.flush()
+
+def fix_min_max_step_temp(session):
+  # For single step mashes, make sure temperatures are reasonable for converison
+  MIN_STEP_TEMP = 60
+  MAX_STEP_TEMP = 70
+  bad_recipes = session.scalars(select(RecipeML).filter(
+    RecipeML.num_mash_steps == 1, 
+    or_(RecipeML.mash_step_1_start_temp > MAX_STEP_TEMP, RecipeML.mash_step_1_start_temp < MIN_STEP_TEMP),
+    or_(RecipeML.mash_step_1_end_temp > MAX_STEP_TEMP, RecipeML.mash_step_1_end_temp < MIN_STEP_TEMP)
+  )).all()
+  
+  if len(bad_recipes) == 0: return
+  
+  from distributions import distributions_by_core_style_id
+  core_style_id_to_dist = distributions_by_core_style_id(session)
+  
+  for recipe in bad_recipes:
+    # Replace the first mash step temperature with something reasonable from the distribution
+    style_dist = core_style_id_to_dist[recipe.style.core_style_id] 
+    
+    start_temp, end_temp = style_dist.sample_named_values_conds(['mash_step_1_start_temp', 'mash_step_1_end_temp'], [('num_mash_steps', 1), ('mash_step_1_type', 'infusion')])
+    start_temp = min(69, max(62, start_temp))
+    end_temp   = min(69, max(62, end_temp))
+    recipe.mash_step_1_start_temp = max(start_temp, end_temp)
+    recipe.mash_step_1_end_temp   = min(start_temp, end_temp)
+    
+    session.flush()
+
+def fix_low_time_initial_mash_steps(session):
+  bad_recipes = session.scalars(select(RecipeML).filter(RecipeML.num_mash_steps == 1, RecipeML.mash_step_1_time < 20)).all()
+  if len(bad_recipes) == 0: return
+  
+  from distributions import distributions_by_core_style_id
+  core_style_id_to_dist = distributions_by_core_style_id(session)
+  
+  for recipe in bad_recipes:
+    style_dist = core_style_id_to_dist[recipe.style.core_style_id]
+    recipe.mash_step_1_time = max(20, style_dist.sample_named_value_conds('mash_step_1_time', [('num_mash_steps', 1), ('mash_step_1_type', 'infusion')]))
+    session.flush()
 
 
 def clean_up_mash_steps(session):
   MAX_L_PER_KG_DECOC = 3.12953
   MIN_L_PER_KG_DECOC = 2.607939
+
+
+
   
-  # Find all starting decoctions or temperatures and just remove them
-  bad_recipes = session.query(RecipeML).filter(or_(RecipeML.mash_step_1_type == "temperature", RecipeML.mash_step_1_type == "decoction")).all()
-  for recipe in bad_recipes:
-    session.delete(recipe)
-  session.commit()
-
-  bad_recipes = session.query(RecipeML).filter(or_(
-    RecipeML.mash_step_1_time > 180, RecipeML.mash_step_2_time > 180, RecipeML.mash_step_3_time > 180,
-    RecipeML.mash_step_4_time > 180, RecipeML.mash_step_5_time > 180, RecipeML.mash_step_6_time > 180,
-    RecipeML.mash_step_1_start_temp > 78, RecipeML.mash_step_2_start_temp > 78, RecipeML.mash_step_3_start_temp > 78,
-    RecipeML.mash_step_4_start_temp > 78, RecipeML.mash_step_5_start_temp > 78, RecipeML.mash_step_6_start_temp > 78,
-    RecipeML.mash_step_1_infuse_amt <= 0
-  )).all()
-  for recipe in bad_recipes:
-    session.delete(recipe)
-  session.commit()
-
+  
+  
+  
+  '''
+  RecipeML.mash_step_1_start_temp > 78, RecipeML.mash_step_2_start_temp > 78, RecipeML.mash_step_3_start_temp > 78,
+  RecipeML.mash_step_4_start_temp > 78, RecipeML.mash_step_5_start_temp > 78, RecipeML.mash_step_6_start_temp > 78,
+  RecipeML.mash_step_1_infuse_amt <= 0
+  '''
+  
+  
+  
+  
+  
+  '''
   # Condense the mash steps for recipes with invalid infusion volumes, 
   # delete them if none of their steps have enough water for the grains 
   # (check against the typical grain absorption volume)
@@ -149,13 +274,11 @@ def clean_up_mash_steps(session):
   ).all()
 
   for recipe in bad_recipes:
-    if not clean_up_recipe_mash_steps(recipe):
+    if not condense_mash_steps(recipe):
       session.delete(recipe)
-    session.commit()
-
-  #RecipeML.mash_step_2_infuse_amt == None,  RecipeML.mash_step_3_infuse_amt == None, 
-  #RecipeML.mash_step_4_infuse_amt == None, RecipeML.mash_step_5_infuse_amt == None,
-  #RecipeML.mash_step_6_infuse_amt == None,
+    session.flush()
+  session.commit()
+  '''
   '''
   # Find recipes that have a bad temperature step to start and move up all other steps
   bad_recipes = session.query(RecipeML).filter(
@@ -364,5 +487,7 @@ if __name__ == "__main__":
     #remove_zero_amounts(session)
 
     #misc_adjunct_to_adjunct(session)
-    aroma_to_whirlpool_hops(session)
+    #aroma_to_whirlpool_hops(session)
+    
+    fix_low_time_initial_mash_steps(session)
     session.commit()

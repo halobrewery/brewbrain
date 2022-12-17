@@ -26,6 +26,10 @@ class StyleDistribution:
   def sample_named_value_cond(self, arr_name, cond_name, cond_value):
     values = self.sample_named_values_cond([arr_name], cond_name, cond_value)
     return values[0] if len(values) > 0 else None
+  
+  def sample_named_value_conds(self, arr_name, conds_name_value_tuples):
+    values = self.sample_named_values_conds([arr_name], conds_name_value_tuples)
+    return values[0] if len(values) > 0 else None
 
   def sample_named_values_cond(self, arr_names, cond_name, cond_value):
     idx_choice_tuples = [(i,c) for i, c in enumerate(self.dist_map[cond_name]) if c == cond_value]

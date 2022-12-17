@@ -1,5 +1,6 @@
 import sys
 import os
+import pickle
 
 import torch
 import numpy as np
@@ -10,12 +11,14 @@ from sqlalchemy import select
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from db_scripts.brewbrain_db import RecipeML, CoreGrain, CoreAdjunct, Hop, Microorganism, Misc
+from db_scripts.brewbrain_db import RecipeML, CoreGrain, CoreAdjunct, Misc
 from db_scripts.brewbrain_db import RecipeMLMiscAT, RecipeMLHopAT, RecipeMLMicroorganismAT
 
 from beer_util_functions import hop_form_utilization, alpha_acid_mg_per_l
 
 class RecipeDataset(torch.utils.data.Dataset):
+  _VERSION = 1
+  
   NUM_GRAIN_SLOTS = 16
   NUM_ADJUNCT_SLOTS = 8
   NUM_HOP_SLOTS = 32
@@ -23,16 +26,26 @@ class RecipeDataset(torch.utils.data.Dataset):
   NUM_MICROORGANISM_SLOTS = 8
   NUM_FERMENT_STAGE_SLOTS = 2
 
-  def __init__(self, db_engine=None): 
+  def __init__(self, db_engine=None):
+    self.recipes = []
+    self.block_size = 128
+    self.last_saved_idx = 0
     if db_engine != None: self.load_from_db(db_engine)
 
-  def load_from_db(self, db_engine):
+  def add_dataset(self, ds):
+    """Add another RecipeDataset to this one.
+    Args:
+        ds (RecipeDataset): The other dataset to add to this one.
+    """
+    self.recipes += ds.recipes
+
+  def load_from_db(self, db_engine, pkl_opts=None):
     # Convert the database into numpy arrays as members of this
     with Session(db_engine) as session:
       # Read all the recipes into numpy format
-      self._load_recipes(session)
+      self._load_recipes(session, pkl_opts)
 
-  def _load_recipes(self, session):
+  def _load_recipes(self, session, pkl_opts):
     # Build the set of tables for look-up between indices and database ids
     # NOTE: 0 is the "empty slot" category for all look-ups
     
@@ -48,38 +61,44 @@ class RecipeDataset(torch.utils.data.Dataset):
       dbids = session.scalars(select(at_id).group_by(at_id)).all()
       return _build_lookup(dbids)
     
-    core_grains_dbid_to_idx, core_grains_idx_to_dbid = _db_idx_lookups(CoreGrain) # Core Grains
-    core_adjs_dbid_to_idx, core_adjs_idx_to_dbid = _db_idx_lookups(CoreAdjunct)   # Core Adjuncts
-    hops_dbid_to_idx, hops_idx_to_dbid = _db_used_only_idx_lookups(RecipeMLHopAT.hop_id) # Hops
-    miscs_dbid_to_idx, miscs_idx_to_dbid = _db_idx_lookups(Misc) # Miscs
-    mos_dbid_to_idx, mos_idx_to_dbid = _db_used_only_idx_lookups(RecipeMLMicroorganismAT.microorganism_id) # Microorganisms
+    core_grains_dbid_to_idx, self.core_grains_idx_to_dbid = _db_idx_lookups(CoreGrain) # Core Grains
+    core_adjs_dbid_to_idx, self.core_adjs_idx_to_dbid = _db_idx_lookups(CoreAdjunct)   # Core Adjuncts
+    hops_dbid_to_idx, self.hops_idx_to_dbid = _db_used_only_idx_lookups(RecipeMLHopAT.hop_id) # Hops
+    miscs_dbid_to_idx, self.miscs_idx_to_dbid = _db_idx_lookups(Misc) # Miscs
+    mos_dbid_to_idx, self.mos_idx_to_dbid = _db_used_only_idx_lookups(RecipeMLMicroorganismAT.microorganism_id) # Microorganisms
     
     # Sub-enumerations
     # Mash step types (e.g., Infusion, Decoction, Temperature)
-    mash_step_name_to_idx, mash_step_idx_to_name = _build_lookup(_mash_step_types(session))
+    mash_step_name_to_idx, self.mash_step_idx_to_name = _build_lookup(_mash_step_types(session))
     # Misc stage (e.g., Mash, Boil, Primary, ...)
-    misc_stage_name_to_idx, misc_stage_idx_to_name = _build_lookup(_misc_stage_types(session))
+    misc_stage_name_to_idx, self.misc_stage_idx_to_name = _build_lookup(_misc_stage_types(session))
     # Hop stage (e.g., Mash, Boil, Primary, ...)
-    hop_stage_name_to_idx, hop_stage_idx_to_name = _build_lookup(_hop_stage_types(session))
+    hop_stage_name_to_idx, self.hop_stage_idx_to_name = _build_lookup(_hop_stage_types(session))
     # Microorganism stage (e.g., Primary, Secondary)
-    mo_stage_name_to_idx, mo_stage_idx_to_name = _build_lookup(_microorganism_stage_types(session))
+    mo_stage_name_to_idx, self.mo_stage_idx_to_name = _build_lookup(_microorganism_stage_types(session))
     
     # ...Core Styles
     #corestyle_dbids = session.scalars(select(CoreStyle.id)).all()
     #self.core_styles_dbid_to_idx = {csid: i+1 for i, csid in enumerate(corestyle_dbids)}
     #self.core_styles_idx_to_dbid = {i+1: csid for i, csid in enumerate(corestyle_dbids)}
     
-    
-    self.recipes = []
+    #start_block_idx = block_read_info['start_block_idx'] or 0 # Starting index of the blocks to start loading
+    #block_size = block_read_info['block_size'] or 1024        # Size of each block to read
+    #num_blocks = block_read_info['num_blocks'] or -1          # Number of blocks to load from the database, -1 means no limit
     
     # Only load fixed quantities of rows into memory at a time, the recipes table is BIG
-    recipe_select_stmt = select(RecipeML).execution_options(yield_per=1024)
+    block_idx = 0
+    recipe_select_stmt = select(RecipeML).execution_options(yield_per=self.block_size)
     for recipeML_partition in session.scalars(recipe_select_stmt).partitions():
-      
+      if block_idx < self.last_saved_idx:
+        block_idx += 1
+        continue
+
       for recipeML in recipeML_partition:
         infusion_vol = recipeML.total_infusion_vol()
         recipe_data = {
-          'dbid': recipeML.id,
+          'dbid': recipeML.id, # Allows us to re-lookup the recipe if we need more info about it at some point
+          'boil_time': recipeML.boil_time,
           'mash_ph': recipeML.mash_ph,
           'sparge_temp': recipeML.sparge_temp,
         }
@@ -190,7 +209,24 @@ class RecipeDataset(torch.utils.data.Dataset):
         
         self.recipes.append(recipe_data)
         
-      break # TODO: Remove this - just for debugging
+      block_idx += 1
+      if pkl_opts != None:
+        if 'write_every_blocks' not in pkl_opts or block_idx % pkl_opts['write_every_blocks'] == 0:
+          filename = pkl_opts['filename']
+          print(f"Writing/Overwriting file {filename}, at block index: {block_idx}")
+          with open(filename, 'wb') as f:
+            self.last_saved_idx = block_idx
+            pickle.dump(self, f)
+    
+    # Make sure we save the final dataset (if pickle options are enabled)        
+    if pkl_opts != None:
+      filename = pkl_opts['filename']
+      print(f"Finished loading dataset, writing final cached data to file {filename}")
+      with open(filename, 'wb') as f:
+        self.last_saved_idx = block_idx
+        pickle.dump(self, f)
+    
+  
 
 def _mash_step_types(session):
   step_types = set()
@@ -227,4 +263,18 @@ if __name__ == "__main__":
   from db_scripts.brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
-  dataset = RecipeDataset(engine)
+  
+  pickle_opts = {
+    'filename': "recipe_dataset.pkl",
+    'write_every_blocks': 1
+  }
+
+  # Read in whatever has been saved from the dataset up to this point
+  if os.path.exists(pickle_opts['filename']):
+    with open(pickle_opts['filename'], 'rb') as f:
+      dataset = pickle.load(f)
+  else:
+    dataset = RecipeDataset()
+
+  # Continue loading and writing the dataset to disk
+  dataset.load_from_db(engine, pickle_opts)
