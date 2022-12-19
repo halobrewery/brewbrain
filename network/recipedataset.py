@@ -1,6 +1,7 @@
 import sys
 import os
 import pickle
+import copy
 
 import torch
 import numpy as np
@@ -18,14 +19,15 @@ from beer_util_functions import hop_form_utilization, alpha_acid_mg_per_l
 
 
 RECIPE_DATASET_FILENAME = "recipe_dataset.pkl"
+NUM_GRAIN_SLOTS = 16
+NUM_ADJUNCT_SLOTS = 8
+NUM_HOP_SLOTS = 32
+NUM_MISC_SLOTS = 16
+NUM_MICROORGANISM_SLOTS = 8
+NUM_FERMENT_STAGE_SLOTS = 2
+NUM_MASH_STEPS = RecipeML.MAX_MASH_STEPS
 
 class RecipeDataset(torch.utils.data.Dataset):
-  NUM_GRAIN_SLOTS = 16
-  NUM_ADJUNCT_SLOTS = 8
-  NUM_HOP_SLOTS = 32
-  NUM_MISC_SLOTS = 16
-  NUM_MICROORGANISM_SLOTS = 8
-  NUM_FERMENT_STAGE_SLOTS = 2
 
   def __init__(self):
     self._VERSION = 2
@@ -40,8 +42,14 @@ class RecipeDataset(torch.utils.data.Dataset):
   def __getitem__(self, idx):
     if torch.is_tensor(idx):
       idx = idx.item()
-    recipe = self.recipes[idx]
-    # TODO: Normalize the recipe data
+    recipe = copy.deepcopy(self.recipes[idx])
+    
+    # Normalize the relevant recipe data in copied arrays
+    for key, stats in self.normalizers.items():
+      recipe[key] = (recipe[key] - stats.mean()) / stats.std()
+    
+    # TODO: Order malt/adjunct/misc./hop slots highest to least??? ... maybe not... maybe ordering shouldn't matter?
+    
     return recipe
   
   # Pickle (dump)...
@@ -100,9 +108,6 @@ class RecipeDataset(torch.utils.data.Dataset):
       self.normalizers['misc_amts'].add(recipe['misc_amts'][valid_misc_inds])
       self.normalizers['misc_times'].add(recipe['misc_times'][valid_misc_inds])
       
-    
-  
-  
   def add_dataset(self, ds):
     """Add another RecipeDataset to this one.
     Args:
@@ -175,9 +180,9 @@ class RecipeDataset(torch.utils.data.Dataset):
         }
         
         # Mash steps
-        mash_step_type_inds = np.zeros((RecipeML.MAX_MASH_STEPS), dtype=np.int32)   # mash step type (index)
-        mash_step_times = np.zeros((RecipeML.MAX_MASH_STEPS), dtype=np.float32)     # mash step time (mins)
-        mash_step_avg_temps = np.zeros((RecipeML.MAX_MASH_STEPS), dtype=np.float32) # mash step avg. temperature (C)
+        mash_step_type_inds = np.zeros((NUM_MASH_STEPS), dtype=np.int32)   # mash step type (index)
+        mash_step_times = np.zeros((NUM_MASH_STEPS), dtype=np.float32)     # mash step time (mins)
+        mash_step_avg_temps = np.zeros((NUM_MASH_STEPS), dtype=np.float32) # mash step avg. temperature (C)
         mash_steps = recipeML.mash_steps()
         for idx, mash_step in enumerate(mash_steps):
           ms_type = mash_step["_type"]
@@ -200,8 +205,8 @@ class RecipeDataset(torch.utils.data.Dataset):
         recipe_data['mash_step_avg_temps'] = mash_step_avg_temps
         
         # Fermentation steps
-        ferment_stage_times = np.zeros((self.NUM_FERMENT_STAGE_SLOTS), dtype=np.float32) # time (in days)
-        ferment_stage_temps = np.zeros((self.NUM_FERMENT_STAGE_SLOTS), dtype=np.float32) # temperature (in C)
+        ferment_stage_times = np.zeros((NUM_FERMENT_STAGE_SLOTS), dtype=np.float32) # time (in days)
+        ferment_stage_temps = np.zeros((NUM_FERMENT_STAGE_SLOTS), dtype=np.float32) # temperature (in C)
         for idx in range(recipeML.num_ferment_stages):
           prefix = "ferment_stage_" + str(idx+1)
           ferment_stage_times[idx] = getattr(recipeML, prefix+"_time")
@@ -210,8 +215,8 @@ class RecipeDataset(torch.utils.data.Dataset):
         recipe_data['ferment_stage_temps'] = ferment_stage_temps
         
         # Grains
-        grain_core_type_inds = np.zeros((self.NUM_GRAIN_SLOTS), dtype=np.int32) # core grain type (index)
-        grain_amts = np.zeros((self.NUM_GRAIN_SLOTS), dtype=np.float32)         # amount (as a %)
+        grain_core_type_inds = np.zeros((NUM_GRAIN_SLOTS), dtype=np.int32) # core grain type (index)
+        grain_amts = np.zeros((NUM_GRAIN_SLOTS), dtype=np.float32)         # amount (as a %)
         total_grain_qty = 0.0
         for idx, grainAT in enumerate(recipeML.grains):
           assert grainAT.grain.core_grain_id != None
@@ -223,8 +228,8 @@ class RecipeDataset(torch.utils.data.Dataset):
         recipe_data['grain_amts'] = grain_amts
         
         # Adjuncts
-        adjunct_core_type_inds = np.zeros((self.NUM_ADJUNCT_SLOTS), dtype=np.int32) # core adjunct type (index)
-        adjunct_amts = np.zeros((self.NUM_ADJUNCT_SLOTS), dtype=np.float32)         # amount (in ~(g or ml)/L)
+        adjunct_core_type_inds = np.zeros((NUM_ADJUNCT_SLOTS), dtype=np.int32) # core adjunct type (index)
+        adjunct_amts = np.zeros((NUM_ADJUNCT_SLOTS), dtype=np.float32)         # amount (in ~(g or ml)/L)
         for idx, adjunctAT in enumerate(recipeML.adjuncts):
           assert adjunctAT.adjunct.core_adjunct_id != None
           adjunct_core_type_inds[idx] = core_adjs_dbid_to_idx[adjunctAT.adjunct.core_adjunct_id]
@@ -235,10 +240,10 @@ class RecipeDataset(torch.utils.data.Dataset):
         recipe_data['adjunct_amts'] = adjunct_amts
         
         # Hops
-        hop_type_inds = np.zeros((self.NUM_HOP_SLOTS), dtype=np.int32)        # hop type (index)
-        hop_stage_type_inds = np.zeros((self.NUM_HOP_SLOTS), dtype=np.int32)  # hop use/stage (index)
-        hop_times = np.zeros((self.NUM_HOP_SLOTS), dtype=np.float32)          # time (in mins)
-        hop_concentrations = np.zeros((self.NUM_HOP_SLOTS), dtype=np.float32) # if this is a boil hop then the amount is a (concentration of alpha acids in g/L), otherwise it's the hop concentration in g/L
+        hop_type_inds = np.zeros((NUM_HOP_SLOTS), dtype=np.int32)        # hop type (index)
+        hop_stage_type_inds = np.zeros((NUM_HOP_SLOTS), dtype=np.int32)  # hop use/stage (index)
+        hop_times = np.zeros((NUM_HOP_SLOTS), dtype=np.float32)          # time (in mins)
+        hop_concentrations = np.zeros((NUM_HOP_SLOTS), dtype=np.float32) # if this is a boil hop then the amount is a (concentration of alpha acids in g/L), otherwise it's the hop concentration in g/L
         for idx, hopAT in enumerate(recipeML.hops):
           hop_type_inds[idx] = hops_dbid_to_idx[hopAT.hop_id]
           hop_stage_type_inds[idx] = hop_stage_name_to_idx[hopAT.stage]
@@ -253,10 +258,10 @@ class RecipeDataset(torch.utils.data.Dataset):
         recipe_data['hop_concentrations'] = hop_concentrations
 
         # Miscs
-        misc_type_inds = np.zeros((self.NUM_MISC_SLOTS), dtype=np.int32)  # misc type (index)
-        misc_amts = np.zeros((self.NUM_MISC_SLOTS), dtype=np.float32)     # amount (in ~(g or ml)/L)
-        misc_times = np.zeros((self.NUM_MISC_SLOTS), dtype=np.float32)    # time (in mins)
-        misc_stage_inds = np.zeros((self.NUM_MISC_SLOTS), dtype=np.int32) # stage (index)
+        misc_type_inds = np.zeros((NUM_MISC_SLOTS), dtype=np.int32)  # misc type (index)
+        misc_amts = np.zeros((NUM_MISC_SLOTS), dtype=np.float32)     # amount (in ~(g or ml)/L)
+        misc_times = np.zeros((NUM_MISC_SLOTS), dtype=np.float32)    # time (in mins)
+        misc_stage_inds = np.zeros((NUM_MISC_SLOTS), dtype=np.int32) # stage (index)
         for idx, miscAT in enumerate(recipeML.miscs):
           misc_type_inds[idx] = miscs_dbid_to_idx[miscAT.misc_id]
           vol =  _recipe_vol_at_stage(recipeML, infusion_vol, miscAT.stage)
@@ -270,8 +275,8 @@ class RecipeDataset(torch.utils.data.Dataset):
         recipe_data['misc_stage_inds'] = misc_stage_inds
         
         # Microorganisms
-        mo_type_inds  = np.zeros((self.NUM_MICROORGANISM_SLOTS), dtype=np.int32)
-        mo_stage_inds = np.zeros((self.NUM_MICROORGANISM_SLOTS), dtype=np.int32)
+        mo_type_inds  = np.zeros((NUM_MICROORGANISM_SLOTS), dtype=np.int32)
+        mo_stage_inds = np.zeros((NUM_MICROORGANISM_SLOTS), dtype=np.int32)
         for idx, moAT in enumerate(recipeML.microorganisms):
           mo_type_inds[idx]  = mos_dbid_to_idx[moAT.microorganism_id]
           mo_stage_inds[idx] = mo_stage_name_to_idx[moAT.stage]
@@ -339,9 +344,9 @@ def _recipe_vol_at_stage(recipe_ml, infusion_vol, stage_name):
 if __name__ == "__main__":
   with open(RECIPE_DATASET_FILENAME, 'rb') as f:
     dataset = pickle.load(f)
-    
   print("Loaded.")
   
+  '''
   # Clean up some data...
   for recipe in dataset.recipes:
     recipe['misc_amts']  = np.clip(recipe['misc_amts'], 0.0, 1000.0)
@@ -351,9 +356,8 @@ if __name__ == "__main__":
   
   # Resave
   with open(RECIPE_DATASET_FILENAME, 'wb') as f:
-    pickle.dump(dataset, f)
-      
-  exit()
+    pickle.dump(dataset, f)  
+  '''
   
   from torch.utils.data import DataLoader
   dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=0)
