@@ -16,9 +16,10 @@ from db_scripts.brewbrain_db import RecipeMLMiscAT, RecipeMLHopAT, RecipeMLMicro
 
 from beer_util_functions import hop_form_utilization, alpha_acid_mg_per_l
 
+
+RECIPE_DATASET_FILENAME = "recipe_dataset.pkl"
+
 class RecipeDataset(torch.utils.data.Dataset):
-  _VERSION = 1
-  
   NUM_GRAIN_SLOTS = 16
   NUM_ADJUNCT_SLOTS = 8
   NUM_HOP_SLOTS = 32
@@ -26,12 +27,82 @@ class RecipeDataset(torch.utils.data.Dataset):
   NUM_MICROORGANISM_SLOTS = 8
   NUM_FERMENT_STAGE_SLOTS = 2
 
-  def __init__(self, db_engine=None):
+  def __init__(self):
+    self._VERSION = 2
+    
     self.recipes = []
     self.block_size = 128
     self.last_saved_idx = 0
-    if db_engine != None: self.load_from_db(db_engine)
 
+  def __len__(self):
+    return len(self.recipes)
+  
+  def __getitem__(self, idx):
+    if torch.is_tensor(idx):
+      idx = idx.item()
+    recipe = self.recipes[idx]
+    # TODO: Normalize the recipe data
+    return recipe
+  
+  # Pickle (dump)...
+  def __getstate__(self):
+    state = self.__dict__.copy()
+    return state
+  
+  # Unpickle (load)...
+  def __setstate__(self, newstate):
+    self.__dict__.update(newstate)
+    if '_VERSION' not in newstate or newstate['_VERSION'] < 2:
+      # Update to version 2 - version 1 had no normalization data
+      self._VERSION = 2
+      self._calc_normalization()
+      
+  def _calc_normalization(self):
+    from running_stats import RunningStats
+    
+    self.normalizers = {
+      'boil_time':   RunningStats(),
+      'mash_ph':     RunningStats(),
+      'sparge_temp': RunningStats(),
+      'mash_step_times': RunningStats(),
+      'mash_step_avg_temps': RunningStats(),
+      'ferment_stage_times': RunningStats(),
+      'ferment_stage_temps': RunningStats(),
+      'grain_amts': RunningStats(1, 0.5, 0.25), # all grain amounts are percentages in [0,1]
+      'adjunct_amts': RunningStats(),
+      'hop_times': RunningStats(),
+      'hop_concentrations': RunningStats(),
+      'misc_amts': RunningStats(),
+      'misc_times': RunningStats(),
+    }
+    
+    for recipe in self.recipes:
+      self.normalizers['boil_time'].add(recipe['boil_time'])
+      self.normalizers['mash_ph'].add(recipe['mash_ph'])
+      self.normalizers['sparge_temp'].add(recipe['sparge_temp'])
+      
+      valid_step_inds = recipe['mash_step_type_inds'] != 0
+      self.normalizers['mash_step_times'].add(recipe['mash_step_times'][valid_step_inds])
+      self.normalizers['mash_step_avg_temps'].add(recipe['mash_step_avg_temps'][valid_step_inds])
+      
+      valid_ferment_inds = recipe['ferment_stage_times'] != 0
+      self.normalizers['ferment_stage_times'].add(recipe['ferment_stage_times'][valid_ferment_inds])
+      self.normalizers['ferment_stage_temps'].add(recipe['ferment_stage_temps'][valid_ferment_inds])
+      
+      valid_adj_inds = recipe['adjunct_core_type_inds'] != 0
+      self.normalizers['adjunct_amts'].add(recipe['adjunct_amts'][valid_adj_inds])
+      
+      valid_hop_inds = recipe['hop_type_inds'] != 0
+      self.normalizers['hop_times'].add(recipe['hop_times'][valid_hop_inds])
+      self.normalizers['hop_concentrations'].add(recipe['hop_concentrations'][valid_hop_inds])
+      
+      valid_misc_inds = recipe['misc_type_inds'] != 0
+      self.normalizers['misc_amts'].add(recipe['misc_amts'][valid_misc_inds])
+      self.normalizers['misc_times'].add(recipe['misc_times'][valid_misc_inds])
+      
+    
+  
+  
   def add_dataset(self, ds):
     """Add another RecipeDataset to this one.
     Args:
@@ -218,6 +289,9 @@ class RecipeDataset(torch.utils.data.Dataset):
             self.last_saved_idx = block_idx
             pickle.dump(self, f)
     
+    # Calculate the normalizers
+    self._calc_normalization()
+    
     # Make sure we save the final dataset (if pickle options are enabled)        
     if pkl_opts != None:
       filename = pkl_opts['filename']
@@ -256,16 +330,47 @@ def _recipe_vol_at_stage(recipe_ml, infusion_vol, stage_name):
     assert stage_name == 'dry hop' or stage_name == 'primary' or stage_name == 'secondary' or stage_name == 'other' or stage_name == 'finishing'
     return recipe_ml.fermenter_vol
   
-  
+
+#def print_recipe_from_batch(batch, idx):
+#def print_recipe(recipe):
+
+
 
 if __name__ == "__main__":
+  with open(RECIPE_DATASET_FILENAME, 'rb') as f:
+    dataset = pickle.load(f)
+    
+  print("Loaded.")
+  
+  # Clean up some data...
+  for recipe in dataset.recipes:
+    recipe['misc_amts']  = np.clip(recipe['misc_amts'], 0.0, 1000.0)
+    recipe['misc_times'] = np.clip(recipe['misc_times'], 0.0, None)
+    recipe['misc_times'][np.isnan(recipe['misc_times'])] = 0.0
+  dataset._calc_normalization()
+  
+  # Resave
+  with open(RECIPE_DATASET_FILENAME, 'wb') as f:
+    pickle.dump(dataset, f)
+      
+  exit()
+  
+  from torch.utils.data import DataLoader
+  dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=0)
+  for batch_idx, sample_batch in enumerate(dataloader):
+    if batch_idx == 1:
+      break
+  
+
+  '''
+  # Convert the database into a pickled file so that we can quickly load everything into memory for training
   from sqlalchemy import create_engine
   from db_scripts.brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
-  
+    
   pickle_opts = {
-    'filename': "recipe_dataset.pkl",
+    'filename': RECIPE_DATASET_FILENAME,
     'write_every_blocks': 1
   }
 
@@ -278,3 +383,4 @@ if __name__ == "__main__":
 
   # Continue loading and writing the dataset to disk
   dataset.load_from_db(engine, pickle_opts)
+  '''
