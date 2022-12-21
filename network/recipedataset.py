@@ -361,8 +361,9 @@ if __name__ == "__main__":
   
   from torch.utils.data import DataLoader
   dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=0)
-  for batch_idx, sample_batch in enumerate(dataloader):
+  for batch_idx, batch in enumerate(dataloader):
     if batch_idx == 1:
+      print(batch.__dict__)
       break
   
 
