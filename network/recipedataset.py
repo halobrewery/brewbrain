@@ -46,7 +46,7 @@ class RecipeDataset(torch.utils.data.Dataset):
     
     # Normalize the relevant recipe data in copied arrays
     for key, stats in self.normalizers.items():
-      recipe[key] = (recipe[key] - stats.mean()) / stats.std()
+      recipe[key] = ((recipe[key] - stats.mean()) / stats.std()).astype(np.float32)
     
     # TODO: Order malt/adjunct/misc./hop slots highest to least??? ... maybe not... maybe ordering shouldn't matter?
     
