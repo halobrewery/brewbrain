@@ -12,7 +12,7 @@ from sqlalchemy import select
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from db_scripts.brewbrain_db import RecipeML, CoreGrain, CoreAdjunct, Misc
+from db_scripts.brewbrain_db import RecipeML, CoreGrain, CoreAdjunct, Misc, Hop, Microorganism
 from db_scripts.brewbrain_db import RecipeMLMiscAT, RecipeMLHopAT, RecipeMLMicroorganismAT
 
 from beer_util_functions import hop_form_utilization, alpha_acid_mg_per_l
@@ -26,6 +26,8 @@ NUM_MISC_SLOTS = 16
 NUM_MICROORGANISM_SLOTS = 8
 NUM_FERMENT_STAGE_SLOTS = 2
 NUM_MASH_STEPS = RecipeML.MAX_MASH_STEPS
+
+EMPTY_TAG = "<EMPTY>"
 
 class RecipeDataset(torch.utils.data.Dataset):
 
@@ -107,13 +109,8 @@ class RecipeDataset(torch.utils.data.Dataset):
       valid_misc_inds = recipe['misc_type_inds'] != 0
       self.normalizers['misc_amts'].add(recipe['misc_amts'][valid_misc_inds])
       self.normalizers['misc_times'].add(recipe['misc_times'][valid_misc_inds])
-      
-  def add_dataset(self, ds):
-    """Add another RecipeDataset to this one.
-    Args:
-        ds (RecipeDataset): The other dataset to add to this one.
-    """
-    self.recipes += ds.recipes
+  
+  
 
   def load_from_db(self, db_engine, pkl_opts=None):
     # Convert the database into numpy arrays as members of this
@@ -304,8 +301,24 @@ class RecipeDataset(torch.utils.data.Dataset):
       with open(filename, 'wb') as f:
         self.last_saved_idx = block_idx
         pickle.dump(self, f)
-    
-  
+
+  def _db_table_labels(self, db_engine, orm_class, idx_to_dbid_lookup):
+    result = [EMPTY_TAG]
+    with Session(db_engine) as session:
+      result += session.scalars(select(orm_class.name).filter(orm_class.id.in_(idx_to_dbid_lookup.values()))).all()
+    return result
+
+  def core_grain_labels(self, db_engine):
+    return self._db_table_labels(db_engine, CoreGrain, self.core_grains_idx_to_dbid)
+  def core_adjunct_labels(self, db_engine):
+    return self._db_table_labels(db_engine, CoreAdjunct, self.core_adjs_idx_to_dbid)
+  def hop_labels(self, db_engine):
+    return self._db_table_labels(db_engine, Hop, self.hops_idx_to_dbid)
+  def misc_labels(self, db_engine):
+    return self._db_table_labels(db_engine, Misc, self.miscs_idx_to_dbid)
+  def microorganism_labels(self, db_engine):
+    return self._db_table_labels(db_engine, Microorganism, self.mos_idx_to_dbid)
+
 
 def _mash_step_types(session):
   step_types = set()
@@ -346,19 +359,14 @@ if __name__ == "__main__":
     dataset = pickle.load(f)
   print("Loaded.")
   
+  from sqlalchemy import create_engine
+  from db_scripts.brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
+  engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
+  Base.metadata.create_all(engine)
+  labels = dataset.core_grain_labels(engine)
+  print(labels)
+
   '''
-  # Clean up some data...
-  for recipe in dataset.recipes:
-    recipe['misc_amts']  = np.clip(recipe['misc_amts'], 0.0, 1000.0)
-    recipe['misc_times'] = np.clip(recipe['misc_times'], 0.0, None)
-    recipe['misc_times'][np.isnan(recipe['misc_times'])] = 0.0
-  dataset._calc_normalization()
-  
-  # Resave
-  with open(RECIPE_DATASET_FILENAME, 'wb') as f:
-    pickle.dump(dataset, f)  
-  '''
-  
   from torch.utils.data import DataLoader
   dataloader = DataLoader(dataset, batch_size=256, shuffle=True, num_workers=0)
   for batch_idx, batch in enumerate(dataloader):
@@ -367,7 +375,7 @@ if __name__ == "__main__":
       break
   
 
-  '''
+
   # Convert the database into a pickled file so that we can quickly load everything into memory for training
   from sqlalchemy import create_engine
   from db_scripts.brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
