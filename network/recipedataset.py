@@ -302,22 +302,23 @@ class RecipeDataset(torch.utils.data.Dataset):
         self.last_saved_idx = block_idx
         pickle.dump(self, f)
 
-  def _db_table_labels(self, db_engine, orm_class, idx_to_dbid_lookup):
-    result = [EMPTY_TAG]
-    with Session(db_engine) as session:
-      result += session.scalars(select(orm_class.name).filter(orm_class.id.in_(idx_to_dbid_lookup.values()))).all()
-    return result
 
-  def core_grain_labels(self, db_engine):
-    return self._db_table_labels(db_engine, CoreGrain, self.core_grains_idx_to_dbid)
-  def core_adjunct_labels(self, db_engine):
-    return self._db_table_labels(db_engine, CoreAdjunct, self.core_adjs_idx_to_dbid)
-  def hop_labels(self, db_engine):
-    return self._db_table_labels(db_engine, Hop, self.hops_idx_to_dbid)
-  def misc_labels(self, db_engine):
-    return self._db_table_labels(db_engine, Misc, self.miscs_idx_to_dbid)
-  def microorganism_labels(self, db_engine):
-    return self._db_table_labels(db_engine, Microorganism, self.mos_idx_to_dbid)
+def _db_table_labels(db_engine, orm_class, idx_to_dbid_lookup):
+  result = [EMPTY_TAG]
+  with Session(db_engine) as session:
+    result += session.scalars(select(orm_class.name).filter(orm_class.id.in_(idx_to_dbid_lookup.values()))).all()
+  return result
+
+def core_grain_labels(db_engine, dataset):
+  return _db_table_labels(db_engine, CoreGrain, dataset.core_grains_idx_to_dbid)
+def core_adjunct_labels(db_engine, dataset):
+  return _db_table_labels(db_engine, CoreAdjunct, dataset.core_adjs_idx_to_dbid)
+def hop_labels(db_engine, dataset):
+  return _db_table_labels(db_engine, Hop, dataset.hops_idx_to_dbid)
+def misc_labels(db_engine, dataset):
+  return _db_table_labels(db_engine, Misc, dataset.miscs_idx_to_dbid)
+def microorganism_labels(db_engine, dataset):
+  return _db_table_labels(db_engine, Microorganism, dataset.mos_idx_to_dbid)
 
 
 def _mash_step_types(session):
@@ -363,7 +364,7 @@ if __name__ == "__main__":
   from db_scripts.brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
-  labels = dataset.core_grain_labels(engine)
+  labels = core_grain_labels(engine, dataset)
   print(labels)
 
   '''

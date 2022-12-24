@@ -1,3 +1,4 @@
+import os
 import hashlib
 
 from sqlalchemy import Column, Integer, String, Float, Boolean
@@ -5,7 +6,12 @@ from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import relationship
 
-BREWBRAIN_DB_ENGINE_STR = "sqlite:///brewbrain.db"
+BREWBRAIN_DB_FILENAME = "brewbrain.db"
+SQLITE_STR = "sqlite:///"
+BREWBRAIN_DB_ENGINE_STR = SQLITE_STR + BREWBRAIN_DB_FILENAME
+
+def build_db_str(db_filepath):
+  return SQLITE_STR + os.path.relpath(db_filepath)
 
 Base = declarative_base()
 
