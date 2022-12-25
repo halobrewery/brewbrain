@@ -12,8 +12,8 @@ from sqlalchemy import select
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from db_scripts.brewbrain_db import RecipeML, CoreGrain, CoreAdjunct, Misc, Hop, Microorganism
-from db_scripts.brewbrain_db import RecipeMLMiscAT, RecipeMLHopAT, RecipeMLMicroorganismAT
+from brewbrain_db import RecipeML, CoreGrain, CoreAdjunct, Misc, Hop, Microorganism
+from brewbrain_db import RecipeMLMiscAT, RecipeMLHopAT, RecipeMLMicroorganismAT
 
 from beer_util_functions import hop_form_utilization, alpha_acid_mg_per_l
 
@@ -361,7 +361,7 @@ if __name__ == "__main__":
   print("Loaded.")
   
   from sqlalchemy import create_engine
-  from db_scripts.brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
+  from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
   labels = core_grain_labels(engine, dataset)

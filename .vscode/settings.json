@@ -1,0 +1,12 @@
+{
+  "jupyter.kernels.filter": [
+    {
+      "path": "/mnt/dev/anaconda3/envs/doom_rl_viewer/bin/python",
+      "type": "pythonEnvironment"
+    },
+    {
+      "path": "/mnt/dev/anaconda3/envs/dreamer/bin/python",
+      "type": "pythonEnvironment"
+    }
+  ]
+}

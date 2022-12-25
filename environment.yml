@@ -1,6 +1,7 @@
 name: brewbrain
 channels:
   - defaults
+  - pytorch
 dependencies:
   - numpy
   - matplotlib
