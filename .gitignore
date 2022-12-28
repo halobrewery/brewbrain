@@ -158,4 +158,4 @@ data/_completed/
 _dbbackups/
 brewbrain copy.db
 recipe_dataset.pkl copy
-network/runs/
+runs/

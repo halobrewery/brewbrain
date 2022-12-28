@@ -29,6 +29,80 @@ NUM_MASH_STEPS = RecipeML.MAX_MASH_STEPS
 
 EMPTY_TAG = "<EMPTY>"
 
+@torch.no_grad()
+def net_output_to_recipe(foots, normalizers):
+
+  t_recipes = {}
+  t_recipes['boil_time'], t_recipes['mash_ph'], t_recipes['sparge_temp'] = torch.chunk(foots.x_hat_toplvl, 3, dim=1)
+  t_recipes['mash_step_type_inds'] = torch.argmax(torch.softmax(foots.dec_mash_step_type_onehot, dim=-1), dim=-1, keepdim=True)
+  t_recipes['mash_step_times']     = foots.dec_mash_step_times
+  t_recipes['mash_step_avg_temps'] = foots.dec_mash_step_avg_temps
+  t_recipes['ferment_stage_times'], t_recipes['ferment_stage_temps'] = torch.chunk(foots.x_hat_ferment_stages, 2, dim=1)
+  t_recipes['grain_core_type_inds'] = torch.argmax(torch.softmax(foots.dec_grain_type_logits, dim=-1), dim=-1, keepdim=False)
+  t_recipes['grain_amts'] = foots.dec_grain_amts
+  t_recipes['adjunct_core_type_inds'] = torch.argmax(torch.softmax(foots.dec_adjunct_type_logits, dim=-1), dim=-1, keepdim=False)
+  t_recipes['adjunct_amts'] = foots.dec_adjunct_amts
+  t_recipes['hop_type_inds'] = torch.argmax(torch.softmax(foots.dec_hop_type_logits, dim=-1), dim=-1, keepdim=False)
+  t_recipes['hop_stage_type_inds'] = torch.argmax(torch.softmax(foots.dec_hop_stage_type_onehot, dim=-1), dim=-1, keepdim=True)
+  t_recipes['hop_times'] = foots.dec_hop_times
+  t_recipes['hop_concentrations'] = foots.dec_hop_concentrations
+  t_recipes['misc_type_inds']  = torch.argmax(torch.softmax(foots.dec_misc_type_logits, dim=-1), dim=-1, keepdim=False)
+  t_recipes['misc_stage_inds'] = torch.argmax(torch.softmax(foots.dec_misc_stage_type_onehot, dim=-1), dim=-1, keepdim=True)
+  t_recipes['misc_times'] = foots.dec_misc_times
+  t_recipes['misc_amts'] = foots.dec_misc_amts
+  t_recipes['mo_type_inds'] = torch.argmax(torch.softmax(foots.dec_mo_type_logits, dim=-1), dim=-1, keepdim=False)
+  t_recipes['mo_stage_inds'] = torch.argmax(torch.softmax(foots.dec_mo_stage_type_onehot, dim=-1), dim=-1, keepdim=True)
+
+  recipes = []
+  num_recipes = t_recipes['boil_time'].shape[0]
+  for i in range(num_recipes):
+    recipe = {}
+    for key, value in t_recipes.items():
+      recipe[key] = value[i].cpu().numpy()
+      if key in normalizers:
+        normalizer = normalizers[key]
+        recipe[key] = normalizer.std() * recipe[key] + normalizer.mean()
+
+    # Clean up some of the recipe data...
+
+    # Make the boil time a multiple of 15 mins
+    recipe['boil_time'] = recipe['boil_time']//15 * 15
+    # Round the mash pH to the nearest 100ths
+    recipe['mash_ph'] = np.round(recipe['mash_ph'], 2)
+    # Round the sparge temp to the nearest 10th of a degree
+    recipe['sparge_temp'] = np.round(recipe['sparge_temp'], 1)
+
+    # Grain amounts should only exist for non-empty slots and 
+    # are proper percentages that add up to 1
+    invalid_grain_inds = recipe['grain_core_type_inds'] == 0
+    recipe['grain_amts'][invalid_grain_inds] = 0
+    recipe['grain_amts'] /= recipe['grain_amts'].sum()
+    
+    # Adjunct amounts should only exist for non-empty slots
+    invalid_adj_inds = recipe['adjunct_core_type_inds'] == 0
+    recipe['adjunct_amts'][invalid_adj_inds] = 0
+
+    # Hop values should only exist for non-empty slots
+    invalid_hop_inds = recipe['hop_type_inds'] == 0
+    recipe['hop_stage_type_inds'][invalid_hop_inds] = 0
+    recipe['hop_times'][invalid_hop_inds] = 0
+    recipe['hop_concentrations'][invalid_hop_inds] = 0
+
+    # Misc. values should only exist for non-empty slots
+    invalid_misc_inds = recipe['misc_type_inds'] == 0
+    recipe['misc_stage_inds'][invalid_misc_inds] = 0
+    recipe['misc_times'][invalid_misc_inds] = 0
+    recipe['misc_amts'][invalid_misc_inds] = 0
+    
+    # Microorganism values should only exist for non-empty slots
+    invalid_mo_inds = recipe['mo_type_inds'] == 0
+    recipe['mo_stage_inds'][invalid_mo_inds] = 0
+
+    recipes.append(recipe)
+    
+  return recipes
+
+
 class RecipeDataset(torch.utils.data.Dataset):
 
   def __init__(self):
@@ -50,8 +124,27 @@ class RecipeDataset(torch.utils.data.Dataset):
     for key, stats in self.normalizers.items():
       recipe[key] = ((recipe[key] - stats.mean()) / stats.std()).astype(np.float32)
     
-    # TODO: Order malt/adjunct/misc./hop slots highest to least??? ... maybe not... maybe ordering shouldn't matter?
+    # Shuffle adjunct, hop, misc, and microorganism addition slots
+    adjunct_shuffle = np.random.permutation(len(recipe['adjunct_core_type_inds']))
+    recipe['adjunct_core_type_inds'] = recipe['adjunct_core_type_inds'][adjunct_shuffle]
+    recipe['adjunct_amts'] = recipe['adjunct_amts'][adjunct_shuffle]
+
+    hop_shuffle = np.random.permutation(len(recipe['hop_type_inds']))
+    recipe['hop_type_inds'] = recipe['hop_type_inds'][hop_shuffle]
+    recipe['hop_times'] = recipe['hop_times'][hop_shuffle]
+    recipe['hop_concentrations'] = recipe['hop_concentrations'][hop_shuffle]
+    recipe['hop_stage_type_inds'] = recipe['hop_stage_type_inds'][hop_shuffle]
+
+    misc_shuffle = np.random.permutation(len(recipe['misc_type_inds']))
+    recipe['misc_type_inds'] = recipe['misc_type_inds'][misc_shuffle]
+    recipe['misc_amts'] = recipe['misc_amts'][misc_shuffle]
+    recipe['misc_times'] = recipe['misc_times'][misc_shuffle]
+    recipe['misc_stage_inds'] = recipe['misc_stage_inds'][misc_shuffle]
     
+    mo_shuffle = np.random.permutation(len(recipe['mo_type_inds']))
+    recipe['mo_type_inds']  = recipe['mo_type_inds'][mo_shuffle]
+    recipe['mo_stage_inds'] = recipe['mo_stage_inds'][mo_shuffle]
+
     return recipe
   
   # Pickle (dump)...
@@ -355,17 +448,37 @@ def _recipe_vol_at_stage(recipe_ml, infusion_vol, stage_name):
 
 
 
+
 if __name__ == "__main__":
   with open(RECIPE_DATASET_FILENAME, 'rb') as f:
     dataset = pickle.load(f)
   print("Loaded.")
-  
+
+  # Set of dbids to remove based on network testing for outliers...
+  remove_dbids = set(
+    [24386, 273684,7467,  199062,203580,63745, 235986,205368,90512, 206014,67078, 29037, 216299,209222,204523,117966,256516,209720,7595,  76690, 92284, 123891,194933,197698,18036,169728,87139, 87249, 23261, 278066,18181, 226705,265337,137826,178025,4299,  90457, 12515, 156488,248743,231291,94054, 56530, 178144,265330,254059,254237,285773]
+  )
+
+  # Remove the ids from the dataset
+  dataset.recipes = [recipe for recipe in dataset.recipes if recipe['dbid'] not in remove_dbids]
+  with open(RECIPE_DATASET_FILENAME, 'wb') as f:
+    pickle.dump(dataset, f)
+
+
+  # Remove the ids from the DB
   from sqlalchemy import create_engine
   from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
-  labels = core_grain_labels(engine, dataset)
-  print(labels)
+  with Session(engine) as session:
+    recipes_to_remove = session.scalars(select(RecipeML).filter(RecipeML.id.in_(remove_dbids))).all()
+    for recipe in recipes_to_remove:
+      session.delete(recipe)
+    session.commit()
+  
+
+  #labels = core_grain_labels(engine, dataset)
+  #print(labels)
 
   '''
   from torch.utils.data import DataLoader

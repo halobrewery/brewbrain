@@ -26,6 +26,8 @@ calculate-a-running-standard-deviation>
 
   def clear(self):
     self.n = 0.0
+    self.m = None
+    self.s = None
 
   def push(self, x, per_dim=False):
     if not isinstance(x, np.ndarray):

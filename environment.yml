@@ -13,5 +13,5 @@ dependencies:
   - torchvision
   - pytorch
   - torchaudio
-  - tensorboard
+  - tensorboard >=2.11.0
 prefix: /Users/callumhay/opt/anaconda3/envs/brewbrain
