@@ -212,8 +212,9 @@ class RecipeNet(nn.Module):
       self.encoder.append(layer_init_xavier(nn.Linear(prev_hidden_size, hidden_size), gain))
       self.encoder.append(activation_fn(**args.activation_fn_params))
       prev_hidden_size = hidden_size
+    
     self.encoder.append(layer_init_xavier(nn.Linear(prev_hidden_size, z_size*2, bias=False), gain)) # TODO: bias=False if using batchnorm
-    #self.encoder.append(activation_fn(**args.activation_fn_params))
+    #self.encoder.append(activation_fn(**args.activation_fn_params)) # NOTE: This is determinental to convergence.
     self.encoder.append(nn.BatchNorm1d(z_size*2))
 
     self.decoder = nn.Sequential()
@@ -350,7 +351,8 @@ class BetaTCVAELoss():
     logvar = kwargs['logvar']
     z = kwargs['z']
     dataset_size = kwargs['dataset_size']
-    iter_num = kwargs.get('iter_num', -1) 
+    iter_num = kwargs.get('iter_num', -1)
+    kl_weight = kwargs.get('kl_weight', 1)
     
     log_q_zx = self.log_density_gaussian(z, mean, logvar).sum(dim = 1)
 
@@ -388,7 +390,7 @@ class BetaTCVAELoss():
     else:
       anneal_rate = 1.0
 
-    loss = reconst_loss / batch_size + self.alpha * idx_loss + self.beta * tc_loss + anneal_rate * self.gamma * kld_loss
+    loss = reconst_loss / batch_size + kl_weight * (self.alpha * idx_loss + self.beta * tc_loss + anneal_rate * self.gamma * kld_loss)
     
     return {
       'loss': loss, 

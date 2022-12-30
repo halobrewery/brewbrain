@@ -159,3 +159,4 @@ _dbbackups/
 brewbrain copy.db
 recipe_dataset.pkl copy
 runs/
+runs_old/

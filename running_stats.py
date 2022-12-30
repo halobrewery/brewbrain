@@ -70,6 +70,6 @@ calculate-a-running-standard-deviation>
     return np.sqrt(self.var())
       
   def __repr__(self):
-    return '<RunningMean(mean={: 2.4f}, std={: 2.4f}, n={: 2f}, m={: 2.4f}, s={: 2.4f})>'.format(self.mean(), self.std(), self.n, self.m, self.s)
+    return '<RunningStats(mean={: 2.4f}, std={: 2.4f}, n={: 2f}, m={: 2.4f}, s={: 2.4f})>'.format(self.mean(), self.std(), self.n, self.m, self.s)
   def __str__(self):
     return 'mean={: 2.4f}, std={: 2.4f}'.format(self.mean(), self.std())

@@ -10,10 +10,19 @@
       "request": "launch",
       "program": "${file}",
       "args": [
-        "--model", "runs/recipe_net__seed42_beta-tc_z64_hidden4096-4096_1672239513/recipe_net_35000.chkpt"
+        //"--model", "runs/recipe_net__seed42_beta-tc_z32_hidden8096-4096_1672268963/recipe_net_415000.chkpt"
       ],
       "console": "integratedTerminal",
       "justMyCode": false
+    },
+    {
+      "name": "Python: Streamlit",
+      "type": "python",
+      "request": "launch",
+      "module": "streamlit",
+      "args": [
+        "run", "${file}"
+      ]
     }
   ]
 }

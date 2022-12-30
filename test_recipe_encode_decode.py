@@ -7,10 +7,12 @@ import torch
 from torch.utils.data import DataLoader
 import numpy as np
 
-from recipe_dataset import RecipeDataset, RECIPE_DATASET_FILENAME, net_output_to_recipe
+from recipe_dataset import RecipeDataset, RECIPE_DATASET_TEST_FILENAME
+from recipe_converter import RecipeConverter
 from recipe_net_args import RecipeNetArgs
 from model import RecipeNet, MODEL_FILE_KEY_NETWORK, MODEL_FILE_KEY_ARGS
-
+from recipe_dataset import DatasetMappings
+from brewbrain import init_rng_seeding, build_datasets
 
 '''
 def parse_args():
@@ -24,16 +26,23 @@ def parse_args():
   return cmd_args
 '''
 
-NETWORK_MODEL_FILEPATH = "runs/recipe_net__seed42_beta-tc_z64_hidden4096-4096_1672243396/recipe_net_45000.chkpt"
+NETWORK_MODEL_FILEPATH = "runs/recipe_net__seed42_beta-tc_z32_hidden8096-4096_1672268963/recipe_net_415000.chkpt"
 
 if __name__ == "__main__":
   SEED = 42
-  random.seed(SEED)
-  np.random.seed(SEED)
-  torch.manual_seed(SEED)
-  torch.backends.cudnn.deterministic = True
+  init_rng_seeding(SEED)
 
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+  # Load the dataset and create a dataloader for it
+  dataset, train_dataset, test_dataset = build_datasets()
+
+  dataloader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=0)
+
+  dataset_mappings = DatasetMappings()
+  dataset_mappings.init_from_dataset(dataset)
+  converter = RecipeConverter(dataset_mappings)
 
   model_dict = torch.load(NETWORK_MODEL_FILEPATH)
   args = RecipeNetArgs()
@@ -42,11 +51,6 @@ if __name__ == "__main__":
   model = RecipeNet(args).to(device)
   model.load_state_dict(model_dict[MODEL_FILE_KEY_NETWORK])
 
-  # Load the dataset and create a dataloader for it
-  with open(RECIPE_DATASET_FILENAME, 'rb') as f:
-    dataset = pickle.load(f)
-  dataloader = DataLoader(dataset, batch_size=1, shuffle=True, num_workers=0)
-
   model.eval()
 
   recipe_batch = next(iter(dataloader))
@@ -54,6 +58,13 @@ if __name__ == "__main__":
   for key, value in recipe_batch.items():
     if key == 'dbid': continue
     batch[key] = value.cuda()
-  heads, foots, mean, logvar, z = model(batch)
+  heads, foots, mean, logvar, z = model(batch, use_mean=True)
   #reconst_loss = model.reconstruction_loss(batch, heads, foots)
-  net_output_to_recipe(foots, dataset.normalizers)
+  input_recipes  = converter.batch_to_recipes(recipe_batch)
+  output_recipes = converter.net_output_to_recipes(foots)
+
+  print("Original:")
+  print(recipe_batch)
+  print("-------")
+  print("Decoded:")
+  print(output_recipes[0])

@@ -27,10 +27,6 @@ class RecipeNetArgs:
     self.num_microorganism_slots = NUM_MICROORGANISM_SLOTS
     self.num_ferment_stage_slots = NUM_FERMENT_STAGE_SLOTS
     
-    if dataset_args != None:
-      for key, value in dataset_args.items():
-        self.__setattr__(key, value)
-
     # Embedding sizes ***
     self.grain_type_embed_size         = 48
     self.adjunct_type_embed_size       = 64
@@ -39,8 +35,8 @@ class RecipeNetArgs:
     self.microorganism_type_embed_size = 256
     
     # Network-specific hyperparameters/constraints ***
-    self.hidden_layers = [4096, 4096]
-    self.z_size = 64 # Latent-bottleneck dimension
+    self.hidden_layers = [8096, 4096, 2048] # NOTE: [9216,4096] is too big
+    self.z_size = 40 # Latent-bottleneck dimension - NOTE: Don't go smaller than 32
     self.activation_fn = nn.LeakyReLU
     self.activation_fn_params = {'negative_slope': 0.1}
     self.gain = nn.init.calculate_gain('leaky_relu', 0.1) # Make sure this corresponds to the activation function!
@@ -54,6 +50,10 @@ class RecipeNetArgs:
     self.beta_tc_vae_beta  = 6.0
     self.beta_tc_vae_gamma = 1.0
     self.beta_tc_vae_anneal_steps = 1e4
+
+    if dataset_args != None:
+      for key, value in dataset_args.items():
+        setattr(self, key, value)
   
   @property
   def num_toplvl_inputs(self):

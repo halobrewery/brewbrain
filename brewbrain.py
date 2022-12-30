@@ -23,9 +23,30 @@ from model import MODEL_FILE_KEY_GLOBAL_STEP, MODEL_FILE_KEY_NETWORK, MODEL_FILE
 from recipe_net_args import RecipeNetArgs, dataset_args
 from running_stats import RunningStats
 
-KL_WEIGHT  = 1.0
+KL_WEIGHT  = 0.5
 OUTLIER_MIN_LOSS = 3.5e4
 OUTLIER_PER_RECIPE_MIN_LOSS = 1e4
+
+def init_rng_seeding(seed):
+  random.seed(seed)
+  np.random.seed(seed)
+  torch.manual_seed(seed)
+  torch.backends.cudnn.deterministic = True
+
+def load_dataset(filepath=RECIPE_DATASET_FILENAME):
+  # Load the dataset and create a dataloader for it
+  with open(filepath, 'rb') as f:
+    dataset = pickle.load(f)
+  return dataset
+
+def build_datasets(filepath=RECIPE_DATASET_FILENAME, train_percent=0.25):
+  dataset = load_dataset(filepath)
+  # Split the dataset up for training / testing
+  dataset_size = len(dataset)
+  train_size = int(dataset_size * train_percent)
+  train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, dataset_size-train_size])
+  return dataset, train_dataset, test_dataset
+
 
 def load_loss_fn(net_type):
   if net_type == "beta":
@@ -59,20 +80,10 @@ if __name__ == "__main__":
   cmd_args = parse_args()
   device = torch.device("cuda" if torch.cuda.is_available() and cmd_args.cuda else "cpu")
   
-  random.seed(cmd_args.seed)
-  np.random.seed(cmd_args.seed)
-  torch.manual_seed(cmd_args.seed)
-  torch.backends.cudnn.deterministic = True
+  init_rng_seeding(cmd_args.seed)
 
   # Load the dataset and create a dataloader for it
-  with open(RECIPE_DATASET_FILENAME, 'rb') as f:
-    dataset = pickle.load(f)
-
-  # Split the dataset up for training / testing
-  dataset_size = len(dataset)
-  train_size = int(dataset_size * cmd_args.train_percent)
-  train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, dataset_size-train_size])
-
+  dataset, train_dataset, test_dataset = build_datasets(train_percent=cmd_args.train_percent)
   train_dataloader = DataLoader(train_dataset, batch_size=cmd_args.batch_size, shuffle=True, num_workers=0)
   net_args = RecipeNetArgs(dataset_args(dataset))
 
@@ -202,7 +213,7 @@ if __name__ == "__main__":
       reconst_loss = recipe_net.reconstruction_loss(batch, heads, foots)
       loss_vals = loss_fn.calc_loss(
         reconst_loss=reconst_loss, z=z, dataset_size=train_size, 
-        mean=mean, logvar=logvar, iter_num=global_step-1
+        mean=mean, logvar=logvar, iter_num=global_step-1, kl_weight=KL_WEIGHT
       )
       loss = loss_vals['loss']
       running_loss.add(loss.detach().cpu().item())
@@ -233,7 +244,7 @@ if __name__ == "__main__":
       '''  
       optimizer.zero_grad() 
       loss.backward()
-      nn.utils.clip_grad_norm_(recipe_net.parameters(), 100.0)
+      #nn.utils.clip_grad_norm_(recipe_net.parameters(), 100.0)
       optimizer.step()
       
       global_step += 1

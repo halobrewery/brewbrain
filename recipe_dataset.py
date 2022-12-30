@@ -2,12 +2,13 @@ import sys
 import os
 import pickle
 import copy
+import json
 
 import torch
 import numpy as np
 
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -16,9 +17,12 @@ from brewbrain_db import RecipeML, CoreGrain, CoreAdjunct, Misc, Hop, Microorgan
 from brewbrain_db import RecipeMLMiscAT, RecipeMLHopAT, RecipeMLMicroorganismAT
 
 from beer_util_functions import hop_form_utilization, alpha_acid_mg_per_l
+from running_stats import RunningStats
 
+RECIPE_DATASET_FILENAME       = "recipe_dataset.pkl"
+RECIPE_DATASET_TEST_FILENAME  = "recipe_dataset_test.pkl"
+DATASET_MAPPINGS_FILENAME     = "recipe_dataset_mappings.json"
 
-RECIPE_DATASET_FILENAME = "recipe_dataset.pkl"
 NUM_GRAIN_SLOTS = 16
 NUM_ADJUNCT_SLOTS = 8
 NUM_HOP_SLOTS = 32
@@ -29,88 +33,68 @@ NUM_MASH_STEPS = RecipeML.MAX_MASH_STEPS
 
 EMPTY_TAG = "<EMPTY>"
 
-@torch.no_grad()
-def net_output_to_recipe(foots, normalizers):
+class _DatasetMappingsEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, DatasetMappings) or isinstance(obj, RunningStats):
+      return vars(obj)
+    return super().default(obj)
 
-  t_recipes = {}
-  t_recipes['boil_time'], t_recipes['mash_ph'], t_recipes['sparge_temp'] = torch.chunk(foots.x_hat_toplvl, 3, dim=1)
-  t_recipes['mash_step_type_inds'] = torch.argmax(torch.softmax(foots.dec_mash_step_type_onehot, dim=-1), dim=-1, keepdim=True)
-  t_recipes['mash_step_times']     = foots.dec_mash_step_times
-  t_recipes['mash_step_avg_temps'] = foots.dec_mash_step_avg_temps
-  t_recipes['ferment_stage_times'], t_recipes['ferment_stage_temps'] = torch.chunk(foots.x_hat_ferment_stages, 2, dim=1)
-  t_recipes['grain_core_type_inds'] = torch.argmax(torch.softmax(foots.dec_grain_type_logits, dim=-1), dim=-1, keepdim=False)
-  t_recipes['grain_amts'] = foots.dec_grain_amts
-  t_recipes['adjunct_core_type_inds'] = torch.argmax(torch.softmax(foots.dec_adjunct_type_logits, dim=-1), dim=-1, keepdim=False)
-  t_recipes['adjunct_amts'] = foots.dec_adjunct_amts
-  t_recipes['hop_type_inds'] = torch.argmax(torch.softmax(foots.dec_hop_type_logits, dim=-1), dim=-1, keepdim=False)
-  t_recipes['hop_stage_type_inds'] = torch.argmax(torch.softmax(foots.dec_hop_stage_type_onehot, dim=-1), dim=-1, keepdim=True)
-  t_recipes['hop_times'] = foots.dec_hop_times
-  t_recipes['hop_concentrations'] = foots.dec_hop_concentrations
-  t_recipes['misc_type_inds']  = torch.argmax(torch.softmax(foots.dec_misc_type_logits, dim=-1), dim=-1, keepdim=False)
-  t_recipes['misc_stage_inds'] = torch.argmax(torch.softmax(foots.dec_misc_stage_type_onehot, dim=-1), dim=-1, keepdim=True)
-  t_recipes['misc_times'] = foots.dec_misc_times
-  t_recipes['misc_amts'] = foots.dec_misc_amts
-  t_recipes['mo_type_inds'] = torch.argmax(torch.softmax(foots.dec_mo_type_logits, dim=-1), dim=-1, keepdim=False)
-  t_recipes['mo_stage_inds'] = torch.argmax(torch.softmax(foots.dec_mo_stage_type_onehot, dim=-1), dim=-1, keepdim=True)
+class DatasetMappings():
+  def __init__(self, **kwargs) -> None:
+    self.core_grains_idx_to_dbid = {}
+    self.core_adjs_idx_to_dbid   = {}
+    self.hops_idx_to_dbid        = {}
+    self.miscs_idx_to_dbid       = {}
+    self.mos_idx_to_dbid         = {}
 
-  recipes = []
-  num_recipes = t_recipes['boil_time'].shape[0]
-  for i in range(num_recipes):
-    recipe = {}
-    for key, value in t_recipes.items():
-      recipe[key] = value[i].cpu().numpy()
-      if key in normalizers:
-        normalizer = normalizers[key]
-        recipe[key] = normalizer.std() * recipe[key] + normalizer.mean()
+    # Mash step types (e.g., Infusion, Decoction, Temperature)
+    self.mash_step_idx_to_name  = {}
+    # Misc stage (e.g., Mash, Boil, Primary, ...)
+    self.misc_stage_idx_to_name = {}
+    # Hop stage (e.g., Mash, Boil, Primary, ...)
+    self.hop_stage_idx_to_name  = {}
+    # Microorganism stage (e.g., Primary, Secondary)
+    self.mo_stage_idx_to_name   = {}
 
-    # Clean up some of the recipe data...
+    # Normalization values for the dataset
+    self.normalizers = {}
 
-    # Make the boil time a multiple of 15 mins
-    recipe['boil_time'] = recipe['boil_time']//15 * 15
-    # Round the mash pH to the nearest 100ths
-    recipe['mash_ph'] = np.round(recipe['mash_ph'], 2)
-    # Round the sparge temp to the nearest 10th of a degree
-    recipe['sparge_temp'] = np.round(recipe['sparge_temp'], 1)
+    for key, value in kwargs.items():
+      if key in self.__dict__:
+        setattr(self, key, value)
+        if key == 'normalizers':
+          for n_key, normalizer in self.normalizers.items():
+            self.normalizers[n_key] = RunningStats(**normalizer)
 
-    # Grain amounts should only exist for non-empty slots and 
-    # are proper percentages that add up to 1
-    invalid_grain_inds = recipe['grain_core_type_inds'] == 0
-    recipe['grain_amts'][invalid_grain_inds] = 0
-    recipe['grain_amts'] /= recipe['grain_amts'].sum()
-    
-    # Adjunct amounts should only exist for non-empty slots
-    invalid_adj_inds = recipe['adjunct_core_type_inds'] == 0
-    recipe['adjunct_amts'][invalid_adj_inds] = 0
 
-    # Hop values should only exist for non-empty slots
-    invalid_hop_inds = recipe['hop_type_inds'] == 0
-    recipe['hop_stage_type_inds'][invalid_hop_inds] = 0
-    recipe['hop_times'][invalid_hop_inds] = 0
-    recipe['hop_concentrations'][invalid_hop_inds] = 0
+  def init_from_dataset(self, dataset):
+    for key in vars(self).keys():
+      dataset_value = getattr(dataset, key, None)
+      if dataset_value == None: continue
+      setattr(self, key, copy.deepcopy(dataset_value))
 
-    # Misc. values should only exist for non-empty slots
-    invalid_misc_inds = recipe['misc_type_inds'] == 0
-    recipe['misc_stage_inds'][invalid_misc_inds] = 0
-    recipe['misc_times'][invalid_misc_inds] = 0
-    recipe['misc_amts'][invalid_misc_inds] = 0
-    
-    # Microorganism values should only exist for non-empty slots
-    invalid_mo_inds = recipe['mo_type_inds'] == 0
-    recipe['mo_stage_inds'][invalid_mo_inds] = 0
+  def save(self, filepath=DATASET_MAPPINGS_FILENAME):
+    with open(filepath, 'w') as f:
+      json.dump(mappings, fp=f, cls=_DatasetMappingsEncoder)
 
-    recipes.append(recipe)
-    
-  return recipes
+  @staticmethod
+  def load(filepath=DATASET_MAPPINGS_FILENAME):
+    assert os.path.exists(filepath)
+    with open(filepath, 'r') as f:
+      mappings_json = json.load(f)
+    return DatasetMappings(**mappings_json)
 
 
 class RecipeDataset(torch.utils.data.Dataset):
 
-  def __init__(self):
+  def __init__(self, dataset_mappings=None):
     self._VERSION = 2
     
     self.recipes = []
     self.block_size = 128
     self.last_saved_idx = 0
+    if dataset_mappings != None:
+      self.normalizers = dataset_mappings.normalizers
 
   def __len__(self):
     return len(self.recipes)
@@ -124,26 +108,47 @@ class RecipeDataset(torch.utils.data.Dataset):
     for key, stats in self.normalizers.items():
       recipe[key] = ((recipe[key] - stats.mean()) / stats.std()).astype(np.float32)
     
-    # Shuffle adjunct, hop, misc, and microorganism addition slots
+    # Move all non-empty slots to the front of each array for various ingredients,
+    # shuffle each first to make sure there's no dependance on ordering
     adjunct_shuffle = np.random.permutation(len(recipe['adjunct_core_type_inds']))
     recipe['adjunct_core_type_inds'] = recipe['adjunct_core_type_inds'][adjunct_shuffle]
     recipe['adjunct_amts'] = recipe['adjunct_amts'][adjunct_shuffle]
-
+    non_empty_adjunct_inds = recipe['adjunct_core_type_inds'] != 0
+    adjunct_new_inds = np.argsort(non_empty_adjunct_inds)[::-1]
+    recipe['adjunct_core_type_inds'] = recipe['adjunct_core_type_inds'][adjunct_new_inds]
+    recipe['adjunct_amts'] = recipe['adjunct_amts'][adjunct_new_inds]
+    
     hop_shuffle = np.random.permutation(len(recipe['hop_type_inds']))
     recipe['hop_type_inds'] = recipe['hop_type_inds'][hop_shuffle]
     recipe['hop_times'] = recipe['hop_times'][hop_shuffle]
     recipe['hop_concentrations'] = recipe['hop_concentrations'][hop_shuffle]
     recipe['hop_stage_type_inds'] = recipe['hop_stage_type_inds'][hop_shuffle]
+    non_empty_hop_inds = recipe['hop_type_inds'] != 0
+    hop_new_inds = np.argsort(non_empty_hop_inds)[::-1]
+    recipe['hop_type_inds'] = recipe['hop_type_inds'][hop_new_inds]
+    recipe['hop_times'] = recipe['hop_times'][hop_new_inds]
+    recipe['hop_concentrations'] = recipe['hop_concentrations'][hop_new_inds]
+    recipe['hop_stage_type_inds'] = recipe['hop_stage_type_inds'][hop_new_inds]
 
     misc_shuffle = np.random.permutation(len(recipe['misc_type_inds']))
     recipe['misc_type_inds'] = recipe['misc_type_inds'][misc_shuffle]
     recipe['misc_amts'] = recipe['misc_amts'][misc_shuffle]
     recipe['misc_times'] = recipe['misc_times'][misc_shuffle]
     recipe['misc_stage_inds'] = recipe['misc_stage_inds'][misc_shuffle]
-    
+    non_empty_misc_inds = recipe['misc_type_inds'] != 0
+    misc_new_inds = np.argsort(non_empty_misc_inds)[::-1]
+    recipe['misc_type_inds'] = recipe['misc_type_inds'][misc_new_inds]
+    recipe['misc_amts'] = recipe['misc_amts'][misc_new_inds]
+    recipe['misc_times'] = recipe['misc_times'][misc_new_inds]
+    recipe['misc_stage_inds'] = recipe['misc_stage_inds'][misc_new_inds]
+
     mo_shuffle = np.random.permutation(len(recipe['mo_type_inds']))
     recipe['mo_type_inds']  = recipe['mo_type_inds'][mo_shuffle]
     recipe['mo_stage_inds'] = recipe['mo_stage_inds'][mo_shuffle]
+    non_empty_mo_inds = recipe['mo_type_inds'] != 0
+    mo_new_inds = np.argsort(non_empty_mo_inds)[::-1]
+    recipe['mo_type_inds']  = recipe['mo_type_inds'][mo_new_inds]
+    recipe['mo_stage_inds'] = recipe['mo_stage_inds'][mo_new_inds]
 
     return recipe
   
@@ -161,8 +166,6 @@ class RecipeDataset(torch.utils.data.Dataset):
       self._calc_normalization()
       
   def _calc_normalization(self):
-    from running_stats import RunningStats
-    
     self.normalizers = {
       'boil_time':   RunningStats(),
       'mash_ph':     RunningStats(),
@@ -205,13 +208,13 @@ class RecipeDataset(torch.utils.data.Dataset):
   
   
 
-  def load_from_db(self, db_engine, pkl_opts=None):
+  def load_from_db(self, db_engine, options=None):
     # Convert the database into numpy arrays as members of this
     with Session(db_engine) as session:
       # Read all the recipes into numpy format
-      self._load_recipes(session, pkl_opts)
+      self._load_recipes(session, options)
 
-  def _load_recipes(self, session, pkl_opts):
+  def _load_recipes(self, session, options):
     # Build the set of tables for look-up between indices and database ids
     # NOTE: 0 is the "empty slot" category for all look-ups
     
@@ -248,13 +251,17 @@ class RecipeDataset(torch.utils.data.Dataset):
     #self.core_styles_dbid_to_idx = {csid: i+1 for i, csid in enumerate(corestyle_dbids)}
     #self.core_styles_idx_to_dbid = {i+1: csid for i, csid in enumerate(corestyle_dbids)}
     
-    #start_block_idx = block_read_info['start_block_idx'] or 0 # Starting index of the blocks to start loading
-    #block_size = block_read_info['block_size'] or 1024        # Size of each block to read
-    #num_blocks = block_read_info['num_blocks'] or -1          # Number of blocks to load from the database, -1 means no limit
-    
+    # Depending on options we may want to only load some recipes
+    if options != None and 'select_stmt' in options:
+      recipe_select_stmt = options['select_stmt']
+    else:
+      recipe_select_stmt = select(RecipeML)
+
     # Only load fixed quantities of rows into memory at a time, the recipes table is BIG
+    recipe_select_stmt = recipe_select_stmt.execution_options(yield_per=self.block_size)
+    
+    
     block_idx = 0
-    recipe_select_stmt = select(RecipeML).execution_options(yield_per=self.block_size)
     for recipeML_partition in session.scalars(recipe_select_stmt).partitions():
       if block_idx < self.last_saved_idx:
         block_idx += 1
@@ -376,20 +383,21 @@ class RecipeDataset(torch.utils.data.Dataset):
         self.recipes.append(recipe_data)
         
       block_idx += 1
-      if pkl_opts != None:
-        if 'write_every_blocks' not in pkl_opts or block_idx % pkl_opts['write_every_blocks'] == 0:
-          filename = pkl_opts['filename']
+      if options != None and 'filename' in options:
+        if 'write_every_blocks' not in options or block_idx % options['write_every_blocks'] == 0:
+          filename = options['filename']
           print(f"Writing/Overwriting file {filename}, at block index: {block_idx}")
           with open(filename, 'wb') as f:
             self.last_saved_idx = block_idx
             pickle.dump(self, f)
     
-    # Calculate the normalizers
-    self._calc_normalization()
+    # Calculate the normalizers if the options specify it
+    if options != None and 'calc_normalizers' in options and options['calc_normalizers'] == True:
+      self._calc_normalization()
     
     # Make sure we save the final dataset (if pickle options are enabled)        
-    if pkl_opts != None:
-      filename = pkl_opts['filename']
+    if options != None and 'filename' in options:
+      filename = options['filename']
       print(f"Finished loading dataset, writing final cached data to file {filename}")
       with open(filename, 'wb') as f:
         self.last_saved_idx = block_idx
@@ -447,9 +455,19 @@ def _recipe_vol_at_stage(recipe_ml, infusion_vol, stage_name):
 #def print_recipe(recipe):
 
 
-
-
 if __name__ == "__main__":
+  with open(RECIPE_DATASET_FILENAME, 'rb') as f:
+    dataset = pickle.load(f)
+
+  mappings = DatasetMappings()
+  mappings.init_from_dataset(dataset)
+  mappings.save()
+
+  loaded_mappings = DatasetMappings.load()
+
+  pass
+
+  '''
   with open(RECIPE_DATASET_FILENAME, 'rb') as f:
     dataset = pickle.load(f)
   print("Loaded.")
@@ -476,9 +494,7 @@ if __name__ == "__main__":
       session.delete(recipe)
     session.commit()
   
-
-  #labels = core_grain_labels(engine, dataset)
-  #print(labels)
+  '''
 
   '''
   from torch.utils.data import DataLoader
@@ -496,18 +512,19 @@ if __name__ == "__main__":
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
     
-  pickle_opts = {
+  options = {
+    'calc_normalizers': True,
     'filename': RECIPE_DATASET_FILENAME,
     'write_every_blocks': 1
   }
 
   # Read in whatever has been saved from the dataset up to this point
-  if os.path.exists(pickle_opts['filename']):
-    with open(pickle_opts['filename'], 'rb') as f:
+  if os.path.exists(options['filename']):
+    with open(options['filename'], 'rb') as f:
       dataset = pickle.load(f)
   else:
     dataset = RecipeDataset()
 
   # Continue loading and writing the dataset to disk
-  dataset.load_from_db(engine, pickle_opts)
+  dataset.load_from_db(engine, options)
   '''
