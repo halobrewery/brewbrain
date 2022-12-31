@@ -23,26 +23,26 @@ class RecipeConverter():
     for i in range(num_recipes):
       recipe = {}
       for key, value in ds_recipes.items():
-        recipe[key] = value[i].cpu().numpy()
+        recipe[key] = value[i].detach().cpu().numpy()
         if key in self.dataset_mappings.normalizers:
           normalizer = self.dataset_mappings.normalizers[key]
           recipe[key] = normalizer.std() * recipe[key] + normalizer.mean()
 
       # Clean up some of the recipe data...
 
-      # Make the boil time a multiple of 15 mins
-      recipe['boil_time'] = recipe['boil_time']//15 * 15
+      # Make the boil time a multiple of 5 mins
+      recipe['boil_time'] = np.round(recipe['boil_time'].item()/5) * 5
       # Round the mash pH to the nearest 100ths
-      recipe['mash_ph'] = np.round(recipe['mash_ph'], 2)
+      recipe['mash_ph'] = np.round(recipe['mash_ph'].item(), 2)
       # Round the sparge temp to the nearest 10th of a degree
-      recipe['sparge_temp'] = np.round(recipe['sparge_temp'], 1)
+      recipe['sparge_temp'] = np.round(recipe['sparge_temp'].item(), 1)
 
       # Mash steps should only exist for non-empty steps
       invalid_mash_step_inds = recipe['mash_step_type_inds'] == 0
       recipe['mash_step_times'][invalid_mash_step_inds] = 0
       recipe['mash_step_avg_temps'][invalid_mash_step_inds] = 0
       # Round mash step times to the nearest 5 mins
-      recipe['mash_step_times'] = recipe['mash_step_times']//5 * 5
+      recipe['mash_step_times'] = np.round(recipe['mash_step_times']/5) * 5
       # Round mash step temps to the nearest 10th of a degree
       recipe['mash_step_avg_temps'] = np.round(recipe['mash_step_avg_temps'], 1)
 
