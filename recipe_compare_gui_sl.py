@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 import streamlit as st
 import pandas as pd
+import numpy as np
 
 import torch
 from torch.utils.data import DataLoader
@@ -62,19 +63,104 @@ def get_model_files():
   sorted(model_files_list, key=lambda x: x[1]['datetime'])
   return [(i[0], i[1]['filepath']) for i in model_files_list]
 
-def recipe_to_markdown(recipe):
+def display_recipe(recipe, converter):
 
-  recipe_md = f"""
-  **Boil Time:** {recipe['boil_time']}<br>
-  **Mash pH:**   {recipe['mash_ph']}<br>
-  **Sparge Temp:** {recipe['sparge_temp']}<br>
-  ##### Mash Steps
-  |            | {'|'.join([f' {i} ' for i in range(len(recipe['mash_step_times']))])} |
-  | ---------- | {'|'.join([' ---- ' for i in range(len(recipe['mash_step_times']))])} |
-  | Time (min) | {'|'.join([f' {t} ' for t in recipe['mash_step_times']])}             |
-  """
+  # High-level recipe features
+  st.markdown(f'''
+    **Boil Time:** {recipe['boil_time']}<br>
+    **Mash pH:**   {recipe['mash_ph']}<br>
+    **Sparge Temp:** {recipe['sparge_temp']}<br>
+  ''', unsafe_allow_html=True)
 
-  return recipe_md
+  # Mash Steps
+  mash_step_inds = recipe['mash_step_type_inds'] != 0
+  mash_step_type_names = converter.mash_step_type_names(recipe['mash_step_type_inds'][mash_step_inds])
+  mash_step_table = [
+    [st for st in mash_step_type_names],
+    [str(int(t)) for t in recipe['mash_step_times'][mash_step_inds]],
+    [str(t) for t in recipe['mash_step_avg_temps'][mash_step_inds]]
+  ]
+  st.table(
+    pd.DataFrame(
+      mash_step_table, 
+      columns=[f"Step {i+1}" for i in range(len(mash_step_type_names))], 
+      index=["Type", "Time (min)", "Temp (C)"]
+    )
+  )
+
+  # Grains / Malt Bill
+  grain_type_inds = recipe['grain_core_type_inds'] != 0
+  grain_names = converter.grain_type_names(recipe['grain_core_type_inds'][grain_type_inds])
+  if len(grain_names) == 0:
+    # This shouldn't happen
+    st.markdown(":red[No Grains Found!]")
+    st.error("No grains found in recipe!")
+  else:
+    grain_table = [(name, str(np.round(recipe['grain_amts'][i]*100,1))+"%") for i, name in enumerate(grain_names)]
+    st.table(pd.DataFrame(grain_table, columns=["Grain", "Percentage"], index=[i for i in range(1, len(grain_table)+1)]))
+
+  # Adjuncts
+  adjunct_type_inds = recipe['adjunct_core_type_inds'] != 0
+  adjunct_names = converter.adjunct_type_names(recipe['adjunct_core_type_inds'][adjunct_type_inds])
+  if len(adjunct_names) > 0:
+    adjunct_table = [(name, str(recipe['adjunct_amts'][i])) for i, name in enumerate(adjunct_names)]
+    st.table(pd.DataFrame(
+      adjunct_table, 
+      columns=["Adjunct", "Concentration (ml or g / L)"], 
+      index=[i for i in range(1, len(adjunct_table)+1)]
+    ))
+
+  # Hops
+  hop_type_inds = recipe['hop_type_inds'] != 0
+  hop_names = converter.hop_type_names(recipe['hop_type_inds'][hop_type_inds])
+  if len(hop_names) > 0:
+    hop_stage_type_names = converter.hop_stage_type_names(recipe['hop_stage_type_inds'][hop_type_inds])
+    hop_table = [(name, hop_stage_type_names[i], str(int(recipe['hop_times'][i])), recipe['hop_concentrations'][i]) for i,name in enumerate(hop_names)]
+    st.table(pd.DataFrame(
+      hop_table, 
+      columns=["Name", "Stage", "Time (min)", "Concentration (AA g/L (boil) or g/L)"], 
+      index=[i for i in range(1, len(hop_table)+1)]
+    ))
+
+  # Miscs
+  misc_type_inds = recipe['misc_type_inds'] != 0
+  misc_names = converter.misc_type_names(recipe['misc_type_inds'][misc_type_inds])
+  if len(misc_names) > 0:
+    misc_stage_type_names = converter.misc_stage_type_names(recipe['misc_stage_inds'][misc_type_inds])
+    misc_table = [(name, misc_stage_type_names[i], str((int(recipe['misc_times'][i]))), recipe['misc_amts'][i]) for i, name in enumerate(misc_names)]
+    st.table(pd.DataFrame(
+      misc_table,
+      columns=["Name", "Stage", "Time (min)", "Concentration (g or ml / L)"],
+      index=[i for i in range(1, len(misc_table)+1)]
+    ))
+
+  # Microorganisms
+  mo_type_inds = recipe['mo_type_inds'] != 0
+  mo_names = converter.microorganism_type_names(recipe['mo_type_inds'][mo_type_inds])
+  if len(mo_names) == 0:
+    # This shouldn't happen
+    st.markdown(":red[No Microorganism Found!]")
+    st.error("No microorganism found in recipe!")
+  else:
+    mo_stage_type_names = converter.microorganism_stage_type_names(recipe['mo_stage_inds'][mo_type_inds])
+    # TODO
+
+  # Fermentation
+  primary_ferment_str = "N/A"
+  secondary_ferment_str = "N/A"
+  if recipe['ferment_stage_times'][0] != 0:
+    primary_ferment_str = f"{str(int(recipe['ferment_stage_times'][0]))} days @ {str(recipe['ferment_stage_temps'][0])}C"
+  if recipe['ferment_stage_times'][1] != 0:
+    secondary_ferment_str = f"{str(int(recipe['ferment_stage_times'][1]))} days @ {str(recipe['ferment_stage_temps'][1])}C"
+
+  st.markdown(f'''
+    **Primary Fermentation:** {primary_ferment_str}<br>
+    **Secondary Fermentation:** {secondary_ferment_str}<br>
+  ''', unsafe_allow_html=True)
+
+
+
+
 
 # Widget Event functions ****
 def on_model_change():
@@ -91,11 +177,13 @@ def on_model_change():
   load_str = f"Loading model '{model_filepath}' ..."
   print(load_str)
   with st.spinner(text=load_str):
-    model_dict = torch.load(model_filepath)
+    model_dict = torch.load(model_filepath, map_location=device)
     args = RecipeNetArgs(model_dict[MODEL_FILE_KEY_ARGS])
     model = RecipeNet(args).to(device)
     model.load_state_dict(model_dict[MODEL_FILE_KEY_NETWORK])
     model.eval()
+    del model_dict
+    torch.cuda.empty_cache()
     st.session_state[SESSION_KEY_MODEL] = model
   print("Model Loading Complete!")
 
@@ -112,6 +200,8 @@ def on_filter_change():
       .limit(num_rows)
     
     st.session_state[SESSION_KEY_RECIPE_OPTS] = [(recipe.name, recipe.id) for recipe in session.scalars(select_stmt).all()]
+    st.session_state[SESSION_KEY_RECIPE] = st.session_state[SESSION_KEY_RECIPE_OPTS][0]
+    on_recipe_change()
 
 def on_recipe_change():
   recipe_id = st.session_state[SESSION_KEY_RECIPE][1]
@@ -164,15 +254,13 @@ else:
   heads, foots, mean, logvar, z = model(batch, use_mean=True)
 
   converter = RecipeConverter(dataset_mappings)
-  input_recipe_md  = recipe_to_markdown(converter.batch_to_recipes(recipe_batch)[0])
-  output_recipe_md = recipe_to_markdown(converter.net_output_to_recipes(foots)[0])
 
   with st.expander("Latent Space Values (z)", expanded=True):
     st.bar_chart(pd.DataFrame(z[0].detach().cpu().numpy(), columns=["z"]))
   
   original_col, decoded_col = st.columns(2)
   with original_col:
-    st.markdown(input_recipe_md, unsafe_allow_html=True)
+    display_recipe(converter.batch_to_recipes(recipe_batch)[0], converter)
   with decoded_col:
-    st.markdown(output_recipe_md, unsafe_allow_html=True)
+    display_recipe(converter.net_output_to_recipes(foots)[0], converter)
 

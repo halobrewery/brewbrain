@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${file}",
       "args": [
-        //"--model", "runs/recipe_net__seed42_beta-tc_z32_hidden8096-4096_1672268963/recipe_net_415000.chkpt"
+        //"--model", "runs/recipe_net__seed42_beta-tc_z256_hidden9248-6144_1673058646/recipe_net_70000.chkpt"
       ],
       "console": "integratedTerminal",
       "justMyCode": false

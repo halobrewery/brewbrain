@@ -19,20 +19,19 @@ calculate-a-running-standard-deviation>
       print(rs.mean, rs.std)
   """
 
-  def __init__(self, n=0., m=None, s=None):
+  def __init__(self, n=0.0, m=0.0, s=0.0):
     self.n = n
     self.m = m
     self.s = s
 
   def clear(self):
     self.n = 0.0
-    self.m = None
-    self.s = None
+    self.m = 0.0
+    self.s = 0.0
 
   def push(self, x, per_dim=False):
     if not isinstance(x, np.ndarray):
       x = np.array(x)
-      
     if per_dim:
       self.update_params(x)
     else:
@@ -45,7 +44,7 @@ calculate-a-running-standard-deviation>
       self.m = x
       self.s = 0.0
     else:
-      prev_m = self.m.copy()
+      prev_m = self.m if isinstance(self.m, float) else self.m.copy()
       self.m += (x - self.m) / self.n
       self.s += (x - prev_m) * (x - self.m)
         

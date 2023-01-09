@@ -45,9 +45,7 @@ if __name__ == "__main__":
   converter = RecipeConverter(dataset_mappings)
 
   model_dict = torch.load(NETWORK_MODEL_FILEPATH)
-  args = RecipeNetArgs()
-  for key, value in model_dict[MODEL_FILE_KEY_ARGS].items():
-    setattr(args, key, value)
+  args = RecipeNetArgs(model_dict[MODEL_FILE_KEY_ARGS])
   model = RecipeNet(args).to(device)
   model.load_state_dict(model_dict[MODEL_FILE_KEY_NETWORK])
 

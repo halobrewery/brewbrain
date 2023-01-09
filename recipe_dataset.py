@@ -33,6 +33,24 @@ NUM_MASH_STEPS = RecipeML.MAX_MASH_STEPS
 
 EMPTY_TAG = "<EMPTY>"
 
+def load_dataset(filepath=RECIPE_DATASET_FILENAME, verbose=True):
+  if verbose: print(f"Loading mappings from {filepath}...")
+  # Load the dataset and create a dataloader for it
+  with open(filepath, 'rb') as f:
+    dataset = pickle.load(f)
+  return dataset
+
+def save_dataset(dataset, dataset_filepath=RECIPE_DATASET_FILENAME, mappings_filepath=DATASET_MAPPINGS_FILENAME, save_mappings=True, verbose=True):
+  if save_mappings:
+    if verbose: print(f"Resaving mappings to {mappings_filepath}...")
+    mappings = DatasetMappings()
+    mappings.init_from_dataset(dataset)
+    mappings.save(mappings_filepath)
+  if verbose: print(f"Resaving dataset to {dataset_filepath}...")
+  with open(dataset_filepath, 'wb') as f:
+    pickle.dump(dataset, f)
+
+
 class _DatasetMappingsEncoder(json.JSONEncoder):
   def default(self, obj):
     if isinstance(obj, DatasetMappings) or isinstance(obj, RunningStats):
@@ -75,7 +93,7 @@ class DatasetMappings():
 
   def save(self, filepath=DATASET_MAPPINGS_FILENAME):
     with open(filepath, 'w') as f:
-      json.dump(mappings, fp=f, cls=_DatasetMappingsEncoder)
+      json.dump(self, fp=f, cls=_DatasetMappingsEncoder)
 
   @staticmethod
   def load(filepath=DATASET_MAPPINGS_FILENAME):
@@ -108,6 +126,24 @@ class RecipeDataset(torch.utils.data.Dataset):
     for key, stats in self.normalizers.items():
       recipe[key] = ((recipe[key] - stats.mean()) / stats.std()).astype(np.float32)
     
+    # Sort ingredient slots based on quantities (higher to lower)
+    adjunct_new_inds = np.argsort(recipe['adjunct_amts'])[::-1]
+    recipe['adjunct_core_type_inds'] = recipe['adjunct_core_type_inds'][adjunct_new_inds]
+    recipe['adjunct_amts'] = recipe['adjunct_amts'][adjunct_new_inds]
+
+    hop_new_inds = np.argsort(recipe['hop_concentrations'])[::-1]
+    recipe['hop_type_inds'] = recipe['hop_type_inds'][hop_new_inds]
+    recipe['hop_times'] = recipe['hop_times'][hop_new_inds]
+    recipe['hop_concentrations'] = recipe['hop_concentrations'][hop_new_inds]
+    recipe['hop_stage_type_inds'] = recipe['hop_stage_type_inds'][hop_new_inds]
+
+    misc_new_inds = np.argsort(recipe['misc_amts'])[::-1]
+    recipe['misc_type_inds'] = recipe['misc_type_inds'][misc_new_inds]
+    recipe['misc_amts'] = recipe['misc_amts'][misc_new_inds]
+    recipe['misc_times'] = recipe['misc_times'][misc_new_inds]
+    recipe['misc_stage_inds'] = recipe['misc_stage_inds'][misc_new_inds]
+
+    '''
     # Move all non-empty slots to the front of each array for various ingredients,
     # shuffle each first to make sure there's no dependance on ordering
     adjunct_shuffle = np.random.permutation(len(recipe['adjunct_core_type_inds']))
@@ -149,6 +185,7 @@ class RecipeDataset(torch.utils.data.Dataset):
     mo_new_inds = np.argsort(non_empty_mo_inds)[::-1]
     recipe['mo_type_inds']  = recipe['mo_type_inds'][mo_new_inds]
     recipe['mo_stage_inds'] = recipe['mo_stage_inds'][mo_new_inds]
+    '''
 
     return recipe
   
@@ -182,6 +219,9 @@ class RecipeDataset(torch.utils.data.Dataset):
       'misc_times': RunningStats(),
     }
     
+    #max_hop_concentration = 0.0
+    #max_adjunct_amt = 0.0
+    #max_misc_amt = 0.0
     for recipe in self.recipes:
       self.normalizers['boil_time'].add(recipe['boil_time'])
       self.normalizers['mash_ph'].add(recipe['mash_ph'])
@@ -196,17 +236,22 @@ class RecipeDataset(torch.utils.data.Dataset):
       self.normalizers['ferment_stage_temps'].add(recipe['ferment_stage_temps'][valid_ferment_inds])
       
       valid_adj_inds = recipe['adjunct_core_type_inds'] != 0
+      #max_adjunct_amt = max(max_adjunct_amt, np.amax(recipe['adjunct_amts']).item())
       self.normalizers['adjunct_amts'].add(recipe['adjunct_amts'][valid_adj_inds])
       
       valid_hop_inds = recipe['hop_type_inds'] != 0
       self.normalizers['hop_times'].add(recipe['hop_times'][valid_hop_inds])
+      #max_hop_concentration = max(max_hop_concentration, np.amax(recipe['hop_concentrations']).item())
       self.normalizers['hop_concentrations'].add(recipe['hop_concentrations'][valid_hop_inds])
       
       valid_misc_inds = recipe['misc_type_inds'] != 0
+      #max_misc_amt = max(max_misc_amt, np.amax(recipe['misc_amts']).item())
       self.normalizers['misc_amts'].add(recipe['misc_amts'][valid_misc_inds])
       self.normalizers['misc_times'].add(recipe['misc_times'][valid_misc_inds])
   
-  
+    #self.normalizers['adjunct_amts'] = RunningStats(1, 0.0, max_adjunct_amt*max_adjunct_amt)
+    #self.normalizers['hop_concentrations'] = RunningStats(1, 0.0, max_hop_concentration*max_hop_concentration)
+    #self.normalizers['misc_amts'] = RunningStats(1, 0.0, max_misc_amt*max_misc_amt)
 
   def load_from_db(self, db_engine, options=None):
     # Convert the database into numpy arrays as members of this
@@ -339,16 +384,19 @@ class RecipeDataset(torch.utils.data.Dataset):
         # Hops
         hop_type_inds = np.zeros((NUM_HOP_SLOTS), dtype=np.int32)        # hop type (index)
         hop_stage_type_inds = np.zeros((NUM_HOP_SLOTS), dtype=np.int32)  # hop use/stage (index)
-        hop_times = np.zeros((NUM_HOP_SLOTS), dtype=np.float32)          # time (in mins)
+        hop_times = np.zeros((NUM_HOP_SLOTS), dtype=np.float32)          # time as a multiple of stage time
         hop_concentrations = np.zeros((NUM_HOP_SLOTS), dtype=np.float32) # if this is a boil hop then the amount is a (concentration of alpha acids in g/L), otherwise it's the hop concentration in g/L
         for idx, hopAT in enumerate(recipeML.hops):
           hop_type_inds[idx] = hops_dbid_to_idx[hopAT.hop_id]
           hop_stage_type_inds[idx] = hop_stage_name_to_idx[hopAT.stage]
-          hop_times[idx] = hopAT.time
-          if hopAT.stage == 'boil':
-            hop_concentrations[idx] = hop_form_utilization(hopAT.form) * alpha_acid_mg_per_l(hopAT.alpha / 100.0, hopAT.amount * 1000.0, recipeML.postboil_vol) / 1000.0
-          else: 
-            hop_concentrations[idx] = (hopAT.amount * 1000.0) / _recipe_vol_at_stage(recipeML, infusion_vol, hopAT.stage)
+          assert hopAT.time >= 0
+          time_div, max_time = recipe_time_at_stage(recipe_data, hopAT.stage)
+          assert time_div > 0
+          hop_times[idx] = min(hopAT.time, max_time) / time_div
+          #if hopAT.stage == 'boil':
+          #  hop_concentrations[idx] = hop_form_utilization(hopAT.form) * alpha_acid_mg_per_l(hopAT.alpha / 100.0, hopAT.amount * 1000.0, recipeML.postboil_vol) / 1000.0
+          #else: 
+          hop_concentrations[idx] = (hopAT.amount * 1000.0) / _recipe_vol_at_stage(recipeML, infusion_vol, hopAT.stage)
         recipe_data['hop_type_inds'] = hop_type_inds
         recipe_data['hop_stage_type_inds'] = hop_stage_type_inds
         recipe_data['hop_times'] = hop_times
@@ -357,14 +405,17 @@ class RecipeDataset(torch.utils.data.Dataset):
         # Miscs
         misc_type_inds = np.zeros((NUM_MISC_SLOTS), dtype=np.int32)  # misc type (index)
         misc_amts = np.zeros((NUM_MISC_SLOTS), dtype=np.float32)     # amount (in ~(g or ml)/L)
-        misc_times = np.zeros((NUM_MISC_SLOTS), dtype=np.float32)    # time (in mins)
+        misc_times = np.zeros((NUM_MISC_SLOTS), dtype=np.float32)    # time as a multiple of stage time
         misc_stage_inds = np.zeros((NUM_MISC_SLOTS), dtype=np.int32) # stage (index)
         for idx, miscAT in enumerate(recipeML.miscs):
           misc_type_inds[idx] = miscs_dbid_to_idx[miscAT.misc_id]
           vol =  _recipe_vol_at_stage(recipeML, infusion_vol, miscAT.stage)
           assert vol != None and vol > 0
           misc_amts[idx] = (miscAT.amount * 1000.0) / vol
-          misc_times[idx] = miscAT.time
+          assert miscAT.time >= 0
+          time_div, max_time = recipe_time_at_stage(recipe_data, miscAT.stage)
+          assert time_div > 0
+          misc_times[idx] = min(miscAT.time, max_time) / time_div
           misc_stage_inds[idx] = misc_stage_name_to_idx[miscAT.stage]
         recipe_data['misc_type_inds'] = misc_type_inds
         recipe_data['misc_amts'] = misc_amts
@@ -441,49 +492,185 @@ def _hop_stage_types(session):
 def _microorganism_stage_types(session):
   return [stage[0] for stage in session.query(RecipeMLMicroorganismAT.stage).group_by(RecipeMLMicroorganismAT.stage).all()]
 
+# Volume in Liters
 def _recipe_vol_at_stage(recipe_ml, infusion_vol, stage_name):
   if stage_name == 'mash':
+    assert infusion_vol > 0, "Infusion volume must be greater than zero!"
     return infusion_vol
   elif stage_name == 'sparge' or stage_name == 'boil' or stage_name == 'first wort' or stage_name == 'whirlpool':
     return recipe_ml.postboil_vol
   else:
     assert stage_name == 'dry hop' or stage_name == 'primary' or stage_name == 'secondary' or stage_name == 'other' or stage_name == 'finishing'
     return recipe_ml.fermenter_vol
-  
 
-#def print_recipe_from_batch(batch, idx):
-#def print_recipe(recipe):
+# Reasonable times in minutes for a given stage in a given recipe
+# Returns a tuple (reasonable_time, max_possible_time)
+def recipe_time_at_stage(recipe, stage_name):
+  if stage_name == 'mash':
+    mash_time = recipe['mash_step_times'].sum()
+    return (mash_time, mash_time)
+  elif stage_name == 'finishing':
+    return (60, 180)
+  elif stage_name == 'boil' or stage_name == 'first wort':
+    return (recipe['boil_time'], recipe['boil_time'])
+  elif stage_name == 'primary':
+    primary_mins = recipe['ferment_stage_times'][0]*1440 # days -> mins
+    return (primary_mins, primary_mins)
+  elif stage_name == 'secondary':
+    secondary_mins = recipe['ferment_stage_times'][1]*1440 # days -> mins
+    return (secondary_mins, secondary_mins)
+  elif stage_name == 'dry hop' or stage_name == 'other':
+    ferment_mins = recipe['ferment_stage_times'].sum()*1440 # days -> mins
+    return (ferment_mins, ferment_mins)
+  elif stage_name == 'sparge':
+    return (60, 180)  # Typical additions to a sparge are within an hour
+  elif stage_name == 'whirlpool':
+    return (60, 180) # Set the typical whirlpool to be about an hour
+  assert False
 
+
+def load_save_recalc_normalizations():
+  dataset = load_dataset()
+  print("Recalculating normalizations...")
+  dataset._calc_normalization()
+  save_dataset(dataset)
+
+def remove_dbids(dataset, session, dbids_to_remove):
+  print(f"Removing {len(dbids_to_remove)} recipes...")
+  dataset.recipes = [recipe for recipe in dataset.recipes if recipe['dbid'] not in dbids_to_remove]
+  print("Recalculating normalizations...")
+  dataset._calc_normalization()
+  recipes_to_remove = session.scalars(select(RecipeML).filter(RecipeML.id.in_(dbids_to_remove))).all()
+  for recipe in recipes_to_remove:
+    session.delete(recipe)
+  session.commit()
 
 if __name__ == "__main__":
-  with open(RECIPE_DATASET_FILENAME, 'rb') as f:
-    dataset = pickle.load(f)
+  dataset = load_dataset()
+  dbids_to_remove = [r['dbid'] for r in dataset.recipes if np.any(r['misc_amts'] > 200)]#[recipe['dbid'] for recipe in dataset.recipes if np.any(recipe['hop_concentrations'] > 25) or np.any(recipe['adjunct_amts'] > 1000) or np.any(recipe['misc_amts']) > 200]
 
+  from sqlalchemy import create_engine
+  from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, RecipeML
+  engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
+  Base.metadata.create_all(engine)
+  with Session(engine) as session:
+    '''
+    db_recipes = session.scalars(select(RecipeML)).all()
+    db_recipes_map = {r.id: r for r in db_recipes}
+
+    # Clean up hop concentrations... fix the boil hops to use g/L
+    boil_idx = -1
+    for idx, name in dataset.hop_stage_idx_to_name.items():
+      if name == 'boil':
+        boil_idx = idx
+        break
+    assert boil_idx != -1
+    dbids_to_remove = set()
+    for recipe in dataset.recipes:
+      # Are there boil hops?
+      boil_hop_inds = recipe['hop_stage_type_inds'] == boil_idx
+      if not np.any(boil_hop_inds): continue
+
+      # Change boil hop concentrations to g/L
+      if recipe['dbid'] not in db_recipes_map:
+        dbids_to_remove.add(recipe['dbid'])
+        continue
+
+      recipe_ml = db_recipes_map[recipe['dbid']]
+      assert recipe_ml != None, f"No recipe found for dbid {recipe['dbid']}!"
+      infusion_vol = recipe_ml.total_infusion_vol()
+      for idx, hop_at in enumerate(recipe_ml.hops):
+        recipe['hop_concentrations'][idx] = (hop_at.amount * 1000.0) / _recipe_vol_at_stage(recipe_ml, infusion_vol, hop_at.stage)
+        if recipe['hop_concentrations'][idx] > 25:
+          dbids_to_remove.add(recipe['dbid'])
+    '''
+    remove_dbids(dataset, session, dbids_to_remove) 
+    save_dataset(dataset)
+    
+  exit()
+
+  
+
+
+  '''
+  # Clean up the timings on hop and misc:
+  # Remove all recipes with negative times
+  dataset.recipes = [recipe for recipe in dataset.recipes if (recipe['hop_times'] >= 0).all() and (recipe['misc_times'] >= 0).all()]
+  print(f"After removal of negative timings: {len(dataset.recipes)} recipes.")
+
+  # Set all hop and misc. addition times clamped and set to a multiple of their stage time
+  dbids_to_remove = set()
+  for recipe in dataset.recipes:
+    for i in np.nonzero(recipe['hop_type_inds'])[0]:
+      stage = dataset.hop_stage_idx_to_name[recipe['hop_stage_type_inds'][i]]
+      div_time, max_time = recipe_time_at_stage(recipe, stage)
+      if div_time <= 0:
+        dbids_to_remove.add(recipe['dbid'])
+        break
+      recipe['hop_times'][i] = min(recipe['hop_times'][i], max_time) / div_time
+    for i in np.nonzero(recipe['misc_type_inds'])[0]:
+      stage = dataset.misc_stage_idx_to_name[recipe['misc_stage_inds'][i]]
+      div_time, max_time = recipe_time_at_stage(recipe, stage)
+      if div_time <= 0:
+        dbids_to_remove.add(recipe['dbid'])
+        break
+      recipe['misc_times'][i] = min(recipe['misc_times'][i], max_time) / div_time
+
+  # Remove bogus recipes (where we couldn't properly set the hop/misc times)
+  dataset.recipes = [recipe for recipe in dataset.recipes if recipe['dbid'] not in dbids_to_remove]
+  print(f"After removal of erroroneous recipes: {len(dataset.recipes)} recipes.")
+
+  # Recalculate all the normalization values for the hop and misc. times
+  dataset.normalizers['hop_times']  = RunningStats()
+  dataset.normalizers['misc_times'] = RunningStats()
+  for recipe in dataset.recipes:
+    dataset.normalizers['hop_times'].add(recipe['hop_times'][recipe['hop_type_inds'] != 0])
+    dataset.normalizers['misc_times'].add(recipe['misc_times'][recipe['misc_type_inds'] != 0])
+
+  print("New normalizations...")
+  print(f"Hop Times:  [mean={dataset.normalizers['hop_times'].mean():>10.3f}, std={dataset.normalizers['hop_times'].std():>10.3f}]")
+  print(f"Misc Times: [mean={dataset.normalizers['misc_times'].mean():>10.3f}, std={dataset.normalizers['misc_times'].std():>10.3f}]")
+
+  print("Resaving mappings...")
   mappings = DatasetMappings()
   mappings.init_from_dataset(dataset)
   mappings.save()
 
-  loaded_mappings = DatasetMappings.load()
+  print("Resaving dataset...")
+  with open(RECIPE_DATASET_FILENAME, 'wb') as f:
+    pickle.dump(dataset, f)
 
-  pass
-
+  #mappings = DatasetMappings()
+  #mappings.init_from_dataset(dataset)
+  #mappings.save()
+  #loaded_mappings = DatasetMappings.load()
   '''
-  with open(RECIPE_DATASET_FILENAME, 'rb') as f:
-    dataset = pickle.load(f)
-  print("Loaded.")
 
   # Set of dbids to remove based on network testing for outliers...
   remove_dbids = set(
-    [24386, 273684,7467,  199062,203580,63745, 235986,205368,90512, 206014,67078, 29037, 216299,209222,204523,117966,256516,209720,7595,  76690, 92284, 123891,194933,197698,18036,169728,87139, 87249, 23261, 278066,18181, 226705,265337,137826,178025,4299,  90457, 12515, 156488,248743,231291,94054, 56530, 178144,265330,254059,254237,285773]
+    [
+      138918,196206,215956,221149,133902,211680,215135,223880,231843,23052, 233061,214458,102975,25209, 88871, 290456,21840, 32398, 6709,  44007, 131139,210853,29271, 254751,221338,226719,273031,219908,22601, 20541, 119635,197266,27991, 233555,45011, 219349,50315, 105705,220452,194885,200975,28019, 21844, 249832,40956, 143032,143709,222311,223045,166997,
+    ]
   )
 
   # Remove the ids from the dataset
   dataset.recipes = [recipe for recipe in dataset.recipes if recipe['dbid'] not in remove_dbids]
+  print(f"After removal of specified dbids: {len(dataset.recipes)} recipes.")
+
+  print("Recalculating normalizations...")
+  dataset._calc_normalization()
+
+  print("Resaving mappings...")
+  mappings = DatasetMappings()
+  mappings.init_from_dataset(dataset)
+  mappings.save()
+
+  print("Resaving dataset...")
   with open(RECIPE_DATASET_FILENAME, 'wb') as f:
     pickle.dump(dataset, f)
 
-
   # Remove the ids from the DB
+  print("Removing specified dbids from database...")
   from sqlalchemy import create_engine
   from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
@@ -493,8 +680,6 @@ if __name__ == "__main__":
     for recipe in recipes_to_remove:
       session.delete(recipe)
     session.commit()
-  
-  '''
 
   '''
   from torch.utils.data import DataLoader

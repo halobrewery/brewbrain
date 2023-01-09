@@ -5,8 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from recipe_dataset import DatasetMappings
-from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, Grain, CoreGrain, RecipeML
+from recipe_dataset import DatasetMappings, recipe_time_at_stage
+from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, Hop, Misc, Microorganism, CoreGrain, CoreAdjunct
 
 class RecipeConverter():
 
@@ -67,14 +67,26 @@ class RecipeConverter():
       # Hop values should only exist for non-empty slots
       invalid_hop_inds = recipe['hop_type_inds'] == 0
       recipe['hop_stage_type_inds'][invalid_hop_inds] = 0
+      recipe['hop_stage_type_names'] = self.hop_stage_type_names(recipe['hop_stage_type_inds'])
       recipe['hop_times'][invalid_hop_inds] = 0
       recipe['hop_concentrations'][invalid_hop_inds] = 0
-
+      # Convert times back into mins
+      for i in np.nonzero(recipe['hop_type_inds'])[0]:
+        stage = recipe['hop_stage_type_names'][i]
+        time_div, _ = recipe_time_at_stage(recipe, stage)
+        recipe['hop_times'][i] *= time_div
+      
       # Misc. values should only exist for non-empty slots
       invalid_misc_inds = recipe['misc_type_inds'] == 0
       recipe['misc_stage_inds'][invalid_misc_inds] = 0
+      recipe['misc_stage_names'] = self.misc_stage_type_names(recipe['misc_stage_inds'])
       recipe['misc_times'][invalid_misc_inds] = 0
       recipe['misc_amts'][invalid_misc_inds] = 0
+      # Convert times back into mins
+      for i in np.nonzero(recipe['misc_type_inds'])[0]:
+        stage = recipe['misc_stage_names'][i]
+        time_div, _ = recipe_time_at_stage(recipe, stage)
+        recipe['misc_times'][i] *= time_div
       
       # Microorganism values should only exist for non-empty slots
       invalid_mo_inds = recipe['mo_type_inds'] == 0
@@ -110,3 +122,37 @@ class RecipeConverter():
     t_recipes['mo_stage_inds'] = torch.argmax(torch.softmax(foots.dec_mo_stage_type_onehot.view(num_recipes, t_recipes['mo_type_inds'].shape[1], -1), dim=-1), dim=-1, keepdim=False)
     
     return self.batch_to_recipes(t_recipes)
+
+  def mash_step_type_names(self, mash_step_type_inds):
+    return [self.dataset_mappings.mash_step_idx_to_name[str(idx)] for idx in mash_step_type_inds]
+  
+  def hop_stage_type_names(self, hop_stage_type_inds):
+    return [self.dataset_mappings.hop_stage_idx_to_name[str(idx)] for idx in hop_stage_type_inds]
+  
+  def misc_stage_type_names(self, misc_stage_type_inds):
+    return [self.dataset_mappings.misc_stage_idx_to_name[str(idx)] for idx in misc_stage_type_inds]
+
+  def microorganism_stage_type_names(self, mo_stage_type_inds):
+    return [self.dataset_mappings.mo_stage_idx_to_name[str(idx)] for idx in mo_stage_type_inds]
+
+  def _type_names(self, type_inds, idx_to_dbid_map, orm_table):
+    with Session(self.db_engine) as session:
+      dbids = [idx_to_dbid_map[str(idx)] for idx in type_inds]
+      values = session.query(orm_table).with_entities(orm_table.id, orm_table.name).filter(orm_table.id.in_(dbids)).all()
+      value_map = {dbid:name for dbid, name in values}
+      return [value_map[dbid] for dbid in dbids]
+
+  def grain_type_names(self, grain_type_inds):
+    return self._type_names(grain_type_inds, self.dataset_mappings.core_grains_idx_to_dbid, CoreGrain)
+
+  def adjunct_type_names(self, adjunct_type_inds):
+    return self._type_names(adjunct_type_inds, self.dataset_mappings.core_adjs_idx_to_dbid, CoreAdjunct)
+
+  def hop_type_names(self, hop_type_inds):
+    return self._type_names(hop_type_inds, self.dataset_mappings.hops_idx_to_dbid, Hop)
+
+  def misc_type_names(self, misc_type_inds):
+    return self._type_names(misc_type_inds, self.dataset_mappings.miscs_idx_to_dbid, Misc)
+
+  def microorganism_type_names(self, mo_type_inds):
+    return self._type_names(mo_type_inds, self.dataset_mappings.mos_idx_to_dbid, Microorganism)

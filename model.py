@@ -12,14 +12,15 @@ def layer_init_ortho(layer, std=np.sqrt(2)):
     nn.init.constant_(layer.bias, 0.0)
   return layer
 
-def layer_init_xavier(layer, gain):
+def layer_init_xavier(layer, gain, bias=0.0):
   nn.init.xavier_normal_(layer.weight, gain)
   if layer.bias != None:
-    nn.init.constant_(layer.bias, 0.0)
+    nn.init.constant_(layer.bias, bias)
   return layer
 
 def reparameterize(mu, logvar):
   std = torch.exp(0.5 * logvar)
+  assert not torch.isnan(std).any()
   eps = torch.randn_like(std)
   return eps * std + mu
 
@@ -36,6 +37,12 @@ class RecipeNetHeadEncoder(nn.Module):
     self.hop_type_embedding           = nn.Embedding(args.num_hop_types, args.hop_type_embed_size)
     self.misc_type_embedding          = nn.Embedding(args.num_misc_types, args.misc_type_embed_size)
     self.microorganism_type_embedding = nn.Embedding(args.num_microorganism_types, args.microorganism_type_embed_size)
+    
+    #self.mash_step_type_embedding  = nn.Embedding(args.num_mash_step_types, args.num_mash_step_types)
+    #self.hop_stage_type_embedding  = nn.Embedding(args.num_hop_stage_types, args.num_hop_stage_types)
+    #self.misc_stage_type_embedding = nn.Embedding(args.num_misc_stage_types, args.num_misc_stage_types)
+    #self.mo_stage_type_embedding   = nn.Embedding(args.num_mo_stage_types, args.num_mo_stage_types)
+
     self.args = args
     
   def forward(self, x):
@@ -193,11 +200,16 @@ class RecipeNet(nn.Module):
   def __init__(self, args) -> None:
     super().__init__()
     
+    use_batch_norm = args.use_batch_norm
+    use_layer_norm = args.use_layer_norm
+    assert not use_batch_norm or not use_layer_norm, "You shouldn't be using both layer and batch normalization simultaneously."
+    
+    fc_prebn_bias = not use_batch_norm
     hidden_layers = args.hidden_layers
     z_size = args.z_size
     activation_fn = args.activation_fn
     gain = args.gain
-    
+
     assert all([num_hidden > 0 for num_hidden in hidden_layers])
     assert args.num_inputs >= 1
     assert len(hidden_layers) >= 1
@@ -205,25 +217,46 @@ class RecipeNet(nn.Module):
 
     # Encoder and decoder networks
     self.encoder = nn.Sequential()
-    self.encoder.append(layer_init_xavier(nn.Linear(args.num_inputs, hidden_layers[0]), gain))
+    self.encoder.append(layer_init_xavier(nn.Linear(args.num_inputs, hidden_layers[0], bias=fc_prebn_bias), gain))
+    if use_layer_norm:
+      self.encoder.append(nn.LayerNorm(hidden_layers[0]))
     self.encoder.append(activation_fn(**args.activation_fn_params))
+    if use_batch_norm:
+      self.encoder.append(nn.BatchNorm1d(hidden_layers[0]))
+
     prev_hidden_size = hidden_layers[0]
     for hidden_size in hidden_layers[1:]:
-      self.encoder.append(layer_init_xavier(nn.Linear(prev_hidden_size, hidden_size), gain))
+      self.encoder.append(layer_init_xavier(nn.Linear(prev_hidden_size, hidden_size, bias=fc_prebn_bias), gain))
+      if use_layer_norm:
+        self.encoder.append(nn.LayerNorm(hidden_size))
       self.encoder.append(activation_fn(**args.activation_fn_params))
+      if use_batch_norm:
+        self.encoder.append(nn.BatchNorm1d(hidden_size))
       prev_hidden_size = hidden_size
     
-    self.encoder.append(layer_init_xavier(nn.Linear(prev_hidden_size, z_size*2, bias=False), gain)) # TODO: bias=False if using batchnorm
+    self.encode_mean   = layer_init_xavier(nn.Linear(prev_hidden_size, z_size), gain)
+    self.encode_logvar = layer_init_xavier(nn.Linear(prev_hidden_size, z_size), gain, -100)
+
+    #self.encoder.append(layer_init_xavier(nn.Linear(prev_hidden_size, z_size*2, bias=False), gain)) # TODO: bias=False if using batchnorm
     #self.encoder.append(activation_fn(**args.activation_fn_params)) # NOTE: This is determinental to convergence.
-    self.encoder.append(nn.BatchNorm1d(z_size*2))
+    #self.encoder.append(nn.BatchNorm1d(z_size*2))
 
     self.decoder = nn.Sequential()
-    self.decoder.append(layer_init_xavier(nn.Linear(z_size, hidden_layers[-1]), gain))
+    self.decoder.append(layer_init_xavier(nn.Linear(z_size, hidden_layers[-1], bias=fc_prebn_bias), gain))
+    if use_layer_norm:
+      self.decoder.append(nn.LayerNorm(hidden_layers[-1]))
     self.decoder.append(activation_fn(**args.activation_fn_params))
+    if use_batch_norm:
+      self.decoder.append(nn.BatchNorm1d(hidden_layers[-1]))
+
     prev_hidden_size = hidden_layers[-1]
     for hidden_size in reversed(hidden_layers[:-1]):
-      self.decoder.append(layer_init_xavier(nn.Linear(prev_hidden_size, hidden_size), gain))
+      self.decoder.append(layer_init_xavier(nn.Linear(prev_hidden_size, hidden_size, bias=fc_prebn_bias), gain))
+      if use_layer_norm:
+        self.decoder.append(nn.LayerNorm(hidden_size))
       self.decoder.append(activation_fn(**args.activation_fn_params))
+      if use_batch_norm:
+        self.decoder.append(nn.BatchNorm1d(hidden_size))
       prev_hidden_size = hidden_size
     self.decoder.append(layer_init_xavier(nn.Linear(hidden_layers[0], args.num_inputs), gain))
     #self.decoder.append(activation_fn(**args.activation_fn_params)) # NOTE: This is determental to convergence.
@@ -248,8 +281,12 @@ class RecipeNet(nn.Module):
     # Start by breaking the given x apart into all the various heads/embeddings 
     # and concatenate them into a value that can be fed to the encoder network
     x, heads = self.head_encoder(input)
+    x = self.encoder(x)
+
     # Encode to the latent distribution mean and std dev.
-    mean, logvar = torch.chunk(self.encoder(x), 2, dim=-1) 
+    mean   = self.encode_mean(x)
+    logvar = self.encode_logvar(x)
+
     return heads, mean, logvar
   
   def decode(self, z: torch.Tensor):
@@ -298,9 +335,6 @@ class RecipeNet(nn.Module):
 
     # Add up all our losses for reconstruction of the recipe
     return loss_toplvl + loss_mash_steps + loss_ferment_stages + loss_grains + loss_adjuncts + loss_hops + loss_miscs + loss_mos
-
-
-
 
 
 class BetaVAELoss():

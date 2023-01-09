@@ -17,7 +17,7 @@ from sqlalchemy import create_engine
 from brewbrain_db import Base, BREWBRAIN_DB_FILENAME, build_db_str
 from file_utils import find_file_cwd_and_parent_dirs
 from recipe_dataset import core_grain_labels, core_adjunct_labels, hop_labels, misc_labels, microorganism_labels
-from recipe_dataset import RecipeDataset, RECIPE_DATASET_FILENAME
+from recipe_dataset import RecipeDataset, RECIPE_DATASET_FILENAME, load_dataset
 from model import RecipeNet, BetaVAELoss, BetaTCVAELoss
 from model import MODEL_FILE_KEY_GLOBAL_STEP, MODEL_FILE_KEY_NETWORK, MODEL_FILE_KEY_OPTIMIZER, MODEL_FILE_KEY_NET_TYPE, MODEL_FILE_KEY_SCHEDULER, MODEL_FILE_KEY_ARGS
 from recipe_net_args import RecipeNetArgs, dataset_args
@@ -32,12 +32,6 @@ def init_rng_seeding(seed):
   np.random.seed(seed)
   torch.manual_seed(seed)
   torch.backends.cudnn.deterministic = True
-
-def load_dataset(filepath=RECIPE_DATASET_FILENAME):
-  # Load the dataset and create a dataloader for it
-  with open(filepath, 'rb') as f:
-    dataset = pickle.load(f)
-  return dataset
 
 def build_datasets(filepath=RECIPE_DATASET_FILENAME, train_percent=0.25):
   dataset = load_dataset(filepath)
@@ -84,7 +78,9 @@ if __name__ == "__main__":
 
   # Load the dataset and create a dataloader for it
   dataset, train_dataset, test_dataset = build_datasets(train_percent=cmd_args.train_percent)
+  train_size = len(train_dataset)
   train_dataloader = DataLoader(train_dataset, batch_size=cmd_args.batch_size, shuffle=True, num_workers=0)
+  
   net_args = RecipeNetArgs(dataset_args(dataset))
 
   # Embedding labels
@@ -98,8 +94,8 @@ if __name__ == "__main__":
   microorganism_type_embedding_labels = microorganism_labels(engine, dataset)
 
   recipe_net = RecipeNet(net_args).to(device)
-  optimizer  = torch.optim.Adam(recipe_net.parameters(), lr=5e-4) #, betas=(0.9, 0.999))
-  scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=1.0) # Step size is in epochs
+  optimizer  = torch.optim.AdamW(recipe_net.parameters(), lr=1e-4) #, betas=(0.9, 0.999))
+  scheduler  = torch.optim.lr_scheduler.StepLR(optimizer, step_size=8, gamma=0.5) # Step size is in epochs
   init_global_step = 1
   global_step = init_global_step
   loss_fn = load_loss_fn(cmd_args.net_type)
@@ -108,7 +104,7 @@ if __name__ == "__main__":
   if cmd_args.model is not None and len(cmd_args.model) > 0:
     if os.path.exists(cmd_args.model):
       print(f"Model file '{cmd_args.model}' found, loading...")
-      model_dict = torch.load(cmd_args.model)
+      model_dict = torch.load(cmd_args.model, map_location=device)
       load_failed = False
       try:
         recipe_net.load_state_dict(model_dict[MODEL_FILE_KEY_NETWORK], strict=False)
@@ -119,6 +115,7 @@ if __name__ == "__main__":
         print("Could not load agent networks:")
         print(e)
         load_failed = True
+
       if not load_failed:
         try:
           optimizer.load_state_dict(model_dict[MODEL_FILE_KEY_OPTIMIZER])
@@ -136,10 +133,12 @@ if __name__ == "__main__":
             except ValueError as e:
               print("Could not load scheduler:")
               print(e)
-
+        
           print("Model loaded!")
       else:
         print("Model loaded with failures.")
+      del model_dict
+      torch.cuda.empty_cache()
     else:
       print(f"Could not find/load model file '{cmd_args.model}'")
 
@@ -155,51 +154,38 @@ if __name__ == "__main__":
   )
   writer.add_text("Model Summary", str(recipe_net).replace("\n", "  \n"))
 
-  running_loss = RunningStats()
 
-  # Monitor the recipe network using hooks and tensorboard
-  MONITOR_UPDATE_STEPS = 1000
-  def histogram_hook(tag, tensor):
-    if global_step % MONITOR_UPDATE_STEPS == 0:
-      writer.add_histogram(tag, tensor.flatten().detach().cpu(), global_step)
-      writer.flush() 
-    return None
+  # Monitor the recipe network using pytorch hooks and tensorboard
+  def hook_lambda(layer_name, update_steps=2500):
+    def histogram_hook(layer, _, output):
+      weights = layer.weight
+      if global_step == 1 or global_step % update_steps == 0:
+        writer.add_histogram(f"dist/weights/{layer_name}", weights.detach().flatten().cpu(), global_step)
+        writer.add_histogram(f"dist/output/{layer_name}", output.detach().flatten().cpu(), global_step)
+      return None
+    return histogram_hook
 
-  for name, layer in recipe_net.named_children():
-    if name == 'encoder':
-      encoder_children = list(layer.named_children())
-      # Distributions of outputs after the first layer+activation
-      first_actfn = encoder_children[1][1]
-      first_actfn.register_forward_hook(lambda layer, input, output: histogram_hook("dists/outputs/encoder_first_actfn", output))
-      # Distribution of outputs after the last layer+activation (before batchnorm)
-      num_hidden_layers = len(net_args.hidden_layers)
-      last_layer = encoder_children[num_hidden_layers*2][1]
-      last_layer.register_forward_hook(lambda layer, input, output: histogram_hook("dists/outputs/encoder_last_layer_output", output))
-      # Distribution of outputs after the encoder (last layer is a batchnorm1D)
-      batchnorm = encoder_children[-1][1]
-      batchnorm.register_forward_hook(lambda layer, input, output: histogram_hook("dists/outputs/encoder_batchnorm", output))
-      # Distributions of weights of the first and last layers
-      first_layer = encoder_children[0][1]
-      first_layer.register_forward_hook(lambda layer, input, output: histogram_hook("dists/weights/encoder_first_layer_weights", layer.weight))
-      last_layer.register_forward_hook(lambda layer, input, output: histogram_hook("dists/weights/encoder_last_layer_weights", layer.weight))
-      
-    elif name == 'decoder':
-      decoder_children = list(layer.named_children())
-      first_actfn = decoder_children[1][1]
-      first_actfn.register_forward_hook(lambda layer, input, output: histogram_hook("dists/outputs/decoder_first_actfn", output))
-      num_hidden_layers = len(net_args.hidden_layers)
-      last_layer = decoder_children[num_hidden_layers*2][1]
-      last_layer.register_forward_hook(lambda layer, input, output: histogram_hook("dists/outputs/decoder_last_layer_output", output))
-      # Distributions of weights of the first and last layers
-      first_layer = decoder_children[0][1]
-      first_layer.register_forward_hook(lambda layer, input, output: histogram_hook("dists/weights/decoder_first_layer_weights", layer.weight))
-      last_layer.register_forward_hook(lambda layer, input, output: histogram_hook("dists/weights/decoder_last_layer_weights", layer.weight))
-    elif name == 'head_encoder':
-      pass
-    else: # name == 'foot_decoder':
-      pass
+  # Record initialized weights for all the layers and add hooks for recording
+  # weights and outputs throughout training
+  layer_idx = 0
+  for name, layer in recipe_net.encoder.named_children():
+    if isinstance(layer, nn.Linear):
+      layer.register_forward_hook(hook_lambda(f"encoder_{name}[{layer_idx}]"))
+      layer_idx += 1
 
+  recipe_net.encode_mean.register_forward_hook(hook_lambda("encoder_mean"))
+  recipe_net.encode_logvar.register_forward_hook(hook_lambda("encoder_logvar"))
+  
+  layer_idx = 0
+  for name, layer in recipe_net.decoder.named_children():
+    if isinstance(layer, nn.Linear):
+      layer.register_forward_hook(hook_lambda(f"decoder_{name}[{layer_idx}]"))
+      layer_idx += 1
+  writer.flush() 
 
+  epoch_running_loss = RunningStats()
+  outlier_loss_window = np.zeros(len(train_dataloader))
+  outlier_window_idx  = 0
   outliers = {}
   for epoch_idx in range(cmd_args.num_epochs):
 
@@ -207,44 +193,53 @@ if __name__ == "__main__":
       batch = {}
       for key, value in recipe_batch.items():
         if key == 'dbid': continue
-        batch[key] = value.cuda()
+        batch[key] = value.to(device)
 
       heads, foots, mean, logvar, z = recipe_net(batch)
       reconst_loss = recipe_net.reconstruction_loss(batch, heads, foots)
-      loss_vals = loss_fn.calc_loss(
-        reconst_loss=reconst_loss, z=z, dataset_size=train_size, 
-        mean=mean, logvar=logvar, iter_num=global_step-1, kl_weight=KL_WEIGHT
-      )
-      loss = loss_vals['loss']
-      running_loss.add(loss.detach().cpu().item())
+      #loss_vals = loss_fn.calc_loss(
+      #  reconst_loss=reconst_loss, z=z, dataset_size=train_size, 
+      #  mean=mean, logvar=logvar, iter_num=global_step-1, kl_weight=KL_WEIGHT
+      #)
+      #loss = loss_vals['loss']
+      loss = reconst_loss / cmd_args.batch_size
+      loss_vals = {'loss': loss}
+      
+      loss_value = loss.detach().cpu().item()
+      epoch_running_loss.add(loss_value)
+      outlier_loss_window[outlier_window_idx] = loss_value
+      outlier_window_idx = (outlier_window_idx + 1) % len(outlier_loss_window)
 
       for key, val in loss_vals.items():
         writer.add_scalar(f"charts/{key}", val.detach().cpu().item(), global_step)
-      
-      ''' 
-      if epoch_idx > 0 and loss.item() > OUTLIER_MIN_LOSS:
-        with torch.no_grad():
-          # Go through each item in the batch and see what its loss is
-          reconst_loss = recipe_net.reconstruction_loss(batch, heads, foots, 'none')
-          loss_result = loss_fn.calc_loss(reconst_loss=reconst_loss, z=z, dataset_size=train_size, mean=mean, logvar=logvar)
+      '''
+      if epoch_idx > 0:
+        z_score = (loss_value - outlier_loss_window.mean()) / outlier_loss_window.std()
+        if z_score > 4.0:
+          with torch.no_grad():
+            # Go through each item in the batch and see what its loss is
+            reconst_loss = recipe_net.reconstruction_loss(batch, heads, foots, 'none')
+            reconst_loss_mean = reconst_loss.mean().detach().cpu().item()
+            reconst_loss_std  = reconst_loss.std().detach().cpu().item()
 
-          # Find the Database IDs for the recipes with the worst losses:
-          # Sort the losses with their indices, highest to lowest
-          loss_dict = {idx: loss.item() for idx, loss in enumerate(loss_result['loss'].detach().cpu())}
-          ordered_idx_loss_tuples = sorted(loss_dict.items(), key=lambda x: x[1], reverse=True)
+            # Find the Database IDs for the recipes with the worst losses:
+            # Sort the losses with their indices, highest to lowest
+            loss_dict = {idx: loss.item() for idx, loss in enumerate(reconst_loss.detach().cpu())}
+            ordered_idx_loss_tuples = sorted(loss_dict.items(), key=lambda x: x[1], reverse=True)
 
-          dbids = recipe_batch['dbid']
-          for idx, loss_val in ordered_idx_loss_tuples:
-            if loss_val <= OUTLIER_PER_RECIPE_MIN_LOSS: break
-            dbid = dbids[idx].item()
-            if dbid not in outliers:
-              outliers[dbid] = {'loss': loss_val, 'count': 1}
-            else:
-              outliers[dbid]['count'] += 1
-      '''  
+            dbids = recipe_batch['dbid']
+            for idx, loss_val in ordered_idx_loss_tuples:
+              loss_val_z_score = (loss_val - reconst_loss_mean) / reconst_loss_std
+              if loss_val_z_score <= 0: break
+              dbid = dbids[idx].item()
+              if dbid not in outliers:
+                outliers[dbid] = {'loss': np.round(loss_val,2), 'mean': np.round(reconst_loss_mean,2), 'count': 1}
+              else:
+                outliers[dbid]['count'] += 1
+      '''
       optimizer.zero_grad() 
       loss.backward()
-      #nn.utils.clip_grad_norm_(recipe_net.parameters(), 100.0)
+      nn.utils.clip_grad_norm_(recipe_net.parameters(), 100.0)
       optimizer.step()
       
       global_step += 1
@@ -274,11 +269,12 @@ if __name__ == "__main__":
     #writer.add_embedding(recipe_net.head_encoder.misc_type_embedding.weight, misc_type_embedding_labels, tag="misc_type")
     #writer.add_embedding(recipe_net.head_encoder.microorganism_type_embedding.weight, microorganism_type_embedding_labels, tag="microorganism_type")        
     #writer.flush()
-      
-    print("\r\n", f"Epoch #{epoch_idx+1} Running Loss: [Mean: {np.around(running_loss.mean(), 3)}, StdDev: {np.around(running_loss.std(), 3)}]\t\t\t\t")
+    
+    writer.add_scalar("charts/learning_rate", optimizer.param_groups[0]['lr'], global_step)
+    print("\r\n", f"Epoch #{epoch_idx+1} Running Loss: [Mean: {np.around(epoch_running_loss.mean(), 3)}, StdDev: {np.around(epoch_running_loss.std(), 3)}]\t\t\t\t")
     if len(outliers) > 0:
       print("", f"Current outliers: {sorted(sorted(outliers.items(), key=lambda x: x[1]['count'], reverse=True), key=lambda x: x[1]['loss'], reverse=True)[:min(len(outliers),50)]}")
-    running_loss.clear()
+    epoch_running_loss.clear()
     scheduler.step()
 
   writer.close()

@@ -17,7 +17,7 @@ def dataset_args(dataset):
   }
 
 class RecipeNetArgs:
-  def __init__(self, dataset_args=None) -> None:
+  def __init__(self, dataset_args) -> None:
     # Recipe-specific constraints ***
     self.num_mash_steps          = NUM_MASH_STEPS
     self.num_grain_slots         = NUM_GRAIN_SLOTS
@@ -28,18 +28,33 @@ class RecipeNetArgs:
     self.num_ferment_stage_slots = NUM_FERMENT_STAGE_SLOTS
     
     # Embedding sizes ***
-    self.grain_type_embed_size         = 48
-    self.adjunct_type_embed_size       = 64
+    self.grain_type_embed_size         = 63
+    self.adjunct_type_embed_size       = 98
     self.hop_type_embed_size           = 256
-    self.misc_type_embed_size          = 128
-    self.microorganism_type_embed_size = 256
+    self.misc_type_embed_size          = 200
+    self.microorganism_type_embed_size = 512
     
+    # Loss Notes:
+    # - 8096,4096 hidden with z=32 results in a min reconst loss of around ~4500 (batch mean)
+    # - 8096,4096 hidden with z=64 results in a min reconst loss of around ~125 (batch mean)
+    # - 8096,4096 hidden with z=70 results in a min reconst loss of around ~1.8 (batch mean)
+    # - 8096,4096 hidden with z=80 results in a similar loss to z=70
+    # - 8096,4096,1024 hidden with z=72 results in ... similar loss (~1.4 batch mean)
+    # - 8160,4128 hidden with z=72 ... min reconst loss of around ~1.4 (batch mean)
+    # - 9120,5120 hidden with z=128, min reconst loss of ~0.116 (batch mean)
+    # - 9248,6144 hidden with z=128, min reconst loss of ~0.107 (batch mean)
+    # - 9248,6144,2048 hidden with z=128, min reconst loss of ~0.107 (batch mean)
+    # - 9248,6144 hidden with z=128 + layernorm and increased embeddings ~0.081 (batch mean)
+    # - 9248,6144 hidden with z=256 + layernorm and increased embeddings ~0.034 (batch mean)
+
     # Network-specific hyperparameters/constraints ***
-    self.hidden_layers = [8096, 4096, 2048] # NOTE: [9216,4096] is too big
-    self.z_size = 40 # Latent-bottleneck dimension - NOTE: Don't go smaller than 32
+    self.hidden_layers = [9248, 6144] # NOTE: A smaller final hidden layer size works better (256 is significantly better than 1024)
+    self.z_size = 256 # Latent-bottleneck dimension - NOTE: Don't go smaller than 32
     self.activation_fn = nn.LeakyReLU
-    self.activation_fn_params = {'negative_slope': 0.1}
-    self.gain = nn.init.calculate_gain('leaky_relu', 0.1) # Make sure this corresponds to the activation function!
+    self.activation_fn_params = {}#{'negative_slope': 0.1} # NOTE: The network appears to work better with the default LeakyReLU slope
+    self.gain = nn.init.calculate_gain('leaky_relu', 1e-2) # Make sure this corresponds to the activation function!
+    self.use_batch_norm = False
+    self.use_layer_norm = True
 
     # VAE-specific hyperparameters ***
     self.beta_vae_gamma = 1000
@@ -51,6 +66,10 @@ class RecipeNetArgs:
     self.beta_tc_vae_gamma = 1.0
     self.beta_tc_vae_anneal_steps = 1e4
 
+    self.num_mash_step_types  = -1
+    self.num_hop_stage_types  = -1
+    self.num_misc_stage_types = -1
+    self.num_mo_stage_types   = -1
     if dataset_args != None:
       for key, value in dataset_args.items():
         setattr(self, key, value)
