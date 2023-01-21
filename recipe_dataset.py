@@ -16,7 +16,6 @@ sys.path.append(os.path.dirname(SCRIPT_DIR))
 from brewbrain_db import RecipeML, CoreGrain, CoreAdjunct, Misc, Hop, Microorganism
 from brewbrain_db import RecipeMLMiscAT, RecipeMLHopAT, RecipeMLMicroorganismAT
 
-from beer_util_functions import hop_form_utilization, alpha_acid_mg_per_l
 from running_stats import RunningStats
 
 RECIPE_DATASET_FILENAME       = "recipe_dataset.pkl"
@@ -25,31 +24,13 @@ DATASET_MAPPINGS_FILENAME     = "recipe_dataset_mappings.json"
 
 NUM_GRAIN_SLOTS = 16
 NUM_ADJUNCT_SLOTS = 8
-NUM_HOP_SLOTS = 32
-NUM_MISC_SLOTS = 16
+NUM_HOP_SLOTS = 16
+NUM_MISC_SLOTS = 8
 NUM_MICROORGANISM_SLOTS = 8
 NUM_FERMENT_STAGE_SLOTS = 2
 NUM_MASH_STEPS = RecipeML.MAX_MASH_STEPS
 
 EMPTY_TAG = "<EMPTY>"
-
-def load_dataset(filepath=RECIPE_DATASET_FILENAME, verbose=True):
-  if verbose: print(f"Loading mappings from {filepath}...")
-  # Load the dataset and create a dataloader for it
-  with open(filepath, 'rb') as f:
-    dataset = pickle.load(f)
-  return dataset
-
-def save_dataset(dataset, dataset_filepath=RECIPE_DATASET_FILENAME, mappings_filepath=DATASET_MAPPINGS_FILENAME, save_mappings=True, verbose=True):
-  if save_mappings:
-    if verbose: print(f"Resaving mappings to {mappings_filepath}...")
-    mappings = DatasetMappings()
-    mappings.init_from_dataset(dataset)
-    mappings.save(mappings_filepath)
-  if verbose: print(f"Resaving dataset to {dataset_filepath}...")
-  with open(dataset_filepath, 'wb') as f:
-    pickle.dump(dataset, f)
-
 
 class _DatasetMappingsEncoder(json.JSONEncoder):
   def default(self, obj):
@@ -102,7 +83,6 @@ class DatasetMappings():
       mappings_json = json.load(f)
     return DatasetMappings(**mappings_json)
 
-
 class RecipeDataset(torch.utils.data.Dataset):
 
   def __init__(self, dataset_mappings=None):
@@ -126,6 +106,10 @@ class RecipeDataset(torch.utils.data.Dataset):
     for key, stats in self.normalizers.items():
       recipe[key] = ((recipe[key] - stats.mean()) / stats.std()).astype(np.float32)
     
+    recipe['boil_time']   = np.expand_dims(recipe['boil_time'], axis=0)
+    recipe['mash_ph']     = np.expand_dims(recipe['mash_ph'], axis=0)
+    recipe['sparge_temp'] = np.expand_dims(recipe['sparge_temp'], axis=0)
+
     # Sort ingredient slots based on quantities (higher to lower)
     adjunct_new_inds = np.argsort(recipe['adjunct_amts'])[::-1]
     recipe['adjunct_core_type_inds'] = recipe['adjunct_core_type_inds'][adjunct_new_inds]
@@ -378,6 +362,7 @@ class RecipeDataset(torch.utils.data.Dataset):
           vol = recipeML.fermenter_vol if adjunctAT.stage == None else _recipe_vol_at_stage(recipeML, infusion_vol, adjunctAT.stage)
           assert vol != None and vol > 0
           adjunct_amts[idx] = (adjunctAT.amount * 1000.0) / vol
+        np.clip(adjunct_amts, 0.0, 100.0, adjunct_amts)
         recipe_data['adjunct_core_type_inds'] = adjunct_core_type_inds
         recipe_data['adjunct_amts'] = adjunct_amts
         
@@ -397,6 +382,7 @@ class RecipeDataset(torch.utils.data.Dataset):
           #  hop_concentrations[idx] = hop_form_utilization(hopAT.form) * alpha_acid_mg_per_l(hopAT.alpha / 100.0, hopAT.amount * 1000.0, recipeML.postboil_vol) / 1000.0
           #else: 
           hop_concentrations[idx] = (hopAT.amount * 1000.0) / _recipe_vol_at_stage(recipeML, infusion_vol, hopAT.stage)
+        np.clip(hop_concentrations, 0.0, 25.0, hop_concentrations)
         recipe_data['hop_type_inds'] = hop_type_inds
         recipe_data['hop_stage_type_inds'] = hop_stage_type_inds
         recipe_data['hop_times'] = hop_times
@@ -417,6 +403,7 @@ class RecipeDataset(torch.utils.data.Dataset):
           assert time_div > 0
           misc_times[idx] = min(miscAT.time, max_time) / time_div
           misc_stage_inds[idx] = misc_stage_name_to_idx[miscAT.stage]
+        np.clip(misc_amts, 0.0, 100.0, misc_amts)
         recipe_data['misc_type_inds'] = misc_type_inds
         recipe_data['misc_amts'] = misc_amts
         recipe_data['misc_times'] = misc_times
@@ -526,14 +513,28 @@ def recipe_time_at_stage(recipe, stage_name):
     return (60, 180)  # Typical additions to a sparge are within an hour
   elif stage_name == 'whirlpool':
     return (60, 180) # Set the typical whirlpool to be about an hour
+  elif stage_name == None:
+    return (0,0)
   assert False
 
+def load_dataset(filepath=RECIPE_DATASET_FILENAME, verbose=True):
+  if verbose: print(f"Loading mappings from {filepath}...")
+  # Load the dataset and create a dataloader for it
+  with open(filepath, 'rb') as f:
+    dataset = pickle.load(f)
+  return dataset
 
-def load_save_recalc_normalizations():
-  dataset = load_dataset()
-  print("Recalculating normalizations...")
-  dataset._calc_normalization()
-  save_dataset(dataset)
+def save_dataset(dataset, dataset_filepath=RECIPE_DATASET_FILENAME, mappings_filepath=DATASET_MAPPINGS_FILENAME, save_mappings=True, verbose=True):
+  if save_mappings:
+    if verbose: print(f"Resaving mappings to {mappings_filepath}...")
+    mappings = DatasetMappings()
+    mappings.init_from_dataset(dataset)
+    mappings.save(mappings_filepath)
+  if verbose: print(f"Resaving dataset to {dataset_filepath}...")
+  with open(dataset_filepath, 'wb') as f:
+    pickle.dump(dataset, f)
+
+
 
 def remove_dbids(dataset, session, dbids_to_remove):
   print(f"Removing {len(dbids_to_remove)} recipes...")
@@ -545,48 +546,51 @@ def remove_dbids(dataset, session, dbids_to_remove):
     session.delete(recipe)
   session.commit()
 
-if __name__ == "__main__":
+def load_save_recalc_normalizations():
   dataset = load_dataset()
-  dbids_to_remove = [r['dbid'] for r in dataset.recipes if np.any(r['misc_amts'] > 200)]#[recipe['dbid'] for recipe in dataset.recipes if np.any(recipe['hop_concentrations'] > 25) or np.any(recipe['adjunct_amts'] > 1000) or np.any(recipe['misc_amts']) > 200]
+  print("Recalculating normalizations...")
+  dataset._calc_normalization()
+  save_dataset(dataset)
 
+def load_save_remove_dbids(dbids_to_remove):
+  dataset = load_dataset()
   from sqlalchemy import create_engine
-  from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, RecipeML
+  from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base
   engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
   Base.metadata.create_all(engine)
   with Session(engine) as session:
-    '''
-    db_recipes = session.scalars(select(RecipeML)).all()
-    db_recipes_map = {r.id: r for r in db_recipes}
+    remove_dbids(dataset, session, dbids_to_remove)
+  save_dataset(dataset)
 
-    # Clean up hop concentrations... fix the boil hops to use g/L
-    boil_idx = -1
-    for idx, name in dataset.hop_stage_idx_to_name.items():
-      if name == 'boil':
-        boil_idx = idx
-        break
-    assert boil_idx != -1
-    dbids_to_remove = set()
-    for recipe in dataset.recipes:
-      # Are there boil hops?
-      boil_hop_inds = recipe['hop_stage_type_inds'] == boil_idx
-      if not np.any(boil_hop_inds): continue
 
-      # Change boil hop concentrations to g/L
-      if recipe['dbid'] not in db_recipes_map:
-        dbids_to_remove.add(recipe['dbid'])
-        continue
+if __name__ == "__main__":
+  '''
+  MAX_MISC_AMT = 100.0
+  MAX_ADJ_AMT  = 100.0
+  misc_recipes_to_clip = [r for r in dataset.recipes if np.any(r['misc_amts'] > MAX_MISC_AMT)]
+  adj_recipes_to_clip  = [r for r in dataset.recipes if np.any(r['adjunct_amts'] > MAX_ADJ_AMT)]
 
-      recipe_ml = db_recipes_map[recipe['dbid']]
-      assert recipe_ml != None, f"No recipe found for dbid {recipe['dbid']}!"
-      infusion_vol = recipe_ml.total_infusion_vol()
-      for idx, hop_at in enumerate(recipe_ml.hops):
-        recipe['hop_concentrations'][idx] = (hop_at.amount * 1000.0) / _recipe_vol_at_stage(recipe_ml, infusion_vol, hop_at.stage)
-        if recipe['hop_concentrations'][idx] > 25:
-          dbids_to_remove.add(recipe['dbid'])
-    '''
-    remove_dbids(dataset, session, dbids_to_remove) 
-    save_dataset(dataset)
-    
+  for recipe in misc_recipes_to_clip:
+    np.clip(recipe['misc_amts'], 0.0, MAX_MISC_AMT, recipe['misc_amts'])
+  for recipe in adj_recipes_to_clip:
+    np.clip(recipe['adjunct_amts'], 0.0, MAX_ADJ_AMT, recipe['adjunct_amts'])
+
+  print("Recalculating normalizations...")
+  dataset._calc_normalization()
+  '''
+
+  dataset = load_dataset()
+  dataset.recipes = [r for r in dataset.recipes if np.count_nonzero(r['misc_type_inds']) <= 8]
+  for recipe in dataset.recipes:
+    recipe['misc_type_inds']  = recipe['misc_type_inds'][:8] 
+    recipe['misc_amts']       = recipe['misc_amts'][:8]
+    recipe['misc_times']      = recipe['misc_times'][:8]
+    recipe['misc_stage_inds'] = recipe['misc_stage_inds'][:8]
+
+  print("Recalculating normalizations...")
+  dataset._calc_normalization()
+  save_dataset(dataset)
+
   exit()
 
   
@@ -648,9 +652,7 @@ if __name__ == "__main__":
 
   # Set of dbids to remove based on network testing for outliers...
   remove_dbids = set(
-    [
-      138918,196206,215956,221149,133902,211680,215135,223880,231843,23052, 233061,214458,102975,25209, 88871, 290456,21840, 32398, 6709,  44007, 131139,210853,29271, 254751,221338,226719,273031,219908,22601, 20541, 119635,197266,27991, 233555,45011, 219349,50315, 105705,220452,194885,200975,28019, 21844, 249832,40956, 143032,143709,222311,223045,166997,
-    ]
+    [220030,45088, 220908,264765,103650,287882,87217, 17982, 27526, 113323,25206, 234313,254023,45696, 1586,  253925,119412,265352,114924,103486,223601,263910,182749,231681,9974,  45592, 9110,  34415, 142438,221444,281008,32392, 18033, 129263,188507,257542,23043, 218882,223658,215375,5195,  265472,8652,  31820, 254158,45570, 45484, 5582,  19067, 24412, ]
   )
 
   # Remove the ids from the dataset

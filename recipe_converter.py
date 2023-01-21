@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 
 from recipe_dataset import DatasetMappings, recipe_time_at_stage
+from recipe_net_args import FEATURE_TYPE_CATEGORY
 from brewbrain_db import BREWBRAIN_DB_ENGINE_STR, Base, Hop, Misc, Microorganism, CoreGrain, CoreAdjunct
 
 class RecipeConverter():
@@ -97,30 +98,18 @@ class RecipeConverter():
     return recipes
 
   @torch.no_grad()
-  def net_output_to_recipes(self, foots):
+  def net_output_to_recipes(self, x_hat, features):
     t_recipes = {}
-    t_recipes['boil_time'], t_recipes['mash_ph'], t_recipes['sparge_temp'] = torch.chunk(foots.x_hat_toplvl, 3, dim=1)
-    num_recipes = t_recipes['boil_time'].shape[0]
+    for key, (feature_type, _, num_slots, _) in features.items():
+      if feature_type == FEATURE_TYPE_CATEGORY:
+        # Categories need a softmax + argmax to get the indices of the class features for each slot
+        slots = []
+        for i in range(num_slots):
+          slots.append(torch.argmax(torch.softmax(x_hat[key][i], dim=-1), dim=-1, keepdim=False))
+        t_recipes[key] = torch.cat(slots).unsqueeze(0) # Put all the slots back together into a single batched array (1, num_slots)
+      else:
+        t_recipes[key] = x_hat[key] # Just copy the reference for real values
 
-    t_recipes['mash_step_type_inds'] = torch.argmax(torch.softmax(foots.dec_mash_step_type_onehot.view(num_recipes, foots.dec_mash_step_times.shape[1], -1), dim=-1), dim=-1, keepdim=False)
-    t_recipes['mash_step_times']     = foots.dec_mash_step_times
-    t_recipes['mash_step_avg_temps'] = foots.dec_mash_step_avg_temps
-    t_recipes['ferment_stage_times'], t_recipes['ferment_stage_temps'] = torch.chunk(foots.x_hat_ferment_stages, 2, dim=1)
-    t_recipes['grain_core_type_inds'] = torch.argmax(torch.softmax(foots.dec_grain_type_logits, dim=-1), dim=-1, keepdim=False)
-    t_recipes['grain_amts'] = foots.dec_grain_amts
-    t_recipes['adjunct_core_type_inds'] = torch.argmax(torch.softmax(foots.dec_adjunct_type_logits, dim=-1), dim=-1, keepdim=False)
-    t_recipes['adjunct_amts'] = foots.dec_adjunct_amts
-    t_recipes['hop_type_inds'] = torch.argmax(torch.softmax(foots.dec_hop_type_logits, dim=-1), dim=-1, keepdim=False)
-    t_recipes['hop_stage_type_inds'] = torch.argmax(torch.softmax(foots.dec_hop_stage_type_onehot.view(num_recipes, foots.dec_hop_times.shape[1], -1), dim=-1), dim=-1, keepdim=False)
-    t_recipes['hop_times'] = foots.dec_hop_times
-    t_recipes['hop_concentrations'] = foots.dec_hop_concentrations
-    t_recipes['misc_type_inds']  = torch.argmax(torch.softmax(foots.dec_misc_type_logits, dim=-1), dim=-1, keepdim=False)
-    t_recipes['misc_stage_inds'] = torch.argmax(torch.softmax(foots.dec_misc_stage_type_onehot.view(num_recipes, foots.dec_misc_amts.shape[1], -1), dim=-1), dim=-1, keepdim=False)
-    t_recipes['misc_times'] = foots.dec_misc_times
-    t_recipes['misc_amts'] = foots.dec_misc_amts
-    t_recipes['mo_type_inds'] = torch.argmax(torch.softmax(foots.dec_mo_type_logits, dim=-1), dim=-1, keepdim=False)
-    t_recipes['mo_stage_inds'] = torch.argmax(torch.softmax(foots.dec_mo_stage_type_onehot.view(num_recipes, t_recipes['mo_type_inds'].shape[1], -1), dim=-1), dim=-1, keepdim=False)
-    
     return self.batch_to_recipes(t_recipes)
 
   def mash_step_type_names(self, mash_step_type_inds):

@@ -22,7 +22,7 @@ from model import RecipeNet, MODEL_FILE_KEY_NETWORK, MODEL_FILE_KEY_ARGS
 # Basic initialization / global variables for app ****
 st.set_page_config(layout="wide")
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu")#torch.device("cuda" if torch.cuda.is_available() else "cpu")
 init_rng_seeding(42)
 db_engine = create_engine(BREWBRAIN_DB_ENGINE_STR, echo=False, future=True)
 Base.metadata.create_all(db_engine)
@@ -118,7 +118,7 @@ def display_recipe(recipe, converter):
     hop_table = [(name, hop_stage_type_names[i], str(int(recipe['hop_times'][i])), recipe['hop_concentrations'][i]) for i,name in enumerate(hop_names)]
     st.table(pd.DataFrame(
       hop_table, 
-      columns=["Name", "Stage", "Time (min)", "Concentration (AA g/L (boil) or g/L)"], 
+      columns=["Name", "Stage", "Time (min)", "Concentration (g/L)"], 
       index=[i for i in range(1, len(hop_table)+1)]
     ))
 
@@ -250,8 +250,8 @@ else:
   batch = {}
   for key, value in recipe_batch.items():
     if key == 'dbid': continue
-    batch[key] = value.cuda()
-  heads, foots, mean, logvar, z = model(batch, use_mean=True)
+    batch[key] = value.to(device)
+  _, x_hat_dict, _, mean, logvar, _, z = model(batch, use_mean=True)
 
   converter = RecipeConverter(dataset_mappings)
 
@@ -262,5 +262,5 @@ else:
   with original_col:
     display_recipe(converter.batch_to_recipes(recipe_batch)[0], converter)
   with decoded_col:
-    display_recipe(converter.net_output_to_recipes(foots)[0], converter)
+    display_recipe(converter.net_output_to_recipes(x_hat_dict, model.args.features)[0], converter)
 

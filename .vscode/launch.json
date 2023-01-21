@@ -10,8 +10,11 @@
       "request": "launch",
       "program": "${file}",
       "args": [
-        //"--model", "runs/recipe_net__seed42_beta-tc_z256_hidden9248-6144_1673058646/recipe_net_70000.chkpt"
+        //"--model", "runs/recipe_net__seed42_beta_z256_hidden10272-8192-4096_1674262385/recipe_net_20000.chkpt"
       ],
+      "env": {
+        "CUDA_LAUNCH_BLOCKING": "1"
+      },
       "console": "integratedTerminal",
       "justMyCode": false
     },
